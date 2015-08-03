@@ -3,13 +3,12 @@
 .onAttach <- function(libname, pkgname) {
   desc  <- packageDescription(pkgname, libname)
   packageStartupMessage(
+    'Package:  btergm\n', 
     'Version:  ', desc$Version, '\n', 
     'Date:     ', desc$Date, '\n', 
-    'Authors:  Philip Leifeld (University of Konstanz)\n',
+    'Authors:  Philip Leifeld (Eawag (ETH) and University of Bern)\n',
     '          Skyler J. Cranmer (The Ohio State University)\n',
-    '          Bruce A. Desmarais (Penn State University)', 
-    '\n\nPlease cite the xergm package in your publications ', 
-    '-- see citation("xergm").'
+    '          Bruce A. Desmarais (Penn State University)\n'
   )
 }
 
@@ -231,8 +230,8 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   env$num.vertices <- max(sapply(env$networks, function(x) 
       network::get.network.attribute(network::network(x), "n")))  # number nodes
   if (is.network(env$networks[[1]])) {
-    env$directed <- is.directed(env$networks[[1]])  # directed?
-    env$bipartite <- is.bipartite(env$networks[[1]])  # bipartite?
+    env$directed <- network::is.directed(env$networks[[1]])  # directed?
+    env$bipartite <- network::is.bipartite(env$networks[[1]])  # bipartite?
   } else {
     if (xergm.common::is.mat.directed(as.matrix(env$networks[[1]]))) {
       env$directed <- TRUE
@@ -463,13 +462,13 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
             } else {
               if (is.null(rn.j) && !is.null(rn.k) && nr.j == nr.k) {
                 if (class(nw.j) == "network") {
-                  set.vertex.attribute(nw.j, "vertex.names", rn.k)
+                  network::set.vertex.attribute(nw.j, "vertex.names", rn.k)
                 } else {
                   rownames(nw.j) <- rn.k
                 }
               } else if (is.null(rn.k) && !is.null(rn.j) && nr.j == nr.k) {
                 if (class(nw.k) == "network") {
-                  set.vertex.attribute(nw.k, "vertex.names", rn.j)
+                  network::set.vertex.attribute(nw.k, "vertex.names", rn.j)
                 } else {
                   rownames(nw.k) <- rn.j
                 }
@@ -690,7 +689,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
           directed = env$directed, bipartite = env$bipartite)
       for (i in 1:length(attrnames)) {  # collate attributes and merge back in
         attrib <- unlist(lapply(attributes, function(x) x[[i]]))
-        set.vertex.attribute(env$networks, attrnames[i], attrib)
+        network::set.vertex.attribute(env$networks, attrnames[i], attrib)
       }
     } else {  # matrix
       env$networks <- network::network(as.matrix(Matrix::bdiag(env$networks)), 
@@ -751,8 +750,8 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
       Clist.miss <- ergm::ergm.design(nw, model, verbose = FALSE)
       pl <- ergm::ergm.pl(Clist, Clist.miss, model, theta.offset = 
           c(rep(FALSE, length(env$rhs.terms) - 1), TRUE), verbose = FALSE, 
-          control = control.ergm(init = c(rep(NA, length(env$rhs.terms) - 1), 
-          1)))
+          control = ergm::control.ergm(init = c(rep(NA, 
+          length(env$rhs.terms) - 1), 1)))
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
           check.names = FALSE), i))
@@ -768,7 +767,7 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
     W <- NULL
     O <- NULL  # will remain NULL and will be fed into GLM
     for (i in 1:length(env$networks)) {
-      mpli <- ergmMPLE(env$form)
+      mpli <- ergm::ergmMPLE(env$form)
       Y <- c(Y, mpli$response)
       X <- rbind(X, cbind(mpli$predictor, i))
       W <- c(W, mpli$weights)
@@ -910,7 +909,7 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   }
   
   # simulate
-  simulate.formula(env$form, nsim = nsim, seed = seed, coef = coef, 
+  ergm::simulate.formula(env$form, nsim = nsim, seed = seed, coef = coef, 
       verbose = verbose, ...)
 }
 

@@ -145,7 +145,7 @@ statnetgof <- function(gofobject, simulations, target, statistics = c("dsp",
   
   message("\nComputing classic (statnet-style) goodness of fit:")
   directed <- simulations[[1]]$gal$directed
-  bipartite <- is.bipartite(network(target[[1]]))
+  bipartite <- network::is.bipartite(network::network(target[[1]]))
   
   # create lists for simulated and observed network stats
   stats <- list()
@@ -310,7 +310,7 @@ rocprgof <- function(gofobject, simulations, target, missingmatrix = NULL,
         sim[missingmatrix == TRUE] <- NA
         sim <- suppressMessages(handleMissings(sim, na = NA, 
             method = na.method))
-        simulations[[i]] <- network(sim)
+        simulations[[i]] <- network::network(sim)
       } else {
         stop(paste("Missing data matrix and simulations do not have the", 
             "same number of nodes."))
@@ -382,8 +382,8 @@ rocprgof <- function(gofobject, simulations, target, missingmatrix = NULL,
         sums <- sums + as.matrix(simulations[[i]])
       }
       sums <- sums / length(simulations)
-      if (is.directed(target[[j]]) == TRUE || 
-          is.bipartite(target[[j]]) == TRUE) {
+      if (network::is.directed(target[[j]]) == TRUE || 
+          network::is.bipartite(target[[j]]) == TRUE) {
         pr <- c(sums)
         y <- c(as.matrix(net))
       } else {
@@ -482,8 +482,8 @@ setMethod("getformula", signature = className("ergm", "ergm"),
 
 # create random graphs with the corresponding tie probability of each time step
 randomgraph <- function(networks, nsim = 100) {
-  di <- is.directed(networks[[1]])
-  bip <- is.bipartite(networks[[1]])
+  di <- network::is.directed(networks[[1]])
+  bip <- network::is.bipartite(networks[[1]])
   rownum <- sapply(networks, function(x) nrow(as.matrix(x)))
   colnum <- sapply(networks, function(x) ncol(as.matrix(x)))
   dens <- sapply(networks, sna::gden)
@@ -588,8 +588,9 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
         i <- index
         sim[[index]] <- simulate.formula(env$form, nsim = nsim, 
             coef = coefs, constraints = ~ ., 
-            control = control.simulate.formula(MCMC.interval = MCMC.interval, 
-            MCMC.burnin = MCMC.burnin, parallel = ncpus, parallel.type = p))
+            control = control.simulate.formula(MCMC.interval = 
+            MCMC.interval, MCMC.burnin = MCMC.burnin, parallel = ncpus, 
+            parallel.type = p))
       } else {
         stop(paste0("For this type of object, \"SOCK\" and \"MPI\" parallel ", 
             "processing are allowed. \"", parallel, 
@@ -599,12 +600,12 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     
     # compute target stats if degeneracy check is switched on
     if (checkdegeneracy == TRUE) {
-      tstats[[index]] <- summary(remove.offset.formula(env$form), 
+      tstats[[index]] <- summary(ergm::remove.offset.formula(env$form), 
           response = NULL)
       degen[[index]] <- simulate.formula(env$form, nsim = nsim, 
           coef = coefs, statsonly = TRUE, 
-          control = control.simulate.formula(MCMC.interval = MCMC.interval, 
-          MCMC.burnin = MCMC.burnin))
+          control = control.simulate.formula(MCMC.interval = 
+          MCMC.interval, MCMC.burnin = MCMC.burnin))
     }
   }
   
@@ -645,11 +646,11 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     for (i in 1:env$time.steps) {
       env$networks[[i]] <- as.matrix(env$networks[[i]])
       env$networks[[i]][is.na(as.matrix(target[[i]]))] <- NA
-      env$networks[[i]] <- network(env$networks[[i]], 
+      env$networks[[i]] <- network::network(env$networks[[i]], 
           directed = env$directed, bipartite = env$bipartite)
       target[[i]] <- as.matrix(target[[i]])
       target[[i]][is.na(as.matrix(env$networks[[i]]))] <- NA
-      target[[i]] <- network(target[[i]], directed = env$directed, 
+      target[[i]] <- network::network(target[[i]], directed = env$directed, 
           bipartite = env$bipartite)
     }
   }
@@ -660,7 +661,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   gofobject$numbasis <- length(env$networks)
   gofobject$numtarget <- length(target)
   num.vertices <- max(sapply(env$networks, function(object) 
-      get.network.attribute(network::network(object, 
+      network::get.network.attribute(network::network(object, 
       directed = env$directed, bipartite = env$bipartite), "n")))
   gofobject$num.vertices <- num.vertices
   
@@ -696,12 +697,12 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     message("\nChecking degeneracy...")
     mat <- list()
     for (i in 1:env$time.steps) {
-      sm <- as.mcmc.list(as.mcmc(degensim))
-      sm <- sweep.mcmc.list(sm, target.stats[[i]], "-")
+      sm <- coda::as.mcmc.list(coda::as.mcmc(degensim))
+      sm <- ergm::sweep.mcmc.list(sm, target.stats[[i]], "-")
       center <- TRUE
-      ds <- colMeans.mcmc.list(sm) - if (!center) target.stats[[i]] else 0
+      ds <- ergm::colMeans.mcmc.list(sm) - if (!center) target.stats[[i]] else 0
       sds <- apply(degensim, 2, sd)
-      ns <- effectiveSize(sm)
+      ns <- coda::effectiveSize(sm)
       se <- sds * sqrt(ns)
       z <- ds / se
       p.z <- pnorm(abs(z), lower.tail = FALSE) * 2
@@ -903,7 +904,7 @@ gof.sienaAlgorithm <- function(object, siena.data, siena.effects,
   dv[missings] <- NA
   dv <- suppressMessages(handleMissings(dv, na = NA, method = target.na.method, 
       logical = FALSE))
-  target <- list(network(dv))
+  target <- list(network::network(dv))
   
   # this function carries out one simulation at a time (for parallelization)
   simSiena <- function(q, mymodel, mydata, myeffects, mybase, mydvname, ...) {
@@ -939,15 +940,15 @@ gof.sienaAlgorithm <- function(object, siena.data, siena.effects,
   }
   
   # correct directed = TRUE --> FALSE
-  isbip <- sapply(simulations, is.bipartite)
+  isbip <- sapply(simulations, network::is.bipartite)
   if (!any(isbip == TRUE)) {
-    isdir <- sapply(simulations, is.directed)
+    isdir <- sapply(simulations, network::is.directed)
     issym <- sapply(simulations, function(x) isSymmetric(as.matrix(x)))
     if (any(isdir && issym) && length(table(isdir && issym)) == 1 && 
-        !any(sapply(target, is.directed))) {
+        !any(sapply(target, network::is.directed))) {
       for (i in 1:length(simulations)) {
         if (issym[i] && isdir[i]) {
-          simulations[[i]] <- as.network(as.matrix(simulations[[i]]), 
+          simulations[[i]] <- network::as.network(as.matrix(simulations[[i]]), 
               directed = FALSE)
         }
       }
@@ -955,15 +956,19 @@ gof.sienaAlgorithm <- function(object, siena.data, siena.effects,
   }
   
   # correct properties of the target network
-  if (is.directed(target[[1]]) && !is.directed(simulations[[1]])) {
-    target[[1]] <- network(as.matrix(target[[1]]), directed = FALSE)
-  } else if (!is.directed(target[[1]]) && is.directed(simulations[[1]])) {
-    target[[1]] <- network(as.matrix(target[[1]]), directed = TRUE)
+  if (network::is.directed(target[[1]]) && 
+      !network::is.directed(simulations[[1]])) {
+    target[[1]] <- network::network(as.matrix(target[[1]]), directed = FALSE)
+  } else if (!network::is.directed(target[[1]]) && 
+      network::is.directed(simulations[[1]])) {
+    target[[1]] <- network::network(as.matrix(target[[1]]), directed = TRUE)
   }
-  if (is.bipartite(target[[1]]) && !is.bipartite(simulations[[1]])) {
-    target[[1]] <- network(as.matrix(target[[1]]), bipartite = FALSE)
-  } else if (!is.bipartite(target[[1]]) && is.bipartite(simulations[[1]])) {
-    target[[1]] <- network(as.matrix(target[[1]]), bipartite = TRUE)
+  if (network::is.bipartite(target[[1]]) && 
+      !network::is.bipartite(simulations[[1]])) {
+    target[[1]] <- network::network(as.matrix(target[[1]]), bipartite = FALSE)
+  } else if (!network::is.bipartite(target[[1]]) && 
+      network::is.bipartite(simulations[[1]])) {
+    target[[1]] <- network::network(as.matrix(target[[1]]), bipartite = TRUE)
   }
   
   # create an object where the final results are stored
@@ -1020,8 +1025,8 @@ gof.network <- function(object, covariates, coef, target = NULL,
   # check dependent network
   nw <- object
   if (class(nw) == "network") {
-    directed <- is.directed(nw)
-    bipartite <- is.bipartite(nw)
+    directed <- network::is.directed(nw)
+    bipartite <- network::is.bipartite(nw)
   } else if (class(nw) == "matrix") {
     directed <- !isSymmetric(nw)
     if (nrow(nw) == ncol(nw)) {
@@ -1029,7 +1034,7 @@ gof.network <- function(object, covariates, coef, target = NULL,
     } else {
       bipartite <- TRUE
     }
-    nw <- network(nw, bipartite = bipartite, directed = directed)
+    nw <- network::network(nw, bipartite = bipartite, directed = directed)
   } else {
     stop("'object' must be a network object or a matrix.")
   }
@@ -1106,8 +1111,8 @@ gof.network <- function(object, covariates, coef, target = NULL,
     dat <- cbind(rep(1, nrow(dat)), dat)
     prob <- plogis(coef %*% t(dat))
     simval <- t(sapply(prob, function(x) rbinom(nsim, 1, x)))
-    simulations <- apply(simval, 2, function(x) network(matrix(x, nrow = 
-        num.vertices, byrow = FALSE), bipartite = bipartite, 
+    simulations <- apply(simval, 2, function(x) network::network(matrix(x, 
+        nrow = num.vertices, byrow = FALSE), bipartite = bipartite, 
         directed = directed))
   } else {
     stop(paste0("For this type of object, \"SOCK\" and \"MPI\" parallel ", 
@@ -1119,10 +1124,10 @@ gof.network <- function(object, covariates, coef, target = NULL,
   # if NA in target networks, put them in the base network, too, and vice-versa
   nw <- as.matrix(nw)
   nw[is.na(as.matrix(target))] <- NA
-  nw <- network(nw, directed = directed, bipartite = bipartite)
+  nw <- network::network(nw, directed = directed, bipartite = bipartite)
   target <- as.matrix(target)
   target[is.na(as.matrix(nw))] <- NA
-  target <- network(target, directed = directed, bipartite = bipartite)
+  target <- network::network(target, directed = directed, bipartite = bipartite)
   
   # create an object where the final results are stored
   gofobject <- list()
