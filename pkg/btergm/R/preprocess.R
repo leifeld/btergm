@@ -63,10 +63,11 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
       } else {
         directed[[i]] <- FALSE
       }
-      attribnames[[i]] <- list.vertex.attributes(mat[[i]])
+      attribnames[[i]] <- network::list.vertex.attributes(mat[[i]])
       attrib <- list()  # list of attributes at time i
       for (j in 1:length(attribnames[[i]])) {
-        attrib[[j]] <- get.vertex.attribute(mat[[i]], attribnames[[i]][j])
+        attrib[[j]] <- network::get.vertex.attribute(mat[[i]], 
+            attribnames[[i]][j])
       }
       attributes[[i]] <- attrib
       mat[[i]] <- as.matrix(mat[[i]])
@@ -185,8 +186,8 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
         mat[[i]] <- network(mat[[i]], directed = directed[[i]], 
             bipartite = bip)
         for (j in 1:length(attribnames[[i]])) {
-          mat[[i]] <- set.vertex.attribute(mat[[i]], attribnames[[i]][j], 
-              attributes[[i]][[j]])
+          mat[[i]] <- network::set.vertex.attribute(mat[[i]], 
+              attribnames[[i]][j], attributes[[i]][[j]])
         }
       }
     } else if (class(mat[[i]]) == "data.frame") {
@@ -375,10 +376,10 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
     sources.types[[i]] <- class(sources[[i]])
     if (class(sources[[i]]) == "network") {
       # save source attributes and other meta information in list
-      sources.attribnames[[i]] <- list.vertex.attributes(sources[[i]])
+      sources.attribnames[[i]] <- network::list.vertex.attributes(sources[[i]])
       attributes <- list()
       for (j in 1:length(sources.attribnames[[i]])) {
-        attributes[[j]] <- get.vertex.attribute(sources[[i]], 
+        attributes[[j]] <- network::get.vertex.attribute(sources[[i]], 
             sources.attribnames[[i]][j])
       }
       sources.attributes[[i]] <- attributes
@@ -395,10 +396,10 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
     targets.types[[i]] <- class(targets[[i]])
     if (class(targets[[i]]) == "network") {
       # save target attributes and other meta information in list
-      targets.attribnames[[i]] <- list.vertex.attributes(targets[[i]])
+      targets.attribnames[[i]] <- network::list.vertex.attributes(targets[[i]])
       attributes <- list()
       for (j in 1:length(targets.attribnames[[i]])) {
-        attributes[[j]] <- get.vertex.attribute(targets[[i]], 
+        attributes[[j]] <- network::get.vertex.attribute(targets[[i]], 
             targets.attribnames[[i]][j])
       }
       targets.attributes[[i]] <- attributes
@@ -688,7 +689,7 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
       sources[[i]] <- network(sources[[i]], directed = sources.directed[[i]], 
           bipartite = !sources.onemode[[i]])
       for (j in 1:length(sources.attribnames[[i]])) {
-        sources[[i]] <- set.vertex.attribute(sources[[i]], 
+        sources[[i]] <- network::set.vertex.attribute(sources[[i]], 
             sources.attribnames[[i]][j], sources.attributes[[i]][[j]])
       }
     }
@@ -808,20 +809,22 @@ preprocess <- function(object, ..., lag = FALSE, covariate = FALSE,
         if (nrow(as.matrix(l[[i]][[j]])) == largest.nr && is.null(rownames(
             as.matrix(l[[i]][[j]])))) {
           if (!is.bipartite(l[[i]][[j]])) {
-            l[[i]][[j]] <- set.vertex.attribute(l[[i]][[j]], "vertex.names", 
-                largest.row.labels)
+            l[[i]][[j]] <- network::set.vertex.attribute(l[[i]][[j]], 
+                "vertex.names", largest.row.labels)
           } else {
-            l[[i]][[j]] <- set.vertex.attribute(l[[i]][[j]], "vertex.names", 
-                c(largest.row.labels, get.vertex.attribute(l[[i]][[j]], 
+            l[[i]][[j]] <- network::set.vertex.attribute(l[[i]][[j]], 
+                "vertex.names", c(largest.row.labels, 
+                network::get.vertex.attribute(l[[i]][[j]], 
                 "vertex.names")[(nrow(as.matrix(l[[i]][[j]]) + 1):ncol(
                 as.matrix(l[[i]][[j]])))]))
           }
         }
         if (ncol(as.matrix(l[[i]][[j]])) == largest.nc && is.null(colnames(
             as.matrix(l[[i]][[j]]))) && is.bipartite(l[[i]][[j]])) {
-          l[[i]][[j]] <- set.vertex.attribute(l[[i]][[j]], "vertex.names", 
-              c(get.vertex.attribute(l[[i]][[j]], "vertex.names")[1:nrow(
-              as.matrix(l[[i]][[j]]))], largest.col.labels))
+          l[[i]][[j]] <- network::set.vertex.attribute(l[[i]][[j]], 
+              "vertex.names", c(network::get.vertex.attribute(l[[i]][[j]], 
+              "vertex.names")[1:nrow(as.matrix(l[[i]][[j]]))], 
+              largest.col.labels))
         }
       } else if (class(l[[i]][[j]]) == "data.frame" && is.null(
           rownames(l[[i]][[j]])) && nrow(l[[i]][[j]]) == largest.nr) {
