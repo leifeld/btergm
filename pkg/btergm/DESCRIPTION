@@ -4,7 +4,7 @@ Date: 2015-08-03
 Title: Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood
 Authors@R: c(person(given = "Philip", family = "Leifeld", email = "philip.leifeld@uni-konstanz.de", role = c("aut", "cre")), person(given = c("Skyler", "J."), family = "Cranmer", email = "cranmer.12@osu.edu", role = "ctb"), person(given = c("Bruce", "A."), family = "Desmarais", email = "desmarais@polsci.umass.edu", role = "ctb"))
 Description: Temporal Exponential Random Graph Models (TERGM) estimated by maximum pseudolikelihood with bootstrapped confidence intervals or Markov Chain Monte Carlo maximum likelihood. Goodness of fit assessment for ERGMs, TERGMs, and SAOMs. Micro-level interpretation of ERGMs and TERGMs.
-Depends: R (>= 2.14.0), xergm.common (>= 1.5.1)
 Imports: stats4, utils, methods, statnet, statnet.common, network, sna, ergm (>= 3.2.4), texreg (>= 1.34), Matrix, parallel, boot, coda, stats, ROCR, speedglm
+Depends: R (>= 2.14.0), xergm.common (>= 1.5.1)
 Suggests: RSiena (>= 1.0.12.169), xergm
 License: GPL (>= 2)
