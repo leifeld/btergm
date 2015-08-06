@@ -657,9 +657,9 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     env$form <- as.formula(env$form, env = env)
     # make covariates block-diagonal
     if (length(env$covnames) > 1) {
-      for (i in 2:length(env$covnames)) {
-        env[[env$covnames[i]]] <- as.matrix(Matrix::bdiag(as.matrix(
-            env[[env$covnames[i]]])))
+      for (j in 2:length(env$covnames)) {
+        env[[env$covnames[j]]] <- as.matrix(Matrix::bdiag(lapply(
+            env[[env$covnames[j]]], as.matrix)))
       }
     }
     # create block-diagonal offset matrix and merge with existing offsmat term
@@ -847,11 +847,16 @@ mtergm <- function(formula, offset = FALSE, constraints = ~ .,
       verbose = verbose)
   parent.env(env) <- environment()
   
+  if (verbose == TRUE) {
+    message("Estimating...")
+  }
+  
   # estimate an ERGM
   e <- ergm(env$form, offset.coef = -Inf, constraints = constraints, 
-      estimate = estimate, ...)
+      estimate = estimate[1], ...)
   
   if (verbose == TRUE) {
+    message("Done.")
     message(paste("\nNote: The infinite 'edgecov.offsmat' model term contains", 
         "structural zeros and can be ignored."))
   }
