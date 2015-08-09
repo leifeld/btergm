@@ -565,6 +565,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   tstats <- list()
   degen <- list()
   for (index in 1:env$time.steps) {
+    i <- index
     # simulations for statnet-style and rocpr GOF
     if (classicgof == TRUE || rocprgof == TRUE) {
       if (verbose == TRUE) {
@@ -585,7 +586,6 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
           ncpus <- 0
           p <- NULL
         }
-        i <- index
         sim[[index]] <- simulate.formula(env$form, nsim = nsim, 
             coef = coefs, constraints = ~ ., 
             control = control.simulate.formula(MCMC.interval = 
