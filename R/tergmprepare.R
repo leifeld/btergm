@@ -452,11 +452,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       stop(paste("MCMC estimation is currently only supported for one-mode", 
           "networks. Use the btergm function instead."))
     }
-    # use original formula without time indices
-    env$form <- update.formula(formula, networks ~ .)
-    env$form <- paste(deparse(env$form), collapse = "")
-    env$form <- paste(env$form, "+ offset(edgecov(offsmat))")
-    env$form <- as.formula(env$form, env = env)
+    # also save formula without time indices for ergm estimation
+    env$mtergmestform <- update.formula(formula, networks ~ .)
+    env$mtergmestform <- paste(deparse(env$mtergmestform), collapse = "")
+    env$mtergmestform <- paste(env$mtergmestform, "+ offset(edgecov(offsmat))")
+    env$mtergmestform <- as.formula(env$mtergmestform, env = env)
     # make covariates block-diagonal
     if (length(env$covnames) > 1) {
       for (j in 2:length(env$covnames)) {
@@ -501,7 +501,6 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       cat("\n")  # to get a blank line before the MCMC MLE output starts
     }
   }
-  
   return(env)  # return the environment with all the data
 }
 

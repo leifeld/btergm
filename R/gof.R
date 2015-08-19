@@ -527,13 +527,17 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   }
   
   # call tergmprepare and integrate results as a child environment in the chain
-  if (class(object) == "btergm") {
+  if (class(object)[1] == "btergm") {
     env <- tergmprepare(formula = formula, offset = object@offset, 
         verbose = verbose)
     parent.env(env) <- environment()
     offset <- object@offset
   } else {
-    env <- tergmprepare(formula = formula, offset = FALSE, verbose = FALSE)
+    if ("mtergm" %in% class(object)) {
+      env <- tergmprepare(formula = formula, offset = TRUE, verbose = FALSE)
+    } else {
+      env <- tergmprepare(formula = formula, offset = FALSE, verbose = FALSE)
+    }
     parent.env(env) <- environment()
     offset <- FALSE
   }
@@ -554,7 +558,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   }
   
   # extract coefficients from object
-  if (class(object) == "btergm" && offset == TRUE) {
+  if (class(object)[1] == "btergm" && offset == TRUE) {
     coefs <- c(coef(object), -Inf)  # -Inf for offset matrix
   } else {
     coefs <- coef(object)
@@ -569,14 +573,18 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     # simulations for statnet-style and rocpr GOF
     if (classicgof == TRUE || rocprgof == TRUE) {
       if (verbose == TRUE) {
-        if (class(object) == "ergm") {
-          f.i <- paste(deparse(formula), collapse = "")
-          f.i <- gsub("\\s+", " ", f.i)
-        } else {
+        if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
           f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
               paste(deparse(env$form), collapse = ""))
           f.i <- gsub("\\s+", " ", f.i)
-          f.i <- gsub("^networks", env$lhs.original, f.i)
+          if ("btergm" %in% class(object)) {
+            f.i <- gsub("^networks", env$lhs.original, f.i)
+          }
+        } else if ("ergm" %in% class(object)) {
+          f.i <- paste(deparse(formula), collapse = "")
+          f.i <- gsub("\\s+", " ", f.i)
+        } else {
+          stop(paste("Unknown object type:", class(object)))
         }
         message(paste("Simulating", nsim, 
             "networks from the following formula:\n", f.i, "\n"))
@@ -613,7 +621,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   if (env$time.steps == 1) {
     message("One network from which simulations are drawn was provided.")
   } else {
-    message(paste(object@time.steps, "networks from which simulations are",
+    message(paste(env$time.steps, "networks from which simulations are",
         "drawn were provided."))
   }
   
@@ -634,7 +642,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       degensim <- rbind(degensim, degen[[i]])
       target.stats[[i]] <- tstats[[i]]
     }
-    if (offset == TRUE) {
+    if (offset == TRUE || "mtergm" %in% class(object)) {
       degensim <- degensim[, -ncol(degensim)]  # get rid of offset statistic
     }
     rm(tstats)
