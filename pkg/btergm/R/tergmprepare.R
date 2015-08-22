@@ -84,6 +84,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       type <- class(x.current)
       env$covnames <- c(env$covnames, x2)
       env[[x2]] <- x.current
+      if (grepl("\\[i\\]+$", x2)) {
+        stop(paste0("Error in the following model term: ", env$rhs.terms[k], 
+            ". The index 'i' is used internally by btergm. Please use a ", 
+            "different index, for example 'j'."))
+      }
       
       # add brackets if necessary, convert to list, and reassemble rhs term
       if (grepl("[^\\]]\\]$", x2)) {
