@@ -1230,14 +1230,15 @@ plot.btergmgof <- function(x, boxplot = TRUE, boxplot.mfrow = TRUE,
     boxplot.odegree.max = NULL, boxplot.kstar.max = NULL, 
     boxplot.istar.max = NULL, boxplot.ostar.max = NULL, 
     boxplot.transform = function(x) x, boxplot.border = "darkgray", 
-    boxplot.mean.col = "black", boxplot.median.col = "black", 
-    boxplot.lwd = 0.8, boxplot.outline = FALSE, boxplot.ylab = "Frequency", 
-    boxplot.main = NULL, boxplot.ylim = NULL, roc = TRUE, pr = TRUE, 
-    rocpr.add = FALSE, rocpr.avg = c("none", "horizontal", "vertical", 
-    "threshold"), rocpr.spread = c("boxplot", "stderror", "stddev"), 
-    rocpr.lwd = 3, roc.main = NULL, roc.random = FALSE, roc.col = "#bd0017", 
-    roc.random.col = "#bd001744", pr.main = NULL, pr.random = FALSE, 
-    pr.col = "#5886be", pr.random.col = "#5886be44", pr.poly = 0, ...) {
+    boxplot.mean = TRUE, boxplot.median = TRUE, boxplot.mean.col = "black", 
+    boxplot.median.col = "black", boxplot.lwd = 0.8, boxplot.outline = FALSE, 
+    boxplot.ylab = "Frequency", boxplot.main = NULL, boxplot.ylim = NULL, 
+    roc = TRUE, pr = TRUE, rocpr.add = FALSE, rocpr.avg = c("none", 
+    "horizontal", "vertical", "threshold"), rocpr.spread = c("boxplot", 
+    "stderror", "stddev"), rocpr.lwd = 3, roc.main = NULL, roc.random = FALSE, 
+    roc.col = "#bd0017", roc.random.col = "#bd001744", pr.main = NULL, 
+    pr.random = FALSE, pr.col = "#5886be", pr.random.col = "#5886be44", 
+    pr.poly = 0, ...) {
   
   # boxplots of simulations vs. observed statistics (classic, statnet-style GOF)
   if (boxplot == TRUE && !is.null(x$statistics) && !is.null(x$raw)) {
@@ -1417,17 +1418,28 @@ plot.btergmgof <- function(x, boxplot = TRUE, boxplot.mfrow = TRUE,
         }
       }
       if (ok == TRUE) {
-        if (ncol(x$statistics[[i]]) == 9) {
+        if (ncol(x$statistics[[i]]) == 9 && boxplot.mean == TRUE) {
           lines(obs.mean, lwd = 2 * boxplot.lwd, type = "l", lty = "dashed", 
               col = boxplot.mean.col)
         }
-        lines(obs, lwd = 3 * boxplot.lwd, type = "l", col = boxplot.median.col)
+        if (boxplot.median == TRUE) {
+          lines(obs, lwd = 3 * boxplot.lwd, type = "l", 
+              col = boxplot.median.col)
+        }
       }
     }
     if (ncol(x$statistics[[1]]) == 9) {
-      message(paste("Note: The solid line in the boxplots represents the",
-          "median of the observed networks and the dashed line represents", 
-          "the mean."))
+      if (boxplot.median == TRUE && boxplot.mean == TRUE) {
+        message(paste("Note: The solid line in the boxplots represents the",
+            "median of the observed networks and the dashed line represents", 
+            "the mean."))
+      } else if (boxplot.median == FALSE) {
+        message(paste("Note: The dashed line in the boxplots represents the",
+            "mean of the observed networks."))
+      } else if (boxplot.mean == FALSE) {
+        message(paste("Note: The solid line in the boxplots represents the",
+            "median of the observed networks."))
+      }
     }
   } else if (boxplot == TRUE) {
     message("The object does not contain any classic GOF data.")
