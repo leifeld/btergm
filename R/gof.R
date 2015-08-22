@@ -653,10 +653,20 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   if (length(env$networks) == length(target)) {
     for (i in 1:env$time.steps) {
       env$networks[[i]] <- as.matrix(env$networks[[i]])
+      target[[i]] <- as.matrix(target[[i]])
+      if (nrow(target[[i]]) != nrow(env$networks[[i]])) {
+        stop(paste0("Dimensions of observed network and target do not match ", 
+            "at t = ", i, ": observed network has ", nrow(env$networks[[i]]), 
+            " rows while target has ", nrow(target[[i]]), " rows."))
+      }
+      if (ncol(target[[i]]) != ncol(env$networks[[i]])) {
+        stop(paste0("Dimensions of observed network and target do not match ", 
+            "at t = ", i, ": observed network has ", ncol(env$networks[[i]]), 
+            " columns while target has ", ncol(target[[i]]), " columns."))
+      }
       env$networks[[i]][is.na(as.matrix(target[[i]]))] <- NA
       env$networks[[i]] <- network::network(env$networks[[i]], 
           directed = env$directed, bipartite = env$bipartite)
-      target[[i]] <- as.matrix(target[[i]])
       target[[i]][is.na(as.matrix(env$networks[[i]]))] <- NA
       target[[i]] <- network::network(target[[i]], directed = env$directed, 
           bipartite = env$bipartite)
