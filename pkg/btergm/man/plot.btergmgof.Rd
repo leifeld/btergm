@@ -15,8 +15,9 @@
     boxplot.odegree.max = NULL, boxplot.kstar.max = NULL, 
     boxplot.istar.max = NULL, boxplot.ostar.max = NULL, 
     boxplot.transform = function(x) x, boxplot.border = "darkgray", 
-    boxplot.mean.col = "black", boxplot.median.col = "black", 
-    boxplot.lwd = 0.8, boxplot.outline = FALSE, boxplot.ylab = "Frequency", 
+    boxplot.mean = TRUE, boxplot.median = TRUE, boxplot.mean.col = "black", 
+    boxplot.median.col = "black", boxplot.lwd = 0.8, 
+    boxplot.outline = FALSE, boxplot.ylab = "Frequency", 
     boxplot.main = NULL, boxplot.ylim = NULL, roc = TRUE, pr = TRUE, 
     rocpr.add = FALSE, rocpr.avg = c("none", "horizontal", "vertical", 
     "threshold"), rocpr.spread = c("boxplot", "stderror", "stddev"), 
@@ -61,6 +62,8 @@ The \code{print} and \code{summary} methods show (1) observed versus simulated n
 \item{boxplot.ostar.max}{ Upper bound of the ostar statistic to report. }
 \item{boxplot.transform}{ A function which transforms the y values used for the boxplots. For example, if some of the values become very large and make the output illegible, \code{boxplot.transform = function(x) x^0.1} or a similar transformation of the values can be used. Note that logarithmic transformations often produce infinite values because \code{log(0) = -Inf}, so one should rather use something like \code{boxplot.transform = function(x) log1p} to avoid infinite values. }
 \item{boxplot.border}{ Color of the borders of the boxplots. }
+\item{boxplot.mean}{ Plot the mean curve for the observed network? }
+\item{boxplot.median}{ Plot the median curve for the observed network? }
 \item{boxplot.mean.col}{ Color of the mean of the observed network statistic. }
 \item{boxplot.median.col}{ Color of the median of the observed network statistic. }
 \item{boxplot.lwd}{ Scaling factor for the line width of the boxplots and of the line for the observed network statistics. }
