@@ -1,6 +1,6 @@
 Package: btergm
-Version: 1.5.7
-Date: 2015-08-22
+Version: 1.5.8
+Date: 2015-09-19
 Title: Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood
 Authors@R: c(person(given = "Philip", family = "Leifeld", email = "philip.leifeld@eawag.ch", role = c("aut", "cre")), person(given = c("Skyler", "J."), family = "Cranmer", email = "cranmer.12@osu.edu", role = "ctb"), person(given = c("Bruce", "A."), family = "Desmarais", email = "bbd5087@psu.edu", role = "ctb"))
 Description: Temporal Exponential Random Graph Models (TERGM) estimated by maximum pseudolikelihood with bootstrapped confidence intervals or Markov Chain Monte Carlo maximum likelihood. Goodness of fit assessment for ERGMs, TERGMs, and SAOMs. Micro-level interpretation of ERGMs and TERGMs.
