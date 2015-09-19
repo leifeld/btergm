@@ -65,9 +65,14 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
       }
       attribnames[[i]] <- network::list.vertex.attributes(mat[[i]])
       attrib <- list()  # list of attributes at time i
-      for (j in 1:length(attribnames[[i]])) {
-        attrib[[j]] <- network::get.vertex.attribute(mat[[i]], 
-            attribnames[[i]][j])
+      if (network.size(mat[[i]]) == 0) {
+        attribnames[[i]] <- character()
+        attributes[[i]] <- list(character())
+      } else {
+        for (j in 1:length(attribnames[[i]])) {
+          attrib[[j]] <- network::get.vertex.attribute(mat[[i]], 
+              attribnames[[i]][j])
+        }
       }
       attributes[[i]] <- attrib
       mat[[i]] <- as.matrix(mat[[i]])
@@ -132,8 +137,10 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
             na.mat[[i]][indices, ] <- TRUE
             na.mat[[i]][, indices] <- TRUE
             if (type[[i]] == "network") {
-              for (j in 1:length(attribnames[[i]])) {
-                attributes[[i]][[j]] <- attributes[[i]][[j]][-indices]
+              if (length(attribnames[[i]]) > 0) {
+                for (j in 1:length(attribnames[[i]])) {
+                  attributes[[i]][[j]] <- attributes[[i]][[j]][-indices]
+                }
               }
             }
           }
@@ -149,8 +156,10 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
               rowLabels <- rowLabels[-indices]
               na.mat[[i]][indices, ] <- TRUE
               if (type[[i]] == "network") {
-                for (j in 1:length(attribnames[[i]])) {
-                  attributes[[i]][[j]] <- attributes[[i]][[j]][-indices]
+                if (length(attribnames[[i]]) > 0) {
+                  for (j in 1:length(attribnames[[i]])) {
+                    attributes[[i]][[j]] <- attributes[[i]][[j]][-indices]
+                  }
                 }
               }
             } else if (length(which(colNAs == maxNA)) > 0) {
@@ -162,8 +171,10 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
               # saved in a single vector consecutively
               indices.bip <- nrow(mat[[i]]) + indices
               if (type[[i]] == "network") {
-                for (j in 1:length(attribnames[[i]])) {
-                  attributes[[i]][[j]] <- attributes[[i]][[j]][-indices.bip]
+                if (length(attribnames[[i]]) > 0) {
+                  for (j in 1:length(attribnames[[i]])) {
+                    attributes[[i]][[j]] <- attributes[[i]][[j]][-indices.bip]
+                  }
                 }
               }
             }
@@ -173,6 +184,12 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
         colnames(mat[[i]]) <- colLabels
         removed.abs <- obs - length(mat[[i]])
         removed.perc <- round(100 * removed.abs / obs, digits = 2)
+        if (is.nan(removed.perc)) {
+          removed.perc <- 0
+        }
+        if (is.nan(missing.perc)) {
+          missing.perc <- 0
+        }
         message(paste0("t = ", i, ": ", removed.perc, "% of the data (= ", 
             removed.abs, " ties) were dropped due to ", missing.perc, "% (= ", 
             missing.abs, ") missing ties."))
@@ -185,9 +202,11 @@ handleMissings <- function(mat, na = NA, method = "remove", logical = FALSE) {
         bip <- (onemode[[i]] == FALSE)
         mat[[i]] <- network(mat[[i]], directed = directed[[i]], 
             bipartite = bip)
-        for (j in 1:length(attribnames[[i]])) {
-          mat[[i]] <- network::set.vertex.attribute(mat[[i]], 
-              attribnames[[i]][j], attributes[[i]][[j]])
+        if (length(attribnames[[i]]) > 0) {
+          for (j in 1:length(attribnames[[i]])) {
+            mat[[i]] <- network::set.vertex.attribute(mat[[i]], 
+                attribnames[[i]][j], attributes[[i]][[j]])
+          }
         }
       }
     } else if (class(mat[[i]]) == "data.frame") {
@@ -378,9 +397,11 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
       # save source attributes and other meta information in list
       sources.attribnames[[i]] <- network::list.vertex.attributes(sources[[i]])
       attributes <- list()
-      for (j in 1:length(sources.attribnames[[i]])) {
-        attributes[[j]] <- network::get.vertex.attribute(sources[[i]], 
-            sources.attribnames[[i]][j])
+      if (length(sources.attribnames) > 0) {
+        for (j in 1:length(sources.attribnames[[i]])) {
+          attributes[[j]] <- network::get.vertex.attribute(sources[[i]], 
+              sources.attribnames[[i]][j])
+        }
       }
       sources.attributes[[i]] <- attributes
       sources.onemode[[i]] <- !is.bipartite(sources[[i]])
@@ -398,9 +419,11 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
       # save target attributes and other meta information in list
       targets.attribnames[[i]] <- network::list.vertex.attributes(targets[[i]])
       attributes <- list()
-      for (j in 1:length(targets.attribnames[[i]])) {
-        attributes[[j]] <- network::get.vertex.attribute(targets[[i]], 
-            targets.attribnames[[i]][j])
+      if (length(targets.attribnames) > 0) {
+        for (j in 1:length(targets.attribnames[[i]])) {
+          attributes[[j]] <- network::get.vertex.attribute(targets[[i]], 
+              targets.attribnames[[i]][j])
+        }
       }
       targets.attributes[[i]] <- attributes
       targets.onemode[[i]] <- !is.bipartite(targets[[i]])
@@ -580,6 +603,9 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
         source.col.labels <- colnames(sources[[i]])
       }
       if (sources.types[[i]] %in% c("matrix", "network")) {
+        if (nr == 0) {
+          stop(paste0("The source at t = ", i, " has no rows."))
+        }
         if (is.null(source.row.labels)) {
           stop(paste0("The source at t = ", i, 
               " does not contain any row labels."))
@@ -864,7 +890,12 @@ preprocess <- function(object, ..., lag = FALSE, covariate = FALSE,
   for (i in 1:t) {
     for (j in 1:length(l)) {
       for (k in 1:length(l)) {
-        l[[j]][[i]] <- adjust(l[[j]][[i]], l[[k]][[i]], add = FALSE)
+        tryCatch({
+          l[[j]][[i]] <- adjust(l[[j]][[i]], l[[k]][[i]], add = FALSE)
+        }, error = function(e) {
+          stop(paste0("The following error was encountered when executing ", 
+              "the adjust function at time step ", i, ": ", e))
+        })
       }
     }
   }
