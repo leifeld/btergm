@@ -371,4 +371,3 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   ergm::simulate.formula(env$form, nsim = nsim, seed = seed, coef = coef, 
       verbose = verbose, ...)
 }
-
