@@ -186,13 +186,21 @@ compute.goflist <- function(simulations, target, statistics, parallel = "no",
             simulated <- suppressMessages(sapply(simulations, statistics[[z]]))
             observed <- suppressMessages(sapply(target, statistics[[z]]))
           } else if (parallel[1] == "multicore") {
-            simulated <- suppressMessages(do.call(cbind, mclapply(simulations, 
-                statistics[[z]], mc.cores = ncpus)))
-            observed <- suppressMessages(do.call(cbind, mclapply(target, 
-                statistics[[z]], mc.cores = ncpus)))
+            test <- suppressMessages(statistics[[z]](simulations[[1]]))
+            if (class(test) == "numeric" && length(test) == 1) {
+              simulated <- suppressMessages(unlist(mclapply(simulations, 
+                  statistics[[z]], mc.cores = ncpus)))
+              observed <- suppressMessages(unlist(mclapply(target, 
+                  statistics[[z]], mc.cores = ncpus)))
+            } else {  # no mcsapply available -> cbind manually
+              simulated <- suppressMessages(do.call(cbind, 
+                  mclapply(simulations, statistics[[z]], mc.cores = ncpus)))
+              observed <- suppressMessages(do.call(cbind, mclapply(target, 
+                  statistics[[z]], mc.cores = ncpus)))
+            }
           } else {
-            clusterExport(cl, varlist = c("is.mat.onemode", "is.mat.directed"))
-            clusterCall(cl, function() library("ergm"))
+            clusterEvalQ(cl, library("ergm"))
+            clusterEvalQ(cl, library("xergm.common"))
             simulated <- suppressMessages(parSapply(cl = cl, simulations, 
                 statistics[[z]]))
             observed <- suppressMessages(parSapply(cl = cl, target, 
@@ -272,22 +280,22 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     parallel <- "no"
     warning("'parallel' argument not recognized. Using 'no' instead.")
   }
-  statnet.stop.parallel <- FALSE
-  if (parallel[1] == "no") {
-    statnet.parallel.type <- NULL
-    statnet.parallel <- 0
-  } else if (parallel[1] == "multicore") {
-    statnet.parallel.type <- "PSOCK"
-    statnet.parallel <- makeForkCluster(nnodes = ncpus)
-    statnet.stop.parallel <- TRUE
-  } else if (parallel[1] == "snow") {
-    statnet.parallel.type <- "PSOCK"
-    if (!is.null(cl)) {
-      statnet.parallel <- cl
-    } else {
-      statnet.parallel <- ncpus
-    }
-  }
+  #statnet.stop.parallel <- FALSE
+  #if (parallel[1] == "no") {
+  #  statnet.parallel.type <- NULL
+  #  statnet.parallel <- 0
+  #} else if (parallel[1] == "multicore") {
+  #  statnet.parallel.type <- "PSOCK"
+  #  statnet.parallel <- makeForkCluster(nnodes = ncpus)
+  #  statnet.stop.parallel <- TRUE
+  #} else if (parallel[1] == "snow") {
+  #  statnet.parallel.type <- "PSOCK"
+  #  if (!is.null(cl)) {
+  #    statnet.parallel <- cl
+  #  } else {
+  #    statnet.parallel <- ncpus
+  #  }
+  #}
   if (verbose == TRUE) {
     if (parallel[1] == "no") {
       parallel.msg <- "on a single computing core."
@@ -436,9 +444,9 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   goflist <- compute.goflist(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
       verbose = verbose)
-  if (statnet.stop.parallel == TRUE) {
-    stopCluster(statnet.parallel)
-  }
+  #if (statnet.stop.parallel == TRUE) {
+  #  stopCluster(statnet.parallel)
+  #}
   return(goflist)
 }
 
