@@ -3,10 +3,12 @@
 \alias{interpret}
 \alias{interpret.ergm}
 \alias{interpret.btergm}
+\alias{interpret.mtergm}
 \alias{interpretation}
 \alias{interpret-methods}
 \alias{interpret,ergm-method}
 \alias{interpret,btergm-method}
+\alias{interpret,mtergm-method}
 \title{Interpretation functions for ergm and btergm objects}
 \description{Interpretation functions for ergm and btergm objects.}
 \usage{
@@ -15,6 +17,11 @@
     deparse(formula[[2]]))), type = "tie", i, j, ...)
 
 \S4method{interpret}{btergm}(object, formula = object@formula, 
+    coefficients = coef(object), network = eval(parse(text = 
+    deparse(formula[[2]]))), type = "tie", i, j, 
+    t = 1:length(network), ...)
+
+\S4method{interpret}{mtergm}(object, formula = object@formula, 
     coefficients = coef(object), network = eval(parse(text = 
     deparse(formula[[2]]))), type = "tie", i, j, 
     t = 1:length(network), ...)
@@ -46,7 +53,7 @@ Application to Estuary Networks.
 \emph{The Policy Studies Journal} 40(3): 402--434.
 }
 \seealso{
-\link{btergm-package} \link{btergm} \link{btergm.timesteps}
+\link{btergm-package} \link{btergm} \link{timesteps.btergm}
 }
 \examples{
 ##### The following example is a TERGM adaptation of the #####

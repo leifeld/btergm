@@ -2,17 +2,23 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{btergm-class}
+\alias{mtergm-class}
 \alias{coef,btergm-method}
+\alias{coef,mtergm-method}
 \alias{confint,btergm-method}
 \alias{nobs,btergm-method}
+\alias{nobs,mtergm-method}
 \alias{show,btergm-method}
+\alias{show,mtergm-method}
 \alias{summary,btergm-method}
-\alias{btergm.timesteps}
+\alias{summary,mtergm-method}
+\alias{timesteps.btergm}
+\alias{timesteps.mtergm}
 \alias{btergm.se}
 
-\title{Class \code{"btergm"}}
+\title{Classes \code{"btergm"} and \code{"mtergm"}}
 \description{
-\code{btergm} objects result from the estimation of a bootstrapped TERGM via the \code{btergm} function in the \pkg{xergm} package. \code{btergm} objects contain the coefficients, the bootstrapping samples of the coefficients, the number of replications, the number of observations, the number of time steps, the original formula, and the response, effects and weights objects that were fed into the \code{glm} call for estimating the model.
+\code{btergm} objects result from the estimation of a bootstrapped TERGM via the \code{btergm} function in the \pkg{xergm} package. \code{btergm} objects contain the coefficients, the bootstrapping samples of the coefficients, the number of replications, the number of observations, the number of time steps, the original formula, and the response, effects and weights objects that were fed into the \code{glm} call for estimating the model. \code{mtergm} objects result from MCMC-MLE-based estimation of a TERGM via the \code{mtergm} function. They contain the coefficients, standard errors, and p-values, among other details.
 }
 \section{Slots}{
   \describe{
@@ -29,29 +35,47 @@
     \item{\code{offset}:}{Object of class \code{"logical"}. Indicates whether an offset matrix with structural zeros was used. }
     \item{\code{directed}:}{Object of class \code{"logical"}. Are the dependent networks directed? }
     \item{\code{bipartite}:}{Object of class \code{"logical"}. Are the dependent networks bipartite? }
+    \item{se}{Standard errors.}
+    \item{pval}{p-values.}
+    \item{estimate}{Estimate: either MCMC MLE or MPLE.}
+    \item{loglik}{The log likelihood.}
+    \item{aic}{Akaike's Information Criterion (AIC).}
+    \item{bic}{The Bayesian Information Criterion (BIC).}
   }
 }
 \usage{
 \S4method{summary}{btergm}(object, level = 0.95, ...)
 
+\S4method{summary}{mtergm}(object, ...)
+
 \S4method{show}{btergm}(object)
+
+\S4method{show}{mtergm}(object)
 
 \S4method{nobs}{btergm}(object)
 
+\S4method{nobs}{mtergm}(object)
+
 \S4method{coef}{btergm}(object, ...)
+
+\S4method{coef}{mtergm}(object, ...)
 
 \S4method{confint}{btergm}(object, parm, level = 0.95, ...)
 
 btergm.se(object, print = FALSE)
 
-btergm.timesteps(object)
+timesteps.btergm(object)
+
+timesteps.mtergm(object)
 }
 \details{
 Various generic methods are available for \code{btergm} objects: The \code{coef} and \code{show} methods return the coefficients; the \code{summary} method gives a model summary. The \code{nobs} method returns the number of observations. The {confint} method returns confidence intervals from the bootstrap replications of \code{btergm} objects, and the user can specify the confidence level. The method returns a matrix with three columns: the estimate, the lower bound, and the upper bound of the confidence interval for each model term.
 
 The \code{btergm.se} function computes standard errors and p values for \code{btergm} objects. It returns a matrix with four columns: the estimate, the standard error, the z value, and the p value for each model term. If the argument \code{print = TRUE} is used, the matrix is printed to the R console as a formatted coefficient matrix with significance stars instead. Note that confidence intervals are the preferred way of interpretation for bootstrapped TERGMs; standard errors are only accurate if the bootstrapped data are normally distributed, which is not always the case. Various methods for checking for normality for each model term are available, for example quantile-quantile plots (e.g., \code{qqnorm(x@bootsamp[, 1])} for the first model term in the \code{btergm} object called \code{x}).
 
-The \code{btergm.timesteps} function extracts the number of time steps from a \code{btergm} object. The number of time steps is the number of networks being modeled on the left-hand side of the model formula.
+The \code{timesteps.btergm} function extracts the number of time steps from a \code{btergm} object. The number of time steps is the number of networks being modeled on the left-hand side of the model formula.
+
+Some of these functions or methods are also available for \code{mtergm} objects.
 }
 \arguments{
 \item{object}{ A \code{btergm} object. }
@@ -77,6 +101,6 @@ Consistent Confidence Intervals for Maximum Pseudolikelihood Estimators.
 Social Science and the Wisdom of Crowds}.
 }
 \seealso{
-\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{getformula} \link{interpret}
+\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{getformula} \link{interpret} \link{mtergm}
 }
 \keyword{classes}
