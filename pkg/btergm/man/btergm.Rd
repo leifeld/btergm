@@ -9,8 +9,8 @@ btergm(formula, R = 500, offset = FALSE, parallel = c("no",
     "multicore", "snow"), ncpus = 1, cl = NULL, 
     verbose = TRUE, ...)
 
-mtergm(formula, offset = FALSE, constraints = ~ ., 
-    estimate = c("MLE", "MPLE"), verbose = TRUE, ...)
+mtergm(formula, constraints = ~ ., estimate = c("MLE", "MPLE"), 
+    verbose = TRUE, ...)
 }
 \details{
 The \code{btergm} function computes temporal exponential random graph models (TERGM) by bootstrapped pseudolikelihood, as described in Desmarais and Cranmer (2012).

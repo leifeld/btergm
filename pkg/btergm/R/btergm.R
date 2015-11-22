@@ -175,7 +175,7 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
 
 
 # function which can extract the number of time steps
-btergm.timesteps <- function(object) {
+timesteps.btergm <- function(object) {
   return(object@time.steps)
 }
 
@@ -368,6 +368,10 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   }
   
   # simulate
-  ergm::simulate.formula(env$form, nsim = nsim, seed = seed, coef = coef, 
-      verbose = verbose, ...)
+  if (object@offset == TRUE) {
+    coef <- c(coef, -Inf)
+  }
+  suppressWarnings(ergm::simulate.formula(env$form, nsim = nsim, seed = seed, 
+      coef = coef, verbose = verbose, ...))
 }
+simulate.mtergm <- simulate.btergm  # create a copy for mtergm objects

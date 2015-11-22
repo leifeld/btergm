@@ -307,6 +307,9 @@ setMethod("interpret", signature = className("ergm", "ergm"),
 setMethod("interpret", signature = className("btergm", "btergm"), 
     definition = interpret.btergm)
 
+setMethod("interpret", signature = className("mtergm", "btergm"), 
+    definition = interpret.btergm)
+
 
 # function which preprocesses the right-hand side (rhs) of the formula
 # (may be obsolete in the near future when the tergmprepare function is used)

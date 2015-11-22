@@ -1,41 +1,173 @@
+
+# an S4 class for btergm objects
+setClass(Class = "mtergm", 
+    representation = representation(
+        coef = "numeric", 
+        se = "numeric", 
+        pval = "numeric", 
+        nobs = "numeric", 
+        time.steps = "numeric",
+        formula = "formula",
+        auto.adjust = "logical", 
+        offset = "logical", 
+        directed = "logical", 
+        bipartite = "logical", 
+        estimate = "character", 
+        loglik = "numeric", 
+        aic = "numeric", 
+        bic = "numeric"
+    ), 
+    validity = function(object) {
+        if (!"numeric" %in% class(object@coef)) {
+          stop("'coef' must be a 'numeric' vector.")
+        }
+        if (!"numeric" %in% class(object@se)) {
+          stop("'se' must be a 'numeric' vector.")
+        }
+        if (!"numeric" %in% class(object@pval)) {
+          stop("'pval' must be a 'numeric' vector.")
+        }
+        if (!is.numeric(object@nobs)) {
+          stop("'nobs' must be a numeric value of length 1.")
+        }
+        if (!is.numeric(object@time.steps)) {
+          stop("'time.steps' must be a numeric value of length 1.")
+        }
+        if (!"formula" %in% class(object@formula)) {
+          stop("'formula' is not a 'formula' object.")
+        }
+        if (length(object@coef) != length(object@se)) {
+          stop("Number of terms differs between 'coef' and 'se'")
+        }
+        if (length(object@coef) != length(object@pval)) {
+          stop("Number of terms differs between 'coef' and 'pval'")
+        }
+        if (length(object@loglik) > 1) {
+          stop("'loglik' must be a numeric value of length 1.")
+        }
+        if (length(object@aic) > 1) {
+          stop("'aic' must be a numeric value of length 1.")
+        }
+        if (length(object@bic) > 1) {
+          stop("'bic' must be a numeric value of length 1.")
+        }
+        return(TRUE)
+    }
+)
+
+
+# constructor for btergm objects
+createMtergm <- function(coef, se, pval, nobs, time.steps, formula, 
+    auto.adjust, offset, directed, bipartite, estimate, loglik, aic, bic) {
+  new("mtergm", coef = coef, se = se, pval = pval, nobs = nobs, 
+      time.steps = time.steps, formula = formula, auto.adjust = auto.adjust, 
+      offset = offset, directed = directed, bipartite = bipartite, 
+      estimate = estimate, loglik = loglik, aic = aic, bic = bic)
+}
+
+
+# define show method for pretty output of btergm objects
+setMethod(f = "show", signature = "mtergm", definition = function(object) {
+    message("MLE Coefficients:")
+    print(object@coef)
+  }
+)
+
+
+# define coef method for extracting coefficients from btergm objects
+setMethod(f = "coef", signature = "mtergm", definition = function(object, ...) {
+    return(object@coef)
+  }
+)
+
+
+# define nobs method for extracting number of observations from btergm objects
+setMethod(f = "nobs", signature = "mtergm", definition = function(object) {
+    n <- object@nobs
+    t <- object@time.steps
+    return(c("Number of time steps" = t, "Number of observations" = n))
+  }
+)
+
+
+# function which can extract the number of time steps
+timesteps.mtergm <- function(object) {
+  return(object@time.steps)
+}
+
+
+# define summary method for pretty output of mtergm objects
+setMethod(f = "summary", signature = "mtergm", definition = function(object, 
+    ...) {
+    message(paste(rep("=", 26), collapse=""))
+    message("Summary of model fit")
+    message(paste(rep("=", 26), collapse=""))
+    message(paste("\nFormula:  ", gsub("\\s+", " ", 
+        paste(deparse(object@formula), collapse = "")), "\n"))
+    message(paste("Time steps:", object@time.steps, "\n"))
+    
+    message("Monte Carlo MLE Results:")
+    cmat <- cbind(object@coef, object@se, object@coef / object@se, object@pval)
+    colnames(cmat) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
+    printCoefmat(cmat, cs.ind = 1:2, tst.ind = 3)
+  }
+)
+
+
 # MCMC MLE estimation function (basically a wrapper for the ergm function)
-mtergm <- function(formula, offset = FALSE, constraints = ~ ., 
-    estimate = c("MLE", "MPLE"), verbose = TRUE, ...) {
+mtergm <- function(formula, constraints = ~ ., estimate = c("MLE", "MPLE"), 
+    verbose = TRUE, ...) {
   
   # call tergmprepare and integrate results as a child environment in the chain
-  env <- tergmprepare(formula = formula, offset = offset, blockdiag = TRUE, 
+  env <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE, 
       verbose = verbose)
   parent.env(env) <- environment()
   
   if (verbose == TRUE) {
     message("Estimating...")
+    e <- ergm(env$mtergmestform, offset.coef = -Inf, constraints = constraints, 
+        eval.loglik = TRUE, estimate = estimate[1], ...)
+  } else {
+    e <- suppressMessages(ergm(env$mtergmestform, offset.coef = -Inf, 
+        constraints = constraints, eval.loglik = TRUE, 
+        estimate = estimate[1], ...))
   }
   
-  # estimate an ERGM
-  e <- ergm(env$mtergmestform, offset.coef = -Inf, constraints = constraints, 
-      estimate = estimate[1], ...)
+  # get coefficients and other details
+  cf <- coef(e)
+  mat <- as.matrix(env$networks)
+  if (env$bipartite == TRUE) {
+    dyads <- sum(1 - env$offsmat)
+  } else {
+    dyads <- sum(1 - env$offsmat) - nrow(mat)
+  }
+  rdf <- dyads - length(cf)
+  asyse <- vcov(e, sources = "all")
+  se <- sqrt(diag(asyse))
+  tval <- e$coef / se
+  pval <- 2 * pt(q = abs(tval), df = rdf, lower.tail = FALSE)
   
-  e$formula <- formula  # insert original formula
-  class(e) <- c(class(e), "mtergm")  # add mtergm class label
+  # create mtergm object
+  object <- createMtergm(
+      coef = cf[-length(cf)],  # do not include NA value for offset matrix
+      se = se[-length(se)], 
+      pval = pval[-length(pval)], 
+      nobs = dyads, 
+      time.steps = env$time.steps,
+      formula = formula,  # original formula but with 'networks' on LHS
+      auto.adjust = env$auto.adjust, 
+      offset = TRUE, 
+      directed = env$directed, 
+      bipartite = env$bipartite, 
+      estimate = e$estimate,  # MLE or MPLE
+      loglik = e$mle.lik[1], 
+      aic = AIC(e), 
+      bic = BIC(e)
+  )
   
   if (verbose == TRUE) {
     message("Done.")
-    message(paste("\nNote: The infinite 'edgecov.offsmat' model term contains", 
-        "structural zeros and can be ignored."))
   }
   
-#  # remove information about the offset term from the ergm object (here: MPLE)
-#  e$coef <- e$coef[-length(e$coef)]
-#  e$MCMCtheta <- e$MCMCtheta[-length(e$MCMCtheta)]
-#  e$gradient <- e$gradient[-length(e$gradient)]
-#  e$covar <- e$covar[, -ncol(e$covar)]
-#  e$mc.se <- e$mc.se[-length(e$mc.se)]
-#  e$offset <- e$offset[-length(e$offset)]
-#  e$drop <- e$drop[-length(e$drop)]
-#  e$estimable <- e$estimable[-length(e$estimable)]
-#  e$offset <- e$offset[-length(e$offset)]
-#  e$formula <- f
-#  e$control$init <- e$control$init[-length(e$control$init)]
-  
-  return(e)
+  return(object)
 }

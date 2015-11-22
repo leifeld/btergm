@@ -12,6 +12,9 @@
 setMethod("getformula", signature = className("btergm", "btergm"), 
     definition = function(x) x@formula)
 
+setMethod("getformula", signature = className("mtergm", "btergm"), 
+    definition = function(x) x@formula)
+
 setMethod("getformula", signature = className("ergm", "ergm"), 
     definition = function(x) x$formula)
 
