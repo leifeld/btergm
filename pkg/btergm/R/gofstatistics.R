@@ -34,7 +34,8 @@ deg <- function(mat) {
   if (is.mat.directed(as.matrix(mat))) {
     stop("'deg' can only be used with undirected networks.")
   }
-  d <- summary(mat ~ degree(0:(nrow(mat) - 1)))
+  d <- summary(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) 
+      - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Degree"
   return(d)
@@ -67,7 +68,8 @@ kstar <- function(mat) {
   if (is.mat.directed(as.matrix(mat))) {
     stop("'kstar' can only be used with undirected networks.")
   }
-  d <- summary(mat ~ kstar(0:(nrow(mat) - 1)))
+  d <- summary(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) 
+      - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star"
   return(d)
@@ -117,7 +119,7 @@ geodesic <- function(mat) {
     }
     return(x)
   }
-  g <- fillup(ergm.geodistdist(network(mat, directed = TRUE)), nrow(mat) - 1)
+  g <- fillup(ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), nrow(mat) - 1)
   attributes(g)$label <- "Geodesic distances"
   return(g)
 }
@@ -137,7 +139,8 @@ triad.undirected <- function(mat) {
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     stop("'triad.undirected' can only be used with undirected networks.")
   }
-  tr <- sna::triad.census(as.matrix(mat), mode = "graph")[1, ]
+  tr <- sna::triad.census(network(as.matrix(mat), directed = FALSE), 
+      mode = "graph")[1, ]
   attributes(tr)$label <- "Triad census"
   return(tr)
 }
@@ -675,7 +678,7 @@ rocprgof <- function(sim, obs, pr.impute = "poly4") {
 
 # wrapper function for rocprgof without pr.impute argument (for use with gof)
 rocpr <- function(sim, obs) {
-  object <- rocprgof(sim, obs)
+  object <- suppressMessages(rocprgof(sim, obs))
   object$label <- "ROC and PR curve"
   attributes(object)$label <- object$label
   return(object)
@@ -683,7 +686,7 @@ rocpr <- function(sim, obs) {
 
 # wrapper function for ROC only (for use with gof)
 roc <- function(sim, obs) {
-  object <- rocpr(sim, obs)[-c(4, 5, 8, 9)]
+  object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
   object$label <- "Receiver-operating characteristics"
   attributes(object)$label <- object$label
@@ -692,7 +695,7 @@ roc <- function(sim, obs) {
 
 # wrapper function for PR only (for use with gof)
 pr <- function(sim, obs) {
-  object <- rocpr(sim, obs)[-c(2, 3, 6, 7)]
+  object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
   object$label <- "Precision-recall curve"
   attributes(object)$label <- object$label
