@@ -118,7 +118,7 @@ fit <- btergm(networks ~ edges + istar(2) +
 g <- gof(fit, statistics = c(triad.directed, esp, maxmod.modularity, 
     rocpr), nsim = 50)
 g
-plot(g)  # see ?"plot-got" for details
+plot(g)  # see ?"gof-plot" for details
 }
 }
 \author{
