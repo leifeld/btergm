@@ -5,7 +5,6 @@
 # TODO:
 # - add side-by-side boxplots and lines with CIs to plot function
 # - add spectral gof
-# - check if parallelization works
 # - reimplement degeneracy function
 
 
@@ -228,7 +227,9 @@ compute.goflist <- function(simulations, target, statistics, parallel = "no",
           names(goflist)[length(goflist)] <- label
         }, 
           error = function(e) {
-          cat(paste("  Skipping statistic for the following reason:", e))
+          if (verbose == TRUE) {
+            cat(paste("  Skipping statistic for the following reason:", e))
+          }
         }, 
         finally = {}
       )
@@ -328,15 +329,21 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   
   # check and rearrange target network(s)
   if (is.null(target)) {
-    message(paste("\nNo 'target' network(s) provided. Using networks on the",
-        "left-hand side of the model formula as observed networks.\n"))
+    if (verbose == TRUE) {
+      message(paste("\nNo 'target' network(s) provided. Using networks on the",
+          "left-hand side of the model formula as observed networks.\n"))
+    }
     target <- env$networks
   } else if (class(target) == "network" || class(target) == "matrix") {
     target <- list(target)
-    message("\nOne observed ('target') network was provided.\n")
+    if (verbose == TRUE) {
+      message("\nOne observed ('target') network was provided.\n")
+    }
   } else if (class(target) == "list") {
-    message(paste("\n", length(target), "observed ('target') networks were",
-        "provided.\n"))
+    if (verbose == TRUE) {
+      message(paste("\n", length(target), "observed ('target') networks were",
+          "provided.\n"))
+    }
   } else {
     stop("'target' must be a network, matrix, or list of matrices or networks.")
   }
@@ -383,11 +390,13 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   }
   
   # check basis network(s)
-  if (env$time.steps == 1) {
-    message("One network from which simulations are drawn was provided.\n")
-  } else {
-    message(paste(env$time.steps, "networks from which simulations are",
-        "drawn were provided.\n"))
+  if (verbose == TRUE) {
+    if (env$time.steps == 1) {
+      message("One network from which simulations are drawn was provided.\n")
+    } else {
+      message(paste(env$time.steps, "networks from which simulations are",
+          "drawn were provided.\n"))
+    }
   }
   
   # unpack nested lists of simulations and target statistics
@@ -459,7 +468,6 @@ setMethod("gof", signature = className("btergm", "btergm"),
 
 setMethod("gof", signature = className("ergm", "ergm"), 
     definition = gof.btergm)
-
 
 
 # GOF function for SIENA (creates btergm-compatible GOF objects)
@@ -774,15 +782,21 @@ gof.network <- function(object, covariates, coef, target = NULL,
   
   # check and rearrange target network(s)
   if (is.null(target)) {
-    message(paste("\nNo 'target' network(s) provided. Using networks on the",
-        "left-hand side of the model formula as observed networks.\n"))
+    if (verbose == TRUE) {
+      message(paste("\nNo 'target' network(s) provided. Using networks on the",
+          "left-hand side of the model formula as observed networks.\n"))
+    }
     target <- nw
   } else if (class(target) == "network" || class(target) == "matrix") {
     # do nothing
-    message("\nOne observed ('target') network was provided.\n")
+    if (verbose == TRUE) {
+      message("\nOne observed ('target') network was provided.\n")
+    }
   } else if (class(target) == "list") {
-    message(paste("\n", length(target), "observed ('target') networks were",
-        "provided. Using the first network\n"))
+    if (verbose == TRUE) {
+      message(paste("\n", length(target), "observed ('target') networks were",
+          "provided. Using the first network\n"))
+    }
     target <- target[[1]]
     if (class(target) != "matrix" && class(target) != network) {
       stop("First target network was not a matrix or network object.")
