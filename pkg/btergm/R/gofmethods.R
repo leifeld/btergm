@@ -209,6 +209,28 @@ compute.goflist <- function(simulations, target, statistics, parallel = "no",
                 statistics[[z]]))
           }
           
+          # if simulations have different dimensions, convert list to matrix
+          if (class(simulated) == "list") {
+            lengths <- sapply(simulated, length)
+            l <- max(lengths)
+            index <- which(lengths == l)[1]
+            rn <- names(simulated[[index]])
+            simulated <- sapply(simulated, function(x) {
+                c(x, rep(0, l - length(x)))
+            })
+            rownames(simulated) <- rn
+          }
+          if (class(observed) == "list") {
+            lengths <- sapply(observed, length)
+            l <- max(lengths)
+            index <- which(lengths == l)[1]
+            rn <- names(observed[[index]])
+            observed <- sapply(observed, function(x) {
+                c(x, rep(0, l - length(x)))
+            })
+            rownames(observed) <- rn
+          }
+          
           gofobject <- list()
           gofobject$label <- label
           if (class(simulated) == "matrix") {  # boxplot-type GOF

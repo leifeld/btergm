@@ -1,5 +1,6 @@
 import("utils")
 import("methods")
+importFrom("graphics", "boxplot", "hist")
 import("statnet")
 import("statnet.common")
 import("network")
