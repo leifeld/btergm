@@ -18,7 +18,7 @@
 \docType{methods}
 \title{Conduct Goodness-of-Fit Diagnostics on ERGMs, TERGMs, SAOMs, and logit models}
 \description{
-Assess goodness of fit and degeneracy of btergm and other network models.
+Assess goodness of fit of btergm and other network models.
 }
 \details{
 The generic \code{gof} function provides goodness-of-fit measures and degeneracy checks for \code{btergm}, \code{ergm}, SAOM, and custom dyadic-independent models. The user can provide a list of network statistics for comparing simulated networks based on the estimated model with the observed network(s). See \link{gof-statistics}. The objects created by these methods can be displayed using various plot and print methods (see \link{gof-plot}).
