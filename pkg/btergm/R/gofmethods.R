@@ -296,8 +296,6 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     statistics <- c(statistics)
   }
   
-  simulations <- list()
-  
   # prepare parallel processing; translate options into statnet arguments
   if (is.null(ncpus) || ncpus == 0) {
     ncpus <- 1
@@ -379,10 +377,8 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   
   # adjust formula at each step, and simulate networks
   sim <- list()
-  tstats <- list()
   degen <- list()
   for (index in 1:env$time.steps) {
-    i <- index
     # simulations for statnet-style and rocpr GOF
     if (verbose == TRUE) {
       if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {

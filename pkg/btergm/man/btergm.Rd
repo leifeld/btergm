@@ -46,7 +46,7 @@ Consistent Confidence Intervals for Maximum Pseudolikelihood Estimators.
 Social Science and the Wisdom of Crowds}.
 }
 \seealso{
-\link{btergm-package} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{btergm-class} \link{preprocess} \link{timecov}
+\link{btergm-package} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{btergm-class} \link{preprocess} \link{timecov} \link{checkdegeneracy}
 }
 \examples{
 # A simple toy example:
