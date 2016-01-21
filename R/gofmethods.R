@@ -379,6 +379,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   sim <- list()
   degen <- list()
   for (index in 1:env$time.steps) {
+    i <- index  # index 'i' is used in formula construction in 'env'!
     # simulations for statnet-style and rocpr GOF
     if (verbose == TRUE) {
       if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
