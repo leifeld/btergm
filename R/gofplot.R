@@ -106,11 +106,19 @@ plot.boxplot <- function(x, relative = TRUE, transform = function(x) x,
   if (relative == TRUE) {
     rs <- rowSums(mat)
     for (i in 1:nrow(mat)) {
-      mat[i, ] <- mat[i, ] / rs[i]
+      if (rs[i] == 0) {
+        mat[i, ] <- 0
+      } else {
+        mat[i, ] <- mat[i, ] / rs[i]
+      }
     }
     cs <- colSums(x$stats)[1:2]
     for (i in 1:2) {
-      x$stats[, i] <- x$stats[, i] / cs[i]
+      if (cs[i] == 0) {
+        x$stats[, i] <- 0
+      } else {
+        x$stats[, i] <- x$stats[, i] / cs[i]
+      }
     }
   }
   
