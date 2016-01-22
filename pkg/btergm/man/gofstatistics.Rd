@@ -297,9 +297,6 @@ dens <- function(mat) {             # univariate: one argument
 # vector is returned.
 
 ideg <- function(mat) {
-  if (!is.mat.directed(as.matrix(mat))) {
-    stop("'ideg' can only be used with directed networks.")
-  }
   d <- summary(mat ~ idegree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Indegree"

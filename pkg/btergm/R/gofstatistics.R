@@ -31,9 +31,9 @@ nsp <- function(mat) {
 
 # GOF function for computing the degree distribution
 deg <- function(mat) {
-  if (is.mat.directed(as.matrix(mat))) {
-    stop("'deg' can only be used with undirected networks.")
-  }
+#  if (is.mat.directed(as.matrix(mat))) {
+#    warning("deg: Converting directed to undirected network.")
+#  }
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -43,10 +43,11 @@ deg <- function(mat) {
 
 # GOF function for computing the degree distribution
 odeg <- function(mat) {
-  if (!is.mat.directed(as.matrix(mat))) {
-    stop("'odeg' can only be used with directed networks.")
-  }
-  d <- summary(mat ~ odegree(0:(nrow(mat) - 1)))
+#  if (!is.mat.directed(as.matrix(mat))) {
+#    warning("odeg: Converting undirected to directed network.")
+#  }
+  d <- summary(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) 
+      - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Outdegree"
   return(d)
@@ -54,10 +55,11 @@ odeg <- function(mat) {
 
 # GOF function for computing the degree distribution
 ideg <- function(mat) {
-  if (!is.mat.directed(as.matrix(mat))) {
-    stop("'ideg' can only be used with directed networks.")
-  }
-  d <- summary(mat ~ idegree(0:(nrow(mat) - 1)))
+#  if (!is.mat.directed(as.matrix(mat))) {
+#    warning("ideg: Converting undirected to directed network.")
+#  }
+  d <- summary(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) 
+      - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Indegree"
   return(d)
@@ -65,9 +67,9 @@ ideg <- function(mat) {
 
 # GOF function for computing the degree distribution
 kstar <- function(mat) {
-  if (is.mat.directed(as.matrix(mat))) {
-    stop("'kstar' can only be used with undirected networks.")
-  }
+#  if (is.mat.directed(as.matrix(mat))) {
+#    warning("kstar: Converting directed to undirected network.")
+#  }
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -77,10 +79,11 @@ kstar <- function(mat) {
 
 # GOF function for computing the degree distribution
 ostar <- function(mat) {
-  if (!is.mat.directed(as.matrix(mat))) {
-    stop("'ostar' can only be used with directed networks.")
-  }
-  d <- summary(mat ~ ostar(0:(nrow(mat) - 1)))
+#  if (!is.mat.directed(as.matrix(mat))) {
+#    warning("ostar: Converting undirected to directed network.")
+#  }
+  d <- summary(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) 
+      - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Outgoing k-star"
   return(d)
@@ -88,10 +91,11 @@ ostar <- function(mat) {
 
 # GOF function for computing the degree distribution
 istar <- function(mat) {
-  if (!is.mat.directed(as.matrix(mat))) {
-    stop("'istar' can only be used with directed networks.")
-  }
-  d <- summary(mat ~ istar(0:(nrow(mat) - 1)))
+#  if (!is.mat.directed(as.matrix(mat))) {
+#    warning("istar: Converting undirected to directed network.")
+#  }
+  d <- summary(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) 
+      - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Incoming k-star"
   return(d)
@@ -119,26 +123,28 @@ geodesic <- function(mat) {
     }
     return(x)
   }
-  g <- fillup(ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), nrow(mat) - 1)
+  g <- fillup(ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), 
+      nrow(mat) - 1)
   attributes(g)$label <- "Geodesic distances"
   return(g)
 }
 
 # GOF function for computing triad census statistics in directed graphs
 triad.directed <- function(mat) {
-  if (!xergm.common::is.mat.directed(as.matrix(mat))) {
-    stop("'triad.directed' can only be used with directed networks.")
-  }
-  tr <- sna::triad.census(as.matrix(mat), mode = "digraph")[1, ]
+#  if (!xergm.common::is.mat.directed(as.matrix(mat))) {
+#    warning("triad.directed: Converting undirected to directed network.")
+#  }
+  tr <- sna::triad.census(network(as.matrix(mat), directed = TRUE), 
+      mode = "digraph")[1, ]
   attributes(tr)$label <- "Triad census"
   return(tr)
 }
 
 # GOF function for computing triad census statistics in undirected graphs
 triad.undirected <- function(mat) {
-  if (xergm.common::is.mat.directed(as.matrix(mat))) {
-    stop("'triad.undirected' can only be used with undirected networks.")
-  }
+#  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+#    warning("triad.undirected: Converting undirected to directed network.")
+#  }
   tr <- sna::triad.census(network(as.matrix(mat), directed = FALSE), 
       mode = "graph")[1, ]
   attributes(tr)$label <- "Triad census"
@@ -167,37 +173,36 @@ walktrap.modularity <- function(mat) {
   } else {
     m <- "undirected"
   }
-  g <- igraph::graph.adjacency(mat, mode = m)
-  wt <- igraph::walktrap.community(g)
-  mod <- igraph::modularity(wt)
+  if (sum(mat) == 0) {
+    mod <- 0
+  } else {
+    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
+    wt <- igraph::walktrap.community(g)
+    mod <- igraph::modularity(wt)
+  }
   attributes(mod)$label <- "Modularity (walktrap)"
   return(mod)
 }
 
 # ROC for Walktrap community detection algorithm
 walktrap.roc <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::walktrap.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::walktrap.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::walktrap.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
   object$label <- "Walktrap community comembership prediction"
@@ -207,28 +212,23 @@ walktrap.roc <- function(sim, obs) {
 
 # PR for Walktrap community detection algorithm
 walktrap.pr <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::walktrap.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::walktrap.community(g.obs)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::walktrap.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
   object$label <- "Walktrap community comembership prediction"
@@ -239,25 +239,30 @@ walktrap.pr <- function(sim, obs) {
 
 # GOF function for computing fast and greedy modularity distribution
 fastgreedy.modularity <- function(mat) {
-  g <- igraph::graph.adjacency(mat, mode = "undirected")
-  wt <- igraph::fastgreedy.community(g)
-  mod <- igraph::modularity(wt)
+  if (sum(mat) == 0) {
+    mod <- 0
+  } else {
+    g <- igraph::graph.adjacency(mat, mode = "undirected")
+    wt <- igraph::fastgreedy.community(g)
+    mod <- igraph::modularity(wt)
+  }
   attributes(mod)$label <- "Modularity (fast & greedy)"
   return(mod)
 }
 
 # ROC for fast & greedy community detection algorithm
 fastgreedy.roc <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
-    memb.sim <- igraph::fastgreedy.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
-    memb.obs <- igraph::fastgreedy.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+  fun <- function(x) {
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
+    } else {
+      g <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
+      memb <- igraph::fastgreedy.community(g)$membership
+    }
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
   object$label <- "Fast $ greedy community comembership prediction"
@@ -267,16 +272,17 @@ fastgreedy.roc <- function(sim, obs) {
 
 # PR for fast & greedy community detection algorithm
 fastgreedy.pr <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
-    memb.sim <- igraph::fastgreedy.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
-    memb.obs <- igraph::fastgreedy.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+  fun <- function(x) {
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
+    } else {
+      g <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
+      memb <- igraph::fastgreedy.community(g)$membership
+    }
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
   object$label <- "Fast $ greedy community comembership prediction"
@@ -291,37 +297,36 @@ maxmod.modularity <- function(mat) {
   } else {
     m <- "undirected"
   }
-  g <- igraph::graph.adjacency(mat, mode = m)
-  wt <- igraph::optimal.community(g)
-  mod <- igraph::modularity(wt)
+  if (sum(mat) == 0) {
+    mod <- 0
+  } else {
+    g <- igraph::graph.adjacency(mat, mode = m)
+    wt <- igraph::optimal.community(g)
+    mod <- igraph::modularity(wt)
+  }
   attributes(mod)$label <- "Maximum modularity"
   return(mod)
 }
 
 # ROC for maximal modularity community detection algorithm
 maxmod.roc <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::optimal.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::optimal.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::optimal.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
   object$label <- "Maximum modularity community comembership prediction"
@@ -331,28 +336,23 @@ maxmod.roc <- function(sim, obs) {
 
 # PR for maximal modularity community detection algorithm
 maxmod.pr <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::optimal.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::optimal.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::optimal.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
   object$label <- "Maximum modularity community comembership prediction"
@@ -367,37 +367,36 @@ edgebetweenness.modularity <- function(mat) {
   } else {
     m <- "undirected"
   }
-  g <- igraph::graph.adjacency(mat, mode = m)
-  eb <- igraph::edge.betweenness.community(g)
-  mod <- igraph::modularity(eb)
+  if (sum(mat) == 0) {
+    mod <- 0
+  } else {
+    g <- igraph::graph.adjacency(mat, mode = m)
+    eb <- igraph::edge.betweenness.community(g)
+    mod <- igraph::modularity(eb)
+  }
   attributes(mod)$label <- "Modularity (edge betweenness)"
   return(mod)
 }
 
 # ROC for edge betweenness community detection algorithm
 edgebetweenness.roc <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::edge.betweenness.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::edge.betweenness.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::edge.betweenness.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
   object$label <- "Edge betweenness community comembership prediction"
@@ -407,28 +406,23 @@ edgebetweenness.roc <- function(sim, obs) {
 
 # PR for edge betweenness community detection algorithm
 edgebetweenness.pr <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::edge.betweenness.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::edge.betweenness.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::edge.betweenness.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
   object$label <- "Edge betweenness community comembership prediction"
@@ -443,37 +437,36 @@ spinglass.modularity <- function(mat) {
   } else {
     m <- "undirected"
   }
-  g <- igraph::graph.adjacency(mat, mode = m)
-  eb <- igraph::spinglass.community(g)
-  mod <- igraph::modularity(eb)
+  if (sum(mat) == 0) {
+    mod <- 0
+  } else {
+    g <- igraph::graph.adjacency(mat, mode = m)
+    eb <- igraph::spinglass.community(g)
+    mod <- igraph::modularity(eb)
+  }
   attributes(mod)$label <- "Modularity (spinglass)"
   return(mod)
 }
 
 # ROC for spinglass community detection algorithm
 spinglass.roc <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::spinglass.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::spinglass.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::spinglass.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
   object$label <- "Spinglass community comembership prediction"
@@ -483,28 +476,23 @@ spinglass.roc <- function(sim, obs) {
 
 # PR for spinglass community detection algorithm
 spinglass.pr <- function(sim, obs) {
-  sim <- lapply(sim, function(x) {
+  fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
       m <- "undirected"
     }
-    g.sim <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.sim <- igraph::spinglass.community(g.sim)$membership
-    return(comemb(memb.sim))
-  })
-  obs <- lapply(obs, function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
     } else {
-      m <- "undirected"
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::spinglass.community(g)$membership
     }
-    g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-    memb.obs <- igraph::spinglass.community(g.obs)$membership
-    return(comemb(memb.obs))
-  })
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
   object$label <- "Spinglass community comembership prediction"
