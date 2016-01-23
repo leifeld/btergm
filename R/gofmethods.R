@@ -194,11 +194,20 @@ compute.goflist <- function(simulations, target, statistics, parallel = "no",
                   statistics[[z]], mc.cores = ncpus)))
               observed <- suppressMessages(unlist(mclapply(target, 
                   statistics[[z]], mc.cores = ncpus)))
-            } else {  # no mcsapply available -> cbind manually
-              simulated <- suppressMessages(do.call(cbind, 
-                  mclapply(simulations, statistics[[z]], mc.cores = ncpus)))
-              observed <- suppressMessages(do.call(cbind, mclapply(target, 
-                  statistics[[z]], mc.cores = ncpus)))
+            } else {  # no mcsapply available because different length vectors
+              simulated <- suppressMessages(mclapply(simulations, 
+                  statistics[[z]], mc.cores = ncpus))
+              observed <- suppressMessages(mclapply(target, statistics[[z]], 
+                  mc.cores = ncpus))
+              max.length.sim <- max(sapply(simulated, length), na.rm = TRUE)
+              max.length.obs <- max(sapply(observed, length), na.rm = TRUE)
+              max.length <- max(max.length.sim, max.length.obs, na.rm = TRUE)
+              simulated <- sapply(simulated, function(x) {
+                c(x, rep(0, max.length - length(x)))
+              })
+              observed <- sapply(observed, function(x) {
+                c(x, rep(0, max.length - length(x)))
+              })
             }
           } else {
             clusterEvalQ(cl, library("ergm"))
