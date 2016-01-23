@@ -90,9 +90,10 @@ plot.gof <- function(x, mfrow = TRUE, ...) {
 
 # plot function for boxplot objects
 plot.boxplot <- function(x, relative = TRUE, transform = function(x) x, 
-    xlim = NULL, ylim = NULL, main = x$label, xlab = x$label, 
-    ylab = "Frequency", border = "darkgray", outline = FALSE, median = TRUE, 
-    median.col = "black", mean = TRUE, mean.col = "black", lwd = 0.8, ...) {
+    xlim = NULL, main = x$label, xlab = x$label, ylab = "Frequency", 
+    border = "darkgray", boxplot.lwd = 0.8, outline = FALSE, median = TRUE, 
+    median.col = "black", median.lty = "solid", median.lwd = 2, mean = TRUE, 
+    mean.col = "black", mean.lty = "dashed", mean.lwd = 1, ...) {
   
   # transform data
   mat <- t(x$raw)
@@ -126,15 +127,8 @@ plot.boxplot <- function(x, relative = TRUE, transform = function(x) x,
   if (ncol(x$stats) == 9) { # several observed networks
     obs.mean <- x$stats[, 1]
     obs <- x$stats[, 2]
-    max.y <- max(mat, obs.mean, obs)
-    min.y <- min(mat, obs.mean, obs)
   } else { # only one observed network
     obs <- x$stats[, 1]
-    max.y <- max(mat, obs)
-    min.y <- min(mat, obs)
-  }
-  if (!is.null(ylim)) {
-    max.y <- ylim
   }
   if (any(is.infinite(c(mat, obs)))) {
     stop(paste("Simulated or observed values contain infinite values.", 
@@ -154,14 +148,14 @@ plot.boxplot <- function(x, relative = TRUE, transform = function(x) x,
         obs.mean <- obs.mean[c(1:(xlim), length(obs.mean))]
       }
     } else {
-      if (xlim > nrow(x$stats) - 1) {
-        xlim <- nrow(x$stats)
+      if (xlim > ncol(mat) - 1) {
         warning("'xlim' was out of bounds. Replaced by maximum possible.")
-      }
-      mat <- mat[, c(1:(xlim + 1))]
-      obs <- obs[c(1:(xlim + 1))]
-      if (exists("obs.mean")) {
-        obs.mean <- obs.mean[c(1:(xlim + 1))]
+      } else {
+        mat <- mat[, c(1:(xlim + 1))]
+        obs <- obs[c(1:(xlim + 1))]
+        if (exists("obs.mean")) {
+          obs.mean <- obs.mean[c(1:(xlim + 1))]
+        }
       }
     }
   }
@@ -172,13 +166,13 @@ plot.boxplot <- function(x, relative = TRUE, transform = function(x) x,
   }
   
   # plot boxplots and curves
-  boxplot(mat, ylim = c(min.y, max.y), border = border, lwd = lwd, xlab = xlab, 
-      ylab = ylab, main = main, outline = outline, ...)
+  boxplot(mat, border = border, xlab = xlab, ylab = ylab, main = main, 
+      outline = outline, lwd = boxplot.lwd, ...)
   if (ncol(x$stats) == 9 && mean == TRUE) {
-    lines(obs.mean, lwd = 2 * lwd, type = "l", lty = "dashed", col = mean.col)
+    lines(obs.mean, lwd = mean.lwd, type = "l", lty = mean.lty, col = mean.col)
   }
   if (median == TRUE) {
-    lines(obs, lwd = 3 * lwd, type = "l", col = median.col)
+    lines(obs, lwd = median.lwd, type = "l", lty = median.lty, col = median.col)
   }
 }
 
