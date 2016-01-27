@@ -874,9 +874,8 @@ gof.network <- function(object, covariates, coef, target = NULL,
     dat <- cbind(rep(1, nrow(dat)), dat)
     prob <- plogis(coef %*% t(dat))
     simval <- t(sapply(prob, function(x) rbinom(nsim, 1, x)))
-    simulations <- apply(simval, 2, function(x) network::network(matrix(x, 
-        nrow = num.vertices, byrow = FALSE), bipartite = bipartite, 
-        directed = directed))
+    simulations <- apply(simval, 2, function(x) Matrix(x, 
+        nrow = num.vertices, byrow = FALSE))
   }
   
   # if NA in target networks, put them in the base network, too, and vice-versa
@@ -885,7 +884,7 @@ gof.network <- function(object, covariates, coef, target = NULL,
   nw <- network::network(nw, directed = directed, bipartite = bipartite)
   target <- as.matrix(target)
   target[is.na(as.matrix(nw))] <- NA
-  target <- network::network(target, directed = directed, bipartite = bipartite)
+  target <- list(Matrix(target))
   
   # data preparation
   sptypes <- c("dgCMatrix", "dgTMatrix", "dsCMatrix", "dsTMatrix", "dgeMatrix")
@@ -907,7 +906,6 @@ gof.network <- function(object, covariates, coef, target = NULL,
       twomode[i] <- !is.mat.onemode(target[[i]])
     }
   }
-  simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
   goflist <- compute.goflist(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
       verbose = verbose)
