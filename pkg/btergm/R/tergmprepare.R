@@ -66,12 +66,12 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     rhs.operators <- substring(rhs, rhs.indices, rhs.indices)
   }
   
-  # preprocess dyadcov and edgecov terms
+  # preprocess dyadcov and edgecov terms, memory terms, and timecov terms
   covnames <- character()
   for (k in 1:length(env$rhs.terms)) {
-    if (grepl("((edge)|(dyad))cov", env$rhs.terms[k])) {
+    if (grepl("((edge)|(dyad))cov", env$rhs.terms[k])) {  # edgecov or dyadcov
       
-      # if edgecov or dyadcov, split up into components
+      # split up into components
       if (grepl(",\\s*?((attr)|\\\")", env$rhs.terms[k])) { # with attrib arg.
         s <- "((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,\\s*a*.*?)\\)(?:\\))?)"
       } else { # without attribute argument
@@ -135,11 +135,172 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
           }
         )
       }
+    } else if (grepl("memory", env$rhs.terms[k])) {  # memory terms
+      
+      # extract type argument
+      s <- "(?:memory\\((?:.*type\\s*=\\s*)?(?:\"|'))(\\w+)(?:(\"|').*\\))"
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        type <- "stability"
+      } else {
+        type <- sub(s, "\\1", env$rhs.terms[k], perl = TRUE)
+      }
+      
+      # extract lag argument
+      s <- "(?:memory\\(.*lag\\s*=\\s*)(\\d+)(?:.*\\))"
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        lag <- 1
+      } else {
+        lag <- as.integer(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
+      }
+      if (lag > length(env$networks) - 2) {
+        stop("The 'lag' argument in the 'memory' term is too large.")
+      }
+      
+      # process dependent list of networks
+      mem <- env$networks[-(length(env$networks):(length(env$networks) - lag))]
+      mem <- lapply(mem, as.matrix)
+      memory <- list()
+      for (i in 1:length(mem)) {
+        if (type == "autoregression") {
+          memory[[i]] <- mem[[i]]
+        } else if (type == "stability") {
+          mem[[i]][mem[[i]] == 0] <- -1
+          memory[[i]] <- mem[[i]]
+        } else if (type == "innovation") {
+          memory[[i]] <- mem[[i]]
+          memory[[i]][mem[[i]] == 0] <- 1
+          memory[[i]][mem[[i]] == 1] <- 0
+        } else if (type == "loss") {
+          memory[[i]] <- mem[[i]]
+          memory[[i]][mem[[i]] == 0] <- 0
+          memory[[i]][mem[[i]] == 1] <- -1
+        } else {
+          stop("'type' argument in the 'memory' term not recognized.")
+        }
+      }
+      rm(mem)
+      
+      # re-introduce as edgecov and name of model term including brackets
+      env[["memory"]] <- memory
+      env$rhs.terms[k] <- "edgecov(memory[[i]])"
+      env$covnames <- c(env$covnames, "memory")
+    } else if (grepl("delrecip", env$rhs.terms[k])) {  # delayed reciprocity
+      
+      # extract mutuality argument
+      s <- "(?:delrecip\\((?:.*mutuality\\s*=\\s*)?)((TRUE)|(FALSE)|T|F)(?:.*\\))"
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        mutuality <- FALSE
+      } else {
+        mutuality <- as.logical(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
+      }
+      
+      # extract lag argument
+      s <- "(?:delrecip\\(.*lag\\s*=\\s*)(\\d+)(?:.*\\))"  # get lag
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        lag <- 1
+      } else {
+        lag <- as.integer(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
+      }
+      if (lag > length(env$networks) - 2) {
+        stop("The 'lag' argument in the 'delrecip' term is too large.")
+      }
+      
+      # process dependent list of networks
+      dlr <- env$networks[-(length(env$networks):(length(env$networks) - lag))]
+      dlr <- lapply(dlr, function(x) t(as.matrix(x)))
+      delrecip <- list()
+      for (i in 1:length(dlr)) {
+        delrecip[[i]] <- dlr[[i]]
+        if (mutuality == TRUE) {
+          delrecip[[i]][dlr[[i]] == 0] <- -1
+        }
+      }
+      rm(dlr)
+      
+      # re-introduce as edgecov and name of model term including brackets
+      env[["delrecip"]] <- delrecip
+      env$rhs.terms[k] <- "edgecov(delrecip[[i]])"
+      env$covnames <- c(env$covnames, "delrecip")
+    } else if (grepl("timecov", env$rhs.terms[k])) {  # time covariate
+      
+      # extract x argument
+      s <- "(?:timecov\\((?:.*x\\s*=\\s*)?)(\\w+)(?:.*\\))"
+      if (sub(s, "\\1", env$rhs.terms[k], perl = TRUE) %in% c("minimum", 
+          "maximum", "transform", "min", "max", "trans")) {
+        s <- "(?:timecov\\(?:.*x\\s*=\\s*)(\\w+)(?:.*\\))"
+      }
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        x <- NULL
+        suffix <- ""
+        label <- "timecov"
+      } else {
+        x <- sub(s, "\\1", env$rhs.terms[k], perl = TRUE)
+        label <- paste0("timecov.", x)
+      }
+      
+      # extract minimum argument
+      s <- "(?:timecov\\(.*minimum\\s*=\\s*)(\\d+)(?:.*\\))"
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        minimum <- 1
+      } else {
+        minimum <- as.integer(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
+      }
+      
+      # extract maximum argument
+      s <- "(?:timecov\\(.*maximum\\s*=\\s*)(\\d+)(?:.*\\))"
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        maximum <- env$time.steps
+      } else {
+        maximum <- as.integer(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
+      }
+      
+      # extract transform argument
+      s <- "(?:timecov\\(.*transform\\s*=\\s*)(.+?)(?:(?:,|\\)$)]*.*)"
+      if (grepl(s, env$rhs.terms[k]) == FALSE) {
+        transform <- function(t) 1 + (0 * t) + (0 * t^2)
+      } else {
+        transform <- eval(parse(text = sub(s, "\\1", env$rhs.terms[k], 
+            perl = TRUE)))
+      }
+      
+      # process dependent list of networks
+      if (is.null(x)) {
+        covariate <- env[["networks"]]
+        onlytime <- TRUE
+      } else {
+        onlytime <- FALSE
+        covariate <- get(x)
+      }
+      tc <- timecov(covariate = covariate, minimum = minimum, 
+        maximum = maximum, transform = transform, onlytime = onlytime)
+      
+      # re-introduce as edgecov and name of model term including brackets
+      env[[label]] <- tc
+      env$rhs.terms[k] <- paste0("edgecov(", label, "[[i]])")
+      env$covnames <- c(env$covnames, label)
     }
   }
+  env$covnames <- c("networks", env$covnames)
+  
+  # fix different lengths of DV/covariate lists due to temporal dependencies
+  lengths <- sapply(env$covnames, function(cn) length(env[[cn]]))
+  mn <- max(lengths)
+  if (length(table(lengths)) > 1) {
+    mn <- min(lengths)
+    env$time.steps <- mn
+    for (i in 1:length(env$covnames)) {
+      cn <- env$covnames[[i]]
+      l <- env[[cn]]
+      difference <- length(l) - mn
+      if (difference > 0) {
+        env[[cn]] <- l[(difference + 1):length(l)]
+      }
+    }
+  }
+  t.end <- max(lengths)
+  t.start <- t.end - mn + 1
   
   # determine and report initial dimensions of networks and covariates
-  env$covnames <- c("networks", env$covnames)
   if (verbose == TRUE) {
     if (length(env$covnames) > 1) {
       dimensions <- lapply(lapply(env$covnames, function(x) env[[x]]), 
@@ -150,7 +311,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
             paste(env$covnames[i], "(col)"))
       }
       dimensions <- do.call(rbind, dimensions)
-      colnames(dimensions) <- paste0("t=", 1:length(env$networks))
+      colnames(dimensions) <- paste0("t=", t.start:t.end) #1:length(env$networks))
       message("\nInitial dimensions of the network and covariates:")
       print(dimensions)
     } else {
@@ -386,7 +547,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
             "maximum deleted nodes (col)", "remaining rows", 
             "remaining columns")
       }
-      colnames(dimensions) <- paste0("t=", 1:length(env$networks))
+      colnames(dimensions) <- paste0("t=", t.start:t.end) #1:length(env$networks))
       message("\nNumber of nodes per time step after adjustment:")
       print(dimensions)
       if (nrow(structzero.df) > 0) {
