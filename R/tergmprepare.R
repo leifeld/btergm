@@ -480,18 +480,18 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
               co <- nw.j.labels$added.col
               if (length(ro) > 0) {
                 ro <- data.frame(label = ro, time = rep(i, length(ro)), 
-                    object = rep(env$covnames[j], length(ro)), 
+                    object = rep(env$covnames[k], length(ro)), 
                     where = rep("row", length(ro)))
                 structzero.df <- rbind(structzero.df, ro)
               }
               if (length(co) > 0) {
                 co <- data.frame(label = co, time = rep(i, length(co)), 
-                    object = rep(env$covnames[j], length(co)), 
+                    object = rep(env$covnames[k], length(co)), 
                     where = rep("col", length(co)))
                 structzero.df <- rbind(structzero.df, co)
               }
               # adjust k back to j
-              nw.k.labels <- adjust(nw.j, nw.k, remove = FALSE, 
+              nw.k.labels <- adjust(nw.k, nw.j, remove = FALSE, 
                   value = 1, returnlabels = TRUE)
               nw.k <- adjust(nw.k, nw.j, remove = FALSE, value = 1)
               env[[env$covnames[k]]][[i]] <- nw.k
