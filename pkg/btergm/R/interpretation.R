@@ -134,47 +134,34 @@ interpret.btergm <- function(object, formula = getformula(object),
   
   env <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE, 
       verbose = FALSE)
+  parent.env(env) <- environment()
   
   # extract response networks and adjust formula
-  if (is.null(target)) {
-    networks <- env$networks
-  } else {
-    networks <- target
-  }
-  if (class(networks) == "network" || class(networks) == "matrix") {
-    networks <- list(networks)
-  }
-  dir <- is.directed(networks[[1]])
-  if (dir == FALSE && type == "dyad") {
-    type <- "tie"
-    warning(paste("Dyadic probabilities not available for undirected",
-        "networks. Reporting tie probabilities instead."))
-  }
-  if (is.null(t)) {
-    t <- 1:length(networks)
+  if (!is.null(target)) {
+    env$networks <- target
   }
   
   # prepare i and j
   if (!is.list(i)) {
-    i <- rep(list(i), length(networks))
+    i <- rep(list(i), length(env$networks))
     num.actors <- numeric()
     for (k in t) {
-      num.actors[k] <- nrow(as.matrix(networks[[k]]))
+      num.actors[k] <- nrow(as.matrix(env$networks[[k]]))
     }
     if (length(table(num.actors)) > 1) {
       warning(paste("'i' does not vary across time steps, but the number of",
-          "actors does. 'i' can be provided as a list."))
+          "actors does. 'i' can be provided as a list or as a name."))
     }
   }
   if (!is.list(j)) {
-    j <- rep(list(j), length(networks))
+    j <- rep(list(j), length(env$networks))
     num.actors <- numeric()
     for (k in t) {
-      num.actors[k] <- nrow(as.matrix(networks[[k]]))
+      num.actors[k] <- nrow(as.matrix(env$networks[[k]]))
     }
     if (length(table(num.actors)) > 1) {
       warning(paste("'j' does not vary across time steps, but the number of",
-          "actors does. 'j' can be provided as a list."))
+          "actors does. 'j' can be provided as a list or as a name."))
     }
   }
   for (l in 1:length(j)) {
@@ -183,14 +170,15 @@ interpret.btergm <- function(object, formula = getformula(object),
           "node can be specified per time step."))
     }
   }
+  node_i <- i
+  node_j <- j
   
-  # do the computations
   if (type == "tie") {
     results <- numeric()
-    for (k in t) {
-      networks[[k]][i[[k]], j[[k]]] <- 0
+    for (i in t) {
+      env$networks[[i]][node_i[[i]], node_j[[i]]] <- 0
       stat0 <- summary(remove.offset.formula(env$form), response = NULL)
-      networks[[k]][i[[k]], j[[k]]] <- 1
+      env$networks[[i]][node_i[[i]], node_j[[i]]] <- 1
       stat1 <- summary(remove.offset.formula(env$form), response = NULL)
       chgstat <- stat1 - stat0
       if (length(chgstat) != length(coefficients)) {
@@ -201,18 +189,18 @@ interpret.btergm <- function(object, formula = getformula(object),
       lp <- t(chgstat) %*% cbind(coefficients)
       result <- c(1 / (1 + exp(-lp)))
       names(result) <- "i->j = 1"
-      results[k] <- result
+      results[i] <- result
     }
     results <- results[!is.na(results)]
     names(results) <- paste("t =", t)
   } else if (type == "dyad") {
     results <- list()
-    for (k in t) {
+    for (i in t) {
       eta_mat <- matrix(NA, 2, 2)
       for (xi in 0:1) {
         for (xj in 0:1) {
-          networks[[k]][i[[k]], j[[k]]] <- xi
-          networks[[k]][j[[k]], i[[k]]] <- xj
+          env$networks[[i]][node_i[[i]], node_j[[i]]] <- xi
+          env$networks[[i]][node_j[[i]], node_i[[i]]] <- xj
           stat <- summary(remove.offset.formula(env$form), response = NULL)
           if (length(stat) != length(coefficients)) {
             stop(paste("Number of coefficients and statistics differ.",
@@ -231,24 +219,24 @@ interpret.btergm <- function(object, formula = getformula(object),
       }
       rownames(prob_mat) <- c("i->j = 0", "i->j = 1")
       colnames(prob_mat) <- c("j->i = 0", "j->i = 1")
-      results[[k]] <- prob_mat
+      results[[i]] <- prob_mat
     }
     results <- results[!sapply(results, is.null)]
     names(results) <- paste("t =", t)
   } else if (type == "node") {
     results <- list()
-    for (k in t) {
-      m <- length(i[[k]])
-      n <- length(j[[k]])
+    for (i in t) {
+      m <- length(node_i[[i]])
+      n <- length(node_j[[i]])
       if (m == 1 && n > 1) {
         labels <- c("Sender", "Receiver")
       } else if (m > 1 && n == 1) {
         labels <- c("Receiver", "Sender")
-        j.old <- j[[k]]
-        j[[k]] <- i[[k]]
-        i[[k]] <- j.old
-        m <- length(i[[k]])
-        n <- length(j[[k]])
+        j.old <- node_j[[i]]
+        node_j[[i]] <- node_i[[i]]
+        node_i[[i]] <- j.old
+        m <- length(node_i[[i]])
+        n <- length(node_j[[i]])
       } else {
         stop(paste("Either 'i' or 'j' must contain more than one node per",
             "time step."))
@@ -265,9 +253,9 @@ interpret.btergm <- function(object, formula = getformula(object),
       }
       eta <- numeric(nrow(vecs))
       for (l in 1:nrow(vecs)) {
-        ik <- i[[k]]
-        jk <- j[[k]]
-        networks[[k]][ik, jk] <- vecs[l, ]
+        ik <- node_i[[i]]
+        jk <- node_j[[i]]
+        env$networks[[i]][ik, jk] <- vecs[l, ]
         stat <- summary(remove.offset.formula(env$form), response = NULL)
         if (length(stat) != length(coefficients)) {
           stop(paste("Number of coefficients and statistics differ.",
@@ -280,11 +268,11 @@ interpret.btergm <- function(object, formula = getformula(object),
       for (l in 1:nrow(vecs)) {
         prob[l] <- 1 / sum(exp(eta - eta[l]))
       }
-      colnames(vecs) <- paste(labels[2], j[[k]])
-      rownames(vecs) <- rep(paste(labels[1], i[[k]]), nrow(vecs))
+      colnames(vecs) <- paste(labels[2], node_j[[i]])
+      rownames(vecs) <- rep(paste(labels[1], node_i[[i]]), nrow(vecs))
       result <- cbind(prob, vecs)
       colnames(result)[1] <- "probability"
-      results[[k]] <- result
+      results[[i]] <- result
     }
     results <- results[!sapply(results, is.null)]
     names(results) <- paste("t =", t)
