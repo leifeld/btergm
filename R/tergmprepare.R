@@ -162,7 +162,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         lag <- as.integer(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
       }
-      if (lag > length(env$networks) - 2) {
+      if (lag > length(env$networks) - 1) {
         stop("The 'lag' argument in the 'memory' term is too large.")
       }
       
@@ -216,7 +216,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         lag <- as.integer(sub(s, "\\1", env$rhs.terms[k], perl = TRUE))
       }
-      if (lag > length(env$networks) - 2) {
+      if (lag > length(env$networks) - 1) {
         stop("The 'lag' argument in the 'delrecip' term is too large.")
       }
       
