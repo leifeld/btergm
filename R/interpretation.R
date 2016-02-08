@@ -1,6 +1,6 @@
 # interpretation function for ergm objects
 interpret.ergm <- function(object, formula = object$formula, 
-    coefficients = coef(object), network = eval(parse(text = 
+    coefficients = coef(object), target = eval(parse(text = 
     deparse(formula[[2]]))), type = "tie", i, j, ...) {
   
   if (length(j) > 1 && (type == "tie" || type == "dyad")) {
@@ -9,9 +9,7 @@ interpret.ergm <- function(object, formula = object$formula,
   }
   
   # extract response network and adjust formula
-  #nw <- eval(parse(text = deparse(formula[[2]])))  # response network
-  nw <- network
-  #nw <- ergm.getnetwork(formula)
+  nw <- target
   dir <- is.directed(nw)
   if (dir == FALSE && type == "dyad") {
     type <- "tie"
@@ -130,13 +128,19 @@ interpret.ergm <- function(object, formula = object$formula,
 
 
 # interpretation method for btergm objects
-interpret.btergm <- function(object, formula = object@formula, 
-    coefficients = coef(object), network = eval(parse(text = 
-    deparse(formula[[2]]))), type = "tie", i, j, t = 1:length(network), 
-    ...) {
+interpret.btergm <- function(object, formula = getformula(object), 
+    coefficients = coef(object), target = NULL, type = "tie", i, j, 
+    t = 1:object@time.steps, ...) {
+  
+  env <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE, 
+      verbose = FALSE)
   
   # extract response networks and adjust formula
-  networks <- network
+  if (is.null(target)) {
+    networks <- env$networks
+  } else {
+    networks <- target
+  }
   if (class(networks) == "network" || class(networks) == "matrix") {
     networks <- list(networks)
   }
@@ -146,17 +150,9 @@ interpret.btergm <- function(object, formula = object@formula,
     warning(paste("Dyadic probabilities not available for undirected",
         "networks. Reporting tie probabilities instead."))
   }
-  
-  # disassemble formula and preprocess rhs
-  tilde <- deparse(formula[[1]])
-  lhs <- "networks[[k]]"
-  rhs <- paste(deparse(formula[[3]]), collapse = "")
-  rhs <- gsub("\\s+", " ", rhs)
-  rhs <- preprocessrhs(rhs, length(networks), iterator = "k")
-  
-  # reassemble formula
-  f <- paste(lhs, tilde, rhs)
-  form <- as.formula(f)
+  if (is.null(t)) {
+    t <- 1:length(networks)
+  }
   
   # prepare i and j
   if (!is.list(i)) {
@@ -193,9 +189,9 @@ interpret.btergm <- function(object, formula = object@formula,
     results <- numeric()
     for (k in t) {
       networks[[k]][i[[k]], j[[k]]] <- 0
-      stat0 <- summary(remove.offset.formula(form), response = NULL)
+      stat0 <- summary(remove.offset.formula(env$form), response = NULL)
       networks[[k]][i[[k]], j[[k]]] <- 1
-      stat1 <- summary(remove.offset.formula(form), response = NULL)
+      stat1 <- summary(remove.offset.formula(env$form), response = NULL)
       chgstat <- stat1 - stat0
       if (length(chgstat) != length(coefficients)) {
         stop(paste("Number of coefficients and statistics differ.",
@@ -206,7 +202,6 @@ interpret.btergm <- function(object, formula = object@formula,
       result <- c(1 / (1 + exp(-lp)))
       names(result) <- "i->j = 1"
       results[k] <- result
-      #names(results)[k] <- paste0("t = ", k)
     }
     results <- results[!is.na(results)]
     names(results) <- paste("t =", t)
@@ -218,7 +213,7 @@ interpret.btergm <- function(object, formula = object@formula,
         for (xj in 0:1) {
           networks[[k]][i[[k]], j[[k]]] <- xi
           networks[[k]][j[[k]], i[[k]]] <- xj
-          stat <- summary(remove.offset.formula(form), response = NULL)
+          stat <- summary(remove.offset.formula(env$form), response = NULL)
           if (length(stat) != length(coefficients)) {
             stop(paste("Number of coefficients and statistics differ.",
                 "Did you fit a curved model? Curved models with non-fixed",
@@ -273,7 +268,7 @@ interpret.btergm <- function(object, formula = object@formula,
         ik <- i[[k]]
         jk <- j[[k]]
         networks[[k]][ik, jk] <- vecs[l, ]
-        stat <- summary(remove.offset.formula(form), response = NULL)
+        stat <- summary(remove.offset.formula(env$form), response = NULL)
         if (length(stat) != length(coefficients)) {
           stop(paste("Number of coefficients and statistics differ.",
               "Did you fit a curved model? Curved models with non-fixed",
@@ -309,97 +304,3 @@ setMethod("interpret", signature = className("btergm", "btergm"),
 
 setMethod("interpret", signature = className("mtergm", "btergm"), 
     definition = interpret.btergm)
-
-
-# function which preprocesses the right-hand side (rhs) of the formula
-# (may be obsolete in the near future when the tergmprepare function is used)
-preprocessrhs <- function(rhs, time.steps, iterator = "i", dep = NULL) {
-  
-  covnames <- character()
-  
-  # split up rhs terms
-  rhs.terms <- strsplit(rhs, "\\s*(\\+|\\*)\\s*")[[1]]
-  rhs.indices <- gregexpr("\\+|\\*", rhs)[[1]]
-  if (length(rhs.indices) == 1 && rhs.indices < 0) {
-    rhs.operators <- character()
-  } else {
-    rhs.operators <- substring(rhs, rhs.indices, rhs.indices)
-  }
-  
-  # preprocess dyadcov and edgecov terms
-  for (k in 1:length(rhs.terms)) {
-    if (grepl("((edge)|(dyad))cov", rhs.terms[k])) {
-      if (grepl(",\\s*?((attr)|\\\")", rhs.terms[k])) { # with attrib argument
-        x1 <- sub("((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,\\s*a*.*?)\\)(?:\\))?)", "\\1", 
-            rhs.terms[k], perl = TRUE)
-        x2 <- sub("((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,\\s*a*.*?)\\)(?:\\))?)", "\\5", 
-            rhs.terms[k], perl = TRUE)
-        x3 <- sub("((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,\\s*a*.*?)\\)(?:\\))?)", "\\6", 
-            rhs.terms[k], perl = TRUE)
-      } else { # without attribute argument
-        x1 <- sub("((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,*\\s*a*.*?)\\)(?:\\))?)", "\\1", 
-            rhs.terms[k], perl = TRUE)
-        x2 <- sub("((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,*\\s*a*.*?)\\)(?:\\))?)", "\\5", 
-            rhs.terms[k], perl = TRUE)
-        x3 <- sub("((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,*\\s*a*.*?)\\)(?:\\))?)", "\\6", 
-            rhs.terms[k], perl = TRUE)
-      }
-      type <- class(eval(parse(text = x2)))
-      covnames <- c(covnames, x2)
-      
-      if (grepl("[^\\]]\\]$", x2)) {
-        # time-varying covariate with given indices (e.g., formula[1:5])
-        rhs.terms[k] <- paste(x1, x2, x3, sep = "")
-        if (length(eval(parse(text = x2))) != time.steps) {
-          stop(paste(x2, "has", length(eval(parse(text = x2))), 
-              "elements, but there are", time.steps, "networks to be modeled."))
-        }
-        
-      } else if (type == "matrix" || type == "network") {
-        # time-independent covariate
-        rhs.terms[k] <- paste(x1, x2, x3, sep = "")
-      } else if (type == "list" || type == "network.list") {
-        # time-varying covariate
-        if (length(eval(parse(text = x2))) != time.steps) {
-          stop(paste(x2, "has", length(get(x2)), "elements, but there are", 
-              time.steps, "networks to be modeled."))
-        }
-        x2 <- paste(x2, "[[", iterator, "]]", sep = "")
-        rhs.terms[k] <- paste(x1, x2, x3, sep = "")
-      } else {
-        stop(paste(x2, "is not a matrix, network, or list."))
-      }
-      
-      # check if dimensions at each time step are OK
-      if (!is.null(dep)) {
-        for (i in 1:length(dep)) {
-          cv <- eval(parse(text = x2))
-          msg <- paste0("btergm error: The dimensions of covariate '", x2, 
-              "' do not match the dimensions of the dependent network ", 
-              "at time step ", i, ".")
-          if ("list" %in% class(cv)) {
-            if (any(dim(as.matrix(dep[[i]])) != dim(as.matrix(cv[[i]])))) {
-              stop(msg)
-            }
-          } else {
-            if (any(dim(as.matrix(dep[[i]])) != dim(as.matrix(cv)))) {
-              stop(msg)
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  assign("covnames", covnames, envir = parent.frame(n = 1))
-  
-  # reassemble rhs
-  rhs <- rhs.terms[1]
-  if (length(rhs.operators) > 0) {
-    for (i in 1:length(rhs.operators)) {
-      rhs <- paste(rhs, rhs.operators[i], rhs.terms[i + 1])
-    }
-  }
-  return(rhs)
-}
-
