@@ -169,7 +169,8 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
       
       # process dependent list of networks
-      mem <- env$networks[-(length(env$networks):(length(env$networks) - lag))]
+      mem <- env$networks[-(length(env$networks):(length(env$networks) - lag + 
+          1))]
       mem <- lapply(mem, as.matrix)
       memory <- list()
       for (i in 1:length(mem)) {
@@ -222,7 +223,8 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
       
       # process dependent list of networks
-      dlr <- env$networks[-(length(env$networks):(length(env$networks) - lag))]
+      dlr <- env$networks[-(length(env$networks):(length(env$networks) - lag + 
+          1))]
       dlr <- lapply(dlr, function(x) t(as.matrix(x)))
       delrecip <- list()
       for (i in 1:length(dlr)) {

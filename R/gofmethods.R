@@ -1,11 +1,6 @@
-# This file contains gof methods for ergm, btergm, Siena, and other network 
-# models. It also contains the compute.goflist function, which accepts 
+# This file contains gof methods for ergm, btergm, mtergm, Siena, and other 
+# network models. It also contains the compute.goflist function, which accepts 
 # simulations and target networks and applies gof statistics to them.
-
-# TODO:
-# - add side-by-side boxplots and lines with CIs to plot function
-# - add spectral gof
-# - reimplement degeneracy function
 
 
 setMethod("getformula", signature = className("btergm", "btergm"), 
@@ -347,11 +342,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     parent.env(env) <- environment()
     offset <- object@offset
   } else {
-    if ("mtergm" %in% class(object)) {
-      env <- tergmprepare(formula = formula, offset = TRUE, verbose = FALSE)
-    } else {
-      env <- tergmprepare(formula = formula, offset = FALSE, verbose = FALSE)
-    }
+    env <- tergmprepare(formula = formula, offset = FALSE, verbose = FALSE)
     parent.env(env) <- environment()
     offset <- FALSE
   }
@@ -495,6 +486,9 @@ setMethod("gof", signature = className("btergm", "btergm"),
     definition = gof.btergm)
 
 setMethod("gof", signature = className("ergm", "ergm"), 
+    definition = gof.btergm)
+
+setMethod("gof", signature = className("mtergm", "btergm"), 
     definition = gof.btergm)
 
 
