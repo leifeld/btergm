@@ -9,8 +9,7 @@ btergm(formula, R = 500, offset = FALSE, parallel = c("no",
     "multicore", "snow"), ncpus = 1, cl = NULL, 
     verbose = TRUE, ...)
 
-mtergm(formula, constraints = ~ ., estimate = c("MLE", "MPLE"), 
-    verbose = TRUE, ...)
+mtergm(formula, constraints = ~ ., verbose = TRUE, ...)
 }
 \details{
 The \code{btergm} function computes temporal exponential random graph models (TERGM) by bootstrapped pseudolikelihood, as described in Desmarais and Cranmer (2012).
@@ -25,9 +24,8 @@ The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected
 \item{ncpus}{ The number of CPU cores used for parallel computing (only if \code{parallel} is activated). If the number of cores should be detected automatically on the machine where the code is executed, one can set \code{ncpus = detectCores()} after loading the \pkg{parallel} package. On some HPC clusters, the number of available cores is saved as an environment variable; for example, if MOAB is used, the number of available cores can sometimes be accessed using \code{Sys.getenv("MOAB_PROCCOUNT")}, depending on the implementation. }
 \item{cl}{ An optional \pkg{parallel} or \pkg{snow} cluster for use if \code{parallel = "snow"}. If not supplied, a PSOCK cluster is created temporarily on the local machine. }
 \item{constraints}{ Constraints of the ERGM. See \code{\link[ergm]{ergm}} for details. }
-\item{estimate}{ Estimation procedure of the ERGM. MCMC MLE by default, but MPLE with uncorrected standard errors is possible. See \code{\link[ergm]{ergm}} for details. }
 \item{verbose}{ Print details about data preprocessing and estimation settings. }
-\item{...}{ Further arguments to be handed over to subroutines. }
+\item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call) or the boot function (in the case of a btergm call). }
 }
 \references{
 Cranmer, Skyler J., Tobias Heinrich and Bruce A. Desmarais (2014):

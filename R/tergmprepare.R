@@ -93,7 +93,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       # add brackets if necessary, convert to list, and reassemble rhs term
       if (grepl("[^\\]]\\]$", x2)) {
         # time-varying covariate with given indices (e.g., formula[1:5])
-        env$rhs.terms[k] <- paste(x1, x2, x3, sep = "")
+        env$rhs.terms[k] <- paste0(x1, x2, x3)
         if (type %in% c("matrix", "network", "dgCMatrix", "dgTMatrix", 
             "dsCMatrix", "dsTMatrix", "dgeMatrix")) {
           x.current <-list(x.current)
@@ -103,7 +103,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
           stop(paste(x2, "has", length(x.current), "elements, but there are", 
               env$time.steps, "networks to be modeled."))
         }
-        x2 <- paste(x2, "[[i]]", sep = "")
+        if (blockdiag == TRUE) {
+          # do not add brackets
+        } else {
+          x2 <- paste0(x2, "[[i]]")
+        }
       } else if (type %in% c("matrix", "network", "dgCMatrix", "dgTMatrix", 
           "dsCMatrix", "dsTMatrix", "dgeMatrix")) {
         # time-independent covariate
@@ -114,7 +118,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         for (i in 1:env$time.steps) {
           env[[x2]][[i]] <- x.current
         }
-        x2 <- paste(x2, "[[i]]", sep = "")
+        if (blockdiag == TRUE) {
+          # do not add brackets
+        } else {
+          x2 <- paste0(x2, "[[i]]")
+        }
         env$rhs.terms[k] <- paste(x1, x2, x3, sep = "")
       } else if (type == "list" || type == "network.list") {
         # time-varying covariate
@@ -122,8 +130,12 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
           stop(paste(x2, "has", length(get(x2)), "elements, but there are", 
               env$time.steps, "networks to be modeled."))
         }
-        x2 <- paste(x2, "[[i]]", sep = "")
-        env$rhs.terms[k] <- paste(x1, x2, x3, sep = "")
+        if (blockdiag == TRUE) {
+          # do not add brackets
+        } else {
+          x2 <- paste0(x2, "[[i]]")
+        }
+        env$rhs.terms[k] <- paste0(x1, x2, x3)
       } else {  # something else --> try to convert to matrix list
         tryCatch(
           {
@@ -182,7 +194,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       
       # re-introduce as edgecov and name of model term including brackets
       env[["memory"]] <- memory
-      env$rhs.terms[k] <- "edgecov(memory[[i]])"
+      if (blockdiag == TRUE) {
+        env$rhs.terms[k] <- "edgecov(memory)"
+      } else {
+        env$rhs.terms[k] <- "edgecov(memory[[i]])"
+      }
       env$covnames <- c(env$covnames, "memory")
     } else if (grepl("delrecip", env$rhs.terms[k])) {  # delayed reciprocity
       
@@ -219,7 +235,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       
       # re-introduce as edgecov and name of model term including brackets
       env[["delrecip"]] <- delrecip
-      env$rhs.terms[k] <- "edgecov(delrecip[[i]])"
+      if (blockdiag == TRUE) {
+        env$rhs.terms[k] <- "edgecov(delrecip)"
+      } else {
+        env$rhs.terms[k] <- "edgecov(delrecip[[i]])"
+      }
       env$covnames <- c(env$covnames, "delrecip")
     } else if (grepl("timecov", env$rhs.terms[k])) {  # time covariate
       
@@ -276,7 +296,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       
       # re-introduce as edgecov and name of model term including brackets
       env[[label]] <- tc
-      env$rhs.terms[k] <- paste0("edgecov(", label, "[[i]])")
+      if (blockdiag == TRUE) {
+        env$rhs.terms[k] <- paste0("edgecov(", label, ")")
+      } else {
+        env$rhs.terms[k] <- paste0("edgecov(", label, "[[i]])")
+      }
       env$covnames <- c(env$covnames, label)
     }
   }
@@ -619,10 +643,10 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
           "networks. Use the btergm function instead."))
     }
     # also save formula without time indices for ergm estimation
-    env$mtergmestform <- update.formula(formula, networks ~ .)
-    env$mtergmestform <- paste(deparse(env$mtergmestform), collapse = "")
-    env$mtergmestform <- paste(env$mtergmestform, "+ offset(edgecov(offsmat))")
-    env$mtergmestform <- as.formula(env$mtergmestform, env = env)
+    env$form <- update.formula(env$form, networks ~ .)
+    env$form <- paste(deparse(env$form), collapse = "")
+    env$form <- paste(env$form, "+ offset(edgecov(offsmat))")
+    env$form <- as.formula(env$form, env = env)
     # make covariates block-diagonal
     if (length(env$covnames) > 1) {
       for (j in 2:length(env$covnames)) {

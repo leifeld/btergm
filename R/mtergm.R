@@ -115,8 +115,7 @@ setMethod(f = "summary", signature = "mtergm", definition = function(object,
 
 
 # MCMC MLE estimation function (basically a wrapper for the ergm function)
-mtergm <- function(formula, constraints = ~ ., estimate = c("MLE", "MPLE"), 
-    verbose = TRUE, ...) {
+mtergm <- function(formula, constraints = ~ ., verbose = TRUE, ...) {
   
   # call tergmprepare and integrate results as a child environment in the chain
   env <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE, 
@@ -125,12 +124,11 @@ mtergm <- function(formula, constraints = ~ ., estimate = c("MLE", "MPLE"),
   
   if (verbose == TRUE) {
     message("Estimating...")
-    e <- ergm(env$mtergmestform, offset.coef = -Inf, constraints = constraints, 
-        eval.loglik = TRUE, estimate = estimate[1], ...)
+    e <- ergm(env$form, offset.coef = -Inf, constraints = constraints, 
+        eval.loglik = TRUE, ...)
   } else {
-    e <- suppressMessages(ergm(env$mtergmestform, offset.coef = -Inf, 
-        constraints = constraints, eval.loglik = TRUE, 
-        estimate = estimate[1], ...))
+    e <- suppressMessages(ergm(env$form, offset.coef = -Inf, 
+        constraints = constraints, eval.loglik = TRUE, ...))
   }
   
   # get coefficients and other details
