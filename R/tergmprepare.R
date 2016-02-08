@@ -39,8 +39,6 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       env$directed <- TRUE
     } else {
       env$directed <- FALSE
-      #stop(paste("The dependent networks seem to be undirected. In this", 
-      #    "case, please store them as a list of network objects."))
     }
     if (xergm.common::is.mat.onemode(as.matrix(env$networks[[1]]))) {
       env$bipartite <- FALSE
@@ -480,13 +478,13 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
               co <- nw.j.labels$added.col
               if (length(ro) > 0) {
                 ro <- data.frame(label = ro, time = rep(i, length(ro)), 
-                    object = rep(env$covnames[k], length(ro)), 
+                    object = rep(env$covnames[j], length(ro)), 
                     where = rep("row", length(ro)))
                 structzero.df <- rbind(structzero.df, ro)
               }
               if (length(co) > 0) {
                 co <- data.frame(label = co, time = rep(i, length(co)), 
-                    object = rep(env$covnames[k], length(co)), 
+                    object = rep(env$covnames[j], length(co)), 
                     where = rep("col", length(co)))
                 structzero.df <- rbind(structzero.df, co)
               }
@@ -573,19 +571,23 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
             "maximum deleted nodes (col)", "remaining rows", 
             "remaining columns")
       }
-      colnames(dimensions) <- paste0("t=", t.start:t.end) #1:length(env$networks))
-      message("\nNumber of nodes per time step after adjustment:")
-      print(dimensions)
+      colnames(dimensions) <- paste0("t=", t.start:t.end)
       if (nrow(structzero.df) > 0) {
         if (offset == TRUE) {
           message("\nNodes affected completely by structural zeros:")
         } else {
-          message("\nNodes removed completely during adjustment:")
+          message("\nAbsent nodes:")
         }
-        print(unique(structzero.df))
+        szcopy <- structzero.df
+        szcopy$time <- szcopy$time - 1 + t.start  # correct lagged starting time
+        print(unique(szcopy))
       } else {
         message("\nAll nodes are retained.")
       }
+      
+      message("\nNumber of nodes per time step after adjustment:")
+      print(dimensions)
+      
     }
   }
   
@@ -626,6 +628,21 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         env[[env$covnames[j]]] <- adjust(env[[env$covnames[j]]], env$offsmat)
       }
     }
+  }
+  
+  # determine and report initial dimensions of networks and covariates
+  if (verbose == TRUE && length(env$covnames) > 1) {
+    dimensions <- lapply(lapply(env$covnames, function(x) env[[x]]), 
+        function(y) sapply(y, function(z) dim(as.matrix(z))))
+    rownames(dimensions[[1]]) <- paste(env$lhs.original, c("(row)", "(col)"))
+    for (i in 2:length(dimensions)) {
+      rownames(dimensions[[i]]) <- c(paste(env$covnames[i], "(row)"), 
+          paste(env$covnames[i], "(col)"))
+    }
+    dimensions <- do.call(rbind, dimensions)
+    colnames(dimensions) <- paste0("t=", t.start:t.end) #1:length(env$networks))
+    message("\nDimensions of the network and covariates after adjustment:")
+    print(dimensions)
   }
   
   # assemble formula
