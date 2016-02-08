@@ -4,12 +4,14 @@
 \alias{gof.methods}
 \alias{gof}
 \alias{gof,btergm-method}
+\alias{gof,mtergm-method}
 \alias{gof,ergm-method}
 \alias{gof,network-method}
 \alias{gof,matrix-method}
 \alias{gof,sienaAlgorithm-method}
 \alias{gof,sienaModel-method}
 \alias{gof.btergm}
+\alias{gof.mtergm}
 \alias{gof.sienaAlgorithm}
 \alias{gof.sienaModel}
 \alias{gof.network}
@@ -21,7 +23,7 @@
 Assess goodness of fit of btergm and other network models.
 }
 \details{
-The generic \code{gof} function provides goodness-of-fit measures and degeneracy checks for \code{btergm}, \code{ergm}, SAOM, and custom dyadic-independent models. The user can provide a list of network statistics for comparing simulated networks based on the estimated model with the observed network(s). See \link{gof-statistics}. The objects created by these methods can be displayed using various plot and print methods (see \link{gof-plot}).
+The generic \code{gof} function provides goodness-of-fit measures and degeneracy checks for \code{btergm}, \code{mtergm}, \code{ergm}, SAOM, and custom dyadic-independent models. The user can provide a list of network statistics for comparing simulated networks based on the estimated model with the observed network(s). See \link{gof-statistics}. The objects created by these methods can be displayed using various plot and print methods (see \link{gof-plot}).
 
 In-sample GOF assessment is the default, which means that the same time steps are used for creating simulations and for comparison with the observed network(s). It is possible to do out-of-sample prediction by specifying a (list of) target network(s) using the \code{target} argument. If a formula is provided, the simulations are based on the networks and covariates specified in the formula. This is helpful in situations where complex out-of-sample predictions have to be evaluated. A usage scenario could be to simulate from a network at time \code{t} (provided through the \code{formula} argument) and compare to an observed network at time \code{t + 1} (the \code{target} argument). This can be done, for example, to assess predictive performance between time steps of the original networks, or to check whether the model performs well with regard to a newly measured network given the old data from the previous time step.
 
@@ -31,6 +33,12 @@ The \code{gof} methods for networks and matrices serve to assess the goodness of
 }
 \usage{
 \S4method{gof}{btergm}(object, target = NULL, formula = getformula(object), 
+    nsim = 100, MCMC.interval = 1000, MCMC.burnin = 10000, 
+    parallel = c("no", "multicore", "snow"), ncpus = 1, cl = NULL, 
+    statistics = c(dsp, esp, deg, ideg, geodesic, rocpr, 
+    walktrap.modularity), verbose = TRUE, ...)
+
+\S4method{gof}{mtergm}(object, target = NULL, formula = getformula(object), 
     nsim = 100, MCMC.interval = 1000, MCMC.burnin = 10000, 
     parallel = c("no", "multicore", "snow"), ncpus = 1, cl = NULL, 
     statistics = c(dsp, esp, deg, ideg, geodesic, rocpr, 
