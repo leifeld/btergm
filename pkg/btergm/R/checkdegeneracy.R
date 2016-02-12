@@ -1,19 +1,25 @@
+
+# checkdegeneracy function for mtergm objects
+checkdegeneracy.mtergm <- function(object, ...) {
+  mcmc.diagnostics(object@ergm, ...)
+}
+
+setMethod("checkdegeneracy", signature = className("mtergm", "btergm"), 
+    definition = checkdegeneracy.mtergm)
+
+
 # checkdegeneracy function for btergm objects
-checkdegeneracy <- function(object, nsim = 1000, MCMC.interval = 1000, 
+checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000, 
     MCMC.burnin = 10000, verbose = FALSE) {
   if (nsim < 2) {
     stop("The 'nsim' argument must be greater than 1.")
   }
   
   # call tergmprepare and integrate results as a child environment in the chain
-  if (class(object)[1] == "btergm") {
-    env <- tergmprepare(formula = getformula(object), offset = object@offset, 
-        verbose = verbose)
-    parent.env(env) <- environment()
-    offset <- object@offset
-  } else {
-    stop("'object' must be a 'btergm' object.")
-  }
+  env <- tergmprepare(formula = getformula(object), offset = object@offset, 
+      verbose = verbose)
+  parent.env(env) <- environment()
+  offset <- object@offset
   target <- env$networks
   
   # extract coefficients from object
@@ -28,6 +34,7 @@ checkdegeneracy <- function(object, nsim = 1000, MCMC.interval = 1000,
   tstats <- list()
   degen <- list()
   for (index in 1:env$time.steps) {
+    i <- index
     if (verbose == TRUE) {
       f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
           paste(deparse(env$form), collapse = ""))
@@ -79,6 +86,10 @@ checkdegeneracy <- function(object, nsim = 1000, MCMC.interval = 1000,
   }
   return(mat)
 }
+
+setMethod("checkdegeneracy", signature = className("btergm", "btergm"), 
+    definition = checkdegeneracy.btergm)
+
 
 # print method for 'degeneracy' objects
 print.degeneracy <- function(x, ...) {
