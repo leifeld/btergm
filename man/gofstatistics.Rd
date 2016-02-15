@@ -11,9 +11,13 @@
 \alias{deg}
 \alias{ideg}
 \alias{odeg}
+\alias{b1deg}
+\alias{b2deg}
 \alias{istar}
 \alias{kstar}
 \alias{ostar}
+\alias{b1star}
+\alias{b2star}
 \alias{kcycle}
 \alias{geodesic}
 \alias{triad.directed}
@@ -55,6 +59,14 @@ Users can create their own statistics for use with the code{gof} methods. To do 
 To aid the development of custom statistics, several helper functions are available: The \code{roc}, \code{pr}, and \code{rocpr} functions accept lists of simulated and observed sparse network matrices and compute ROC and precision recall curves as well as the area under the curve that can be used as network statistics. These functions are used internally for a number of functions related to community structure, where the community structure in the simulated networks is compared to the community structure in the observed network(s) by means of tie prediction. The \code{rocprgof} function provides the same functionality as the \code{rocpr} function, but it has an additional argument for controlling imputation of the first PR value. Another helper function is \code{comemb}, which accepts a vector of community memberships and converts it to a co-membership matrix. This function is also used internally by statistics like \code{walktrap.roc} and others.
 }
 \usage{
+b1deg(mat)
+
+b1star(mat)
+
+b2deg(mat)
+
+b2star(mat)
+
 comemb(vec)
 
 deg(mat)
@@ -175,6 +187,14 @@ Indegree distribution (for directed networks).
 Outdegree distribution (for directed networks).
 }
 
+\item{\code{b1deg(mat)}}{
+Degree distribution (for the first mode in a two-mode network).
+}
+
+\item{\code{b2deg(mat)}}{
+Degree distribution (for the second mode in a two-mode network).
+}
+
 \item{\code{kstar(mat)}}{
 k-star distribution (for undirected networks).
 }
@@ -185,6 +205,14 @@ in-star distribution (for directed networks).
 
 \item{\code{ostar(mat)}}{
 out-star distribution (for directed networks).
+}
+
+\item{\code{b1star(mat)}}{
+k-star distribution (for the first mode in a two-mode network).
+}
+
+\item{\code{b2star(mat)}}{
+k-star distribution (for the second mode in a two-mode network).
 }
 
 \item{\code{kcycle(mat)}}{

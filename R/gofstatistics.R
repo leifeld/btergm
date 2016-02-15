@@ -31,9 +31,6 @@ nsp <- function(mat) {
 
 # GOF function for computing the degree distribution
 deg <- function(mat) {
-#  if (is.mat.directed(as.matrix(mat))) {
-#    warning("deg: Converting directed to undirected network.")
-#  }
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -41,11 +38,26 @@ deg <- function(mat) {
   return(d)
 }
 
+# GOF function for computing the degree distribution for the first mode
+b1deg <- function(mat) {
+  d <- summary(network(as.matrix(mat), directed = FALSE) ~ 
+      b1degree(0:nrow(mat)))
+  names(d) <- 0:(length(d)- 1)
+  attributes(d)$label <- "Degree (first mode)"
+  return(d)
+}
+
+# GOF function for computing the degree distribution for the second mode
+b2deg <- function(mat) {
+  d <- summary(network(as.matrix(mat), directed = FALSE) ~ 
+      b2degree(0:ncol(mat)))
+  names(d) <- 0:(length(d)- 1)
+  attributes(d)$label <- "Degree (second mode)"
+  return(d)
+}
+
 # GOF function for computing the degree distribution
 odeg <- function(mat) {
-#  if (!is.mat.directed(as.matrix(mat))) {
-#    warning("odeg: Converting undirected to directed network.")
-#  }
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -55,9 +67,6 @@ odeg <- function(mat) {
 
 # GOF function for computing the degree distribution
 ideg <- function(mat) {
-#  if (!is.mat.directed(as.matrix(mat))) {
-#    warning("ideg: Converting undirected to directed network.")
-#  }
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -65,11 +74,8 @@ ideg <- function(mat) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+# GOF function for computing the k-star distribution
 kstar <- function(mat) {
-#  if (is.mat.directed(as.matrix(mat))) {
-#    warning("kstar: Converting directed to undirected network.")
-#  }
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -77,11 +83,24 @@ kstar <- function(mat) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+# GOF function for computing the k-star distribution on the first mode
+b1star <- function(mat) {
+  d <- summary(network(as.matrix(mat), directed = FALSE) ~ b1star(0:nrow(mat)))
+  names(d) <- 0:(length(d) - 1)
+  attributes(d)$label <- "k-star (first mode)"
+  return(d)
+}
+
+# GOF function for computing the k-star distribution on the second mode
+b2star <- function(mat) {
+  d <- summary(network(as.matrix(mat), directed = FALSE) ~ b2star(0:nrow(mat)))
+  names(d) <- 0:(length(d) - 1)
+  attributes(d)$label <- "k-star (second mode)"
+  return(d)
+}
+
+# GOF function for computing the outgoing k-star distribution
 ostar <- function(mat) {
-#  if (!is.mat.directed(as.matrix(mat))) {
-#    warning("ostar: Converting undirected to directed network.")
-#  }
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -89,11 +108,8 @@ ostar <- function(mat) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+# GOF function for computing the incoming k-star distribution
 istar <- function(mat) {
-#  if (!is.mat.directed(as.matrix(mat))) {
-#    warning("istar: Converting undirected to directed network.")
-#  }
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
