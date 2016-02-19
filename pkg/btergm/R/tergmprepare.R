@@ -443,11 +443,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
             cn.k <- colnames(as.matrix(nw.k))
             nr.k <- nrow(as.matrix(nw.k))
             nc.k <- ncol(as.matrix(nw.k))
-            if (is.null(rn.j) || is.null(rn.k)) {
+            if (is.null(rn.j) || is.null(cn.j)) {
               stop(paste0("Missing row or column labels in object '", 
                   env$covnames[j], "'. Provide row and column ", 
                   "labels for all networks and covariates."))
-            } else if (is.null(cn.j) || is.null(cn.k)) {
+            } else if (is.null(rn.k) || is.null(cn.k)) {
               stop(paste0("Missing row or column labels in object '", 
                   env$covnames[k], "'. Provide row and column ", 
                   "labels for all networks and covariates."))
