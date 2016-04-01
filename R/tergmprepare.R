@@ -77,6 +77,10 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
       x1 <- sub(s, "\\1", env$rhs.terms[k], perl = TRUE)  # before the covariate
       x2 <- sub(s, "\\5", env$rhs.terms[k], perl = TRUE)  # name of the cov.
+      if (grepl("\\[.*\\]", x2)) {
+       stop(paste0("Covariate names are not allowed to have indices: ", x2, 
+           ". Please prepare a list object before estimation."))
+      }
       x3 <- sub(s, "\\6", env$rhs.terms[k], perl = TRUE)  # after the covariate
       x.current <- eval(parse(text = x2))
       type <- class(x.current)
