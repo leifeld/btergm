@@ -40,7 +40,7 @@ deg <- function(mat) {
 
 # GOF function for computing the degree distribution for the first mode
 b1deg <- function(mat) {
-  d <- summary(network(as.matrix(mat), directed = FALSE) ~ 
+  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b1degree(0:nrow(mat)))
   names(d) <- 0:(length(d)- 1)
   attributes(d)$label <- "Degree (first mode)"
@@ -49,7 +49,7 @@ b1deg <- function(mat) {
 
 # GOF function for computing the degree distribution for the second mode
 b2deg <- function(mat) {
-  d <- summary(network(as.matrix(mat), directed = FALSE) ~ 
+  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b2degree(0:ncol(mat)))
   names(d) <- 0:(length(d)- 1)
   attributes(d)$label <- "Degree (second mode)"
@@ -85,7 +85,8 @@ kstar <- function(mat) {
 
 # GOF function for computing the k-star distribution on the first mode
 b1star <- function(mat) {
-  d <- summary(network(as.matrix(mat), directed = FALSE) ~ b1star(0:nrow(mat)))
+  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
+      b1star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star (first mode)"
   return(d)
@@ -93,7 +94,8 @@ b1star <- function(mat) {
 
 # GOF function for computing the k-star distribution on the second mode
 b2star <- function(mat) {
-  d <- summary(network(as.matrix(mat), directed = FALSE) ~ b2star(0:nrow(mat)))
+  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
+      b2star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star (second mode)"
   return(d)
@@ -127,6 +129,7 @@ kcycle <- function(mat) {
 
 # GOF function for computing geodesic distances
 geodesic <- function(mat) {
+  mat[is.na(mat)] <- 0
   fillup <- function(x, another.length) {  # fill up x if shorter
     difference <- length(x) - another.length
     inf.value <- x[length(x)]
@@ -147,9 +150,6 @@ geodesic <- function(mat) {
 
 # GOF function for computing triad census statistics in directed graphs
 triad.directed <- function(mat) {
-#  if (!xergm.common::is.mat.directed(as.matrix(mat))) {
-#    warning("triad.directed: Converting undirected to directed network.")
-#  }
   tr <- sna::triad.census(network(as.matrix(mat), directed = TRUE), 
       mode = "digraph")[1, ]
   attributes(tr)$label <- "Triad census"
@@ -158,9 +158,6 @@ triad.directed <- function(mat) {
 
 # GOF function for computing triad census statistics in undirected graphs
 triad.undirected <- function(mat) {
-#  if (xergm.common::is.mat.directed(as.matrix(mat))) {
-#    warning("triad.undirected: Converting undirected to directed network.")
-#  }
   tr <- sna::triad.census(network(as.matrix(mat), directed = FALSE), 
       mode = "graph")[1, ]
   attributes(tr)$label <- "Triad census"
@@ -184,6 +181,7 @@ comemb <- function(vec) {
 
 # GOF function for computing Walktrap modularity distribution
 walktrap.modularity <- function(mat) {
+  mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
@@ -202,6 +200,12 @@ walktrap.modularity <- function(mat) {
 
 # ROC for Walktrap community detection algorithm
 walktrap.roc <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -228,6 +232,12 @@ walktrap.roc <- function(sim, obs) {
 
 # PR for Walktrap community detection algorithm
 walktrap.pr <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -255,6 +265,7 @@ walktrap.pr <- function(sim, obs) {
 
 # GOF function for computing fast and greedy modularity distribution
 fastgreedy.modularity <- function(mat) {
+  mat[is.na(mat)] <- 0
   if (sum(mat) == 0) {
     mod <- 0
   } else {
@@ -268,6 +279,12 @@ fastgreedy.modularity <- function(mat) {
 
 # ROC for fast & greedy community detection algorithm
 fastgreedy.roc <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
@@ -288,6 +305,12 @@ fastgreedy.roc <- function(sim, obs) {
 
 # PR for fast & greedy community detection algorithm
 fastgreedy.pr <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
@@ -308,6 +331,7 @@ fastgreedy.pr <- function(sim, obs) {
 
 # GOF function for computing maximal modularity distribution
 maxmod.modularity <- function(mat) {
+  mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
@@ -326,6 +350,12 @@ maxmod.modularity <- function(mat) {
 
 # ROC for maximal modularity community detection algorithm
 maxmod.roc <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -352,6 +382,12 @@ maxmod.roc <- function(sim, obs) {
 
 # PR for maximal modularity community detection algorithm
 maxmod.pr <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -378,6 +414,7 @@ maxmod.pr <- function(sim, obs) {
 
 # GOF function for computing edge betweenness modularity distribution
 edgebetweenness.modularity <- function(mat) {
+  mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
@@ -396,6 +433,12 @@ edgebetweenness.modularity <- function(mat) {
 
 # ROC for edge betweenness community detection algorithm
 edgebetweenness.roc <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -422,6 +465,12 @@ edgebetweenness.roc <- function(sim, obs) {
 
 # PR for edge betweenness community detection algorithm
 edgebetweenness.pr <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -448,6 +497,7 @@ edgebetweenness.pr <- function(sim, obs) {
 
 # GOF function for computing spinglass modularity distribution
 spinglass.modularity <- function(mat) {
+  mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
@@ -466,6 +516,12 @@ spinglass.modularity <- function(mat) {
 
 # ROC for spinglass community detection algorithm
 spinglass.roc <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
@@ -492,6 +548,12 @@ spinglass.roc <- function(sim, obs) {
 
 # PR for spinglass community detection algorithm
 spinglass.pr <- function(sim, obs) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
   fun <- function(x) {
     m <- xergm.common::is.mat.directed(as.matrix(x))
     if (m == TRUE) {
