@@ -492,190 +492,149 @@ setMethod("gof", signature = className("mtergm", "btergm"),
     definition = gof.btergm)
 
 
-# GOF function for SIENA (creates btergm-compatible GOF objects)
-gof.sienaAlgorithm <- function(object, siena.data, siena.effects, 
-    predict.period = NULL, nsim = 50, parallel = c("no", "multicore", 
-    "snow"), ncpus = 1, cl = NULL, target.na = NA, 
-    target.na.method = "remove", target.structzero = 10, 
-    statistics = c(dsp, esp, deg, ideg, geodesic, rocpr, 
-    walktrap.modularity), verbose = TRUE, ...) {
+# gof method for sienaFit objects
+gof.sienaFit <- function(object, period = NULL, parallel = c("no", 
+    "multicore", "snow"), ncpus = 1, cl = NULL, structzero = 10, 
+    statistics = c(esp, deg, ideg, geodesic, rocpr, walktrap.modularity), 
+    groupName = object$f$groupNames[[1]], varName = NULL, 
+    outofsample = FALSE, sienaData = NULL, sienaEffects = NULL, 
+    nsim = NULL, verbose = TRUE, ...) {
   
-  # check RSiena version
-  if (!requireNamespace("RSiena", quietly = TRUE)) {
-    stop("Please install the RSiena package to use this method.")
+  # check correct specification of all data
+  if (outofsample == FALSE) {
+    if (is.null(varName)) {
+      varName <- object$f$depNames[[1]]
+    }
+    if (is.null(object$sims) || any(sapply(object$sims, is.null))) {
+      stop(paste("The object does not contain any simulations. Please", 
+          "re-estimate the model again with argument 'returnDeps = TRUE'."))
+    }
+    if (verbose == TRUE) {
+      if (!is.null(sienaData)) {
+        message(paste("'sienaData' argument is ignored because", 
+            "outofsample = FALSE."))
+      }
+      if (!is.null(sienaEffects)) {
+        message(paste("'sienaEffects' argument is ignored because", 
+            "outofsample = FALSE."))
+      }
+      if (!is.null(nsim)) {
+        message(paste("'nsim' argument is ignored because", 
+            "outofsample = FALSE."))
+      }
+    }
+  } else {  # check if all data are there for out-of-sample prediction
+    if (is.null(sienaData) || class(sienaData) != "siena") {
+      stop(paste("For out-of-sample prediction, the 'sienaData'", 
+          "argument should provide a 'siena' object (as created by the", 
+          "'sienaDependent' function), and this object should contain two", 
+          "networks: the base network to simulate from and the target network", 
+          "to be predicted."))
+    }
+    if (sienaData$observations > 2) {
+      stop(paste("For out-of-sample prediction, the 'sienaData' argument", 
+          "should contain only two networks: the base network to simulate", 
+          "from and the target network to be predicted."))
+    }
+    if (is.null(sienaEffects) || class(sienaEffects) != "sienaEffects") {
+      stop(paste("For out-of-sample GOF assessment, a 'sienaEffects' object", 
+          "must be provided. This object must contain the same effects that", 
+          "were used in the original estimation, and it must be based on", 
+          "the 'sienaData' object."))
+    }
+    if (is.null(varName)) {
+      varName <- names(sienaData$depvars)[1]
+    }
+    if (is.null(nsim)) {
+      if (verbose == TRUE) {
+        message("'nsim' not given. Using a default of 100 simulations.")
+      }
+      nsim <- 100
+    }
+    if (verbose == TRUE) {
+      if (!is.null(period)) {
+        message("The 'period' argument is ignored because outofsample = TRUE.")
+      }
+    }
   }
-  if (packageVersion("RSiena") < as.package_version("1.0.12.169")) {
-    stop("RSiena (>= 1.0.12.169) is required.")
+  if (verbose == TRUE) {
+    message(paste("Variable name:", varName))
+    if (outofsample == FALSE) {
+      message(paste("Group name:", groupName))
+    }
   }
   
-  # check and prepare arguments for SIENA
-  if ((!"sienaModel" %in% class(object) && packageVersion("RSiena") < 
-      as.package_version("1.1-227")) || (!"sienaAlgorithm" %in% 
-      class(object) && packageVersion("RSiena") >= 
-      as.package_version("1.1-227"))) {
-    if (packageVersion("RSiena") < as.package_version("1.1-227")) {
-      stop(paste("'object' must be an object of class 'sienaModel'.", 
-          "Please use the sienaModelCreate() function to create such an", 
-          "object."))
+  # interpret period argument
+  if (outofsample == FALSE) {
+    if (is.null(period)) {
+      base <- 1:(attr(object$f[[1]]$depvars[[1]], "netdims")[3] - 1)
     } else {
-      stop(paste("'object' must be an object of class 'sienaAlgorithm'.", 
-          "Please use the sienaAlgorithmCreate() function to create such an", 
-          "object."))
+      if (period < 2) {
+        stop("The 'period' argument should have a minimum value of 2.")
+      } else if (period > object$observations) {
+        stop(paste("The 'period' argument should not be larger than the number", 
+            "of observed time periods."))
+      }
+      base <- period - 1
     }
-  }
-  if (!"siena" %in% class(siena.data)) {
-    stop(paste("'siena.data' must be an object of class 'siena'.", 
-        "Please use the sienaDataCreate() function to create such an object."))
-  }
-  if (!"sienaEffects" %in% class(siena.effects)) {
-    stop(paste("'siena.effects' must be an object of class 'sienaEffects'.", 
-        "Please use the getEffects() and includeEffects() functions to create", 
-        "such an object."))
-  }
-  if (nsim < 2) {
-    stop("The 'nsim' argument must be greater than 1.")
-  }
-  if (is.null(predict.period)) {
-    base <- siena.data$observations - 1
   } else {
-    base <- predict.period - 1
-  }
-  message(paste0("The network at time step ", base + 1, 
-      " is predicted based on the last simulation at time step ", base, "."))
-  message(paste("Simulating", nsim, "networks. This may take a long time."))
-  
-  # When an old RSiena version is installed, some internal helper functions 
-  # are not available yet. In this case, these functions are embedded here. 
-  # They were copied from sienaGOF.r in RSiena revision r267:
-  if (packageVersion("RSiena") < as.package_version("1.1-231")) {
-    
-    changeToStructural <- function(X, S) {
-      if (any(S >= 10, na.rm = TRUE)) {
-        S[is.na(S)] <- 0
-        S0 <- Matrix(S == 10)
-        S1 <- Matrix(S == 11)
-        X <- 1 * ((X - S0 + S1) >= 1)
-      }
-      X[is.na(X)] <- 0
-      drop0(X)
-    }
-    
-    changeToNewStructural <- function(X, SBefore, SAfter) {
-      SB <- Matrix(SBefore >= 10)
-      SA <- Matrix(SAfter >= 10)
-      if (any(SA > SB, na.rm = TRUE)) {
-        S0 <- (SA > SB) * Matrix(SAfter == 10)
-        S1 <- (SA > SB) * Matrix(SAfter == 11)
-        X <- 1 * ((X - S0 + S1) >= 1)
-      }
-      X[is.na(X)] <- 0
-      drop0(X)
-    }
-  
-    sparseMatrixExtraction <- function(i, obsData, sims, period, groupName, 
-        varName) {
-      dimsOfDepVar<- attr(obsData[[groupName]]$depvars[[varName]], "netdims")
-      if (attr(obsData[[groupName]]$depvars[[varName]], "sparse")) {
-        missings <- (is.na(obsData[[groupName]]$depvars[[varName]][[period]]) | 
-            is.na(obsData[[groupName]]$depvars[[varName]][[period + 1]])) * 1
-      } else {
-        missings <- Matrix(
-            (is.na(obsData[[groupName]]$depvars[[varName]][, , period]) |
-            is.na(obsData[[groupName]]$depvars[[varName]][, , period + 1])) * 1)
-      }
-      if (is.null(i)) {
-        if (attr(obsData[[groupName]]$depvars[[varName]], "sparse")) {
-          returnValue <- drop0(Matrix(
-              obsData[[groupName]]$depvars[[varName]][[period + 1]] %% 10))
-          returnValue[is.na(returnValue)] <- 0
-          returnValue <- changeToStructural(returnValue, 
-              Matrix(obsData[[groupName]]$depvars[[varName]][[period]]))
-        } else {
-          returnValue <- Matrix(
-              obsData[[groupName]]$depvars[[varName]][, , period + 1] %% 10)
-          returnValue[is.na(returnValue)] <- 0
-          returnValue <- changeToStructural(returnValue, 
-              Matrix(obsData[[groupName]]$depvars[[varName]][, , period]))
-        }
-      } else {
-        returnValue <- sparseMatrix(
-            sims[[i]][[groupName]][[varName]][[period]][, 1],
-            sims[[i]][[groupName]][[varName]][[period]][, 2],
-            x = sims[[i]][[groupName]][[varName]][[period]][, 3],
-            dims = dimsOfDepVar[1:2]
-        )
-        if (attr(obsData[[groupName]]$depvars[[varName]], "sparse")) {
-          returnValue <- changeToNewStructural(returnValue,
-              Matrix(obsData[[groupName]]$depvars[[varName]][[period]]),
-              Matrix(obsData[[groupName]]$depvars[[varName]][[period + 1]]))
-        } else {
-          returnValue <- changeToNewStructural(returnValue,
-              Matrix(obsData[[groupName]]$depvars[[varName]][, , period]),
-              Matrix(obsData[[groupName]]$depvars[[varName]][, , period + 1]))
-        }
-      }
-      1 * drop0((returnValue - missings) > 0)
-    }
-    
-    networkExtraction <- function (i, obsData, sims, period, groupName, 
-        varName) {
-      dimsOfDepVar <- attr(obsData[[groupName]]$depvars[[varName]], "netdims")
-      isbipartite <- (attr(obsData[[groupName]]$depvars[[varName]], "type")	
-          == "bipartite")
-      bipartiteOffset <- ifelse (isbipartite, 1 + dimsOfDepVar[1], 1)
-      if (isbipartite) {
-        emptyNetwork <- network.initialize(dimsOfDepVar[1] + dimsOfDepVar[2], 
-            bipartite = dimsOfDepVar[1])
-      } else {
-        emptyNetwork <- network.initialize(dimsOfDepVar[1], bipartite = NULL)
-      }
-      matrixNetwork <- sparseMatrixExtraction(i, obsData, sims, period, 
-          groupName, varName)
-      sparseMatrixNetwork <- as(matrixNetwork, "dgTMatrix")
-      if (sum(matrixNetwork) <= 0) {
-        returnValue <- emptyNetwork
-      } else {
-        returnValue <- network.edgelist(
-            cbind(sparseMatrixNetwork@i + 1,
-            sparseMatrixNetwork@j + bipartiteOffset, 1),
-            emptyNetwork
-        )
-      }
-      returnValue
-    }
-  
+    base <- 1
   }
   
-  # save the target object in a list and remove/handle missing data
-  dvname <- attr(siena.data$depvars, "name")[1]
-  dv <- eval(parse(text = dvname))
-  if (!"sienaDependent" %in% class(dv) && !"sienaNet" %in% class(dv)) {
-    stop(paste(dvname, "is not a sienaDependent or sienaNet object."))
-  }
-  dv <- dv[, , base + 1]
-  missings.1 <- suppressMessages(handleMissings(dv, na = target.na, 
-      method = target.na.method, logical = TRUE))
-  missings.2 <- suppressMessages(handleMissings(dv, na = target.structzero, 
-      method = "remove", logical = TRUE))
-  missings <- missings.1
-  missings[missings.2 == TRUE] <- TRUE
-  dv[missings] <- NA
-  dv <- suppressMessages(handleMissings(dv, na = NA, method = target.na.method, 
-      logical = FALSE))
-  target <- list(network::network(dv))
-  
-  # this function carries out one simulation at a time (for parallelization)
-  simSiena <- function(q, mymodel, mydata, myeffects, mybase, mydvname, ...) {
-    ans <- RSiena::siena07(mymodel, data = mydata, effects = myeffects, 
-        batch = TRUE, verbose = FALSE, silent = TRUE, returnDeps = TRUE, ...)
-    simul <- RSiena::networkExtraction(i = length(ans$sims), obsData = ans$f,
-        sims = ans$sims, period = mybase, groupName = "Data1", 
-        varName = mydvname)
-    message(paste0("Completed simulation ", q, "."))
-    return(simul)
+  # out of sample: extract, inject and fix coefficients and simulate networks
+  if (outofsample == TRUE) {
+    numtheta.new <- length(sienaEffects$initialValue[sienaEffects$include])
+    numtheta.old <- length(object$theta)
+    difference <- numtheta.old - numtheta.new
+    sienaEffects$initialValue[sienaEffects$include][2:numtheta.new] <- 
+        object$theta[(numtheta.old - difference + 1):numtheta.old]
+    sim_model <- RSiena::sienaAlgorithmCreate(projname = "sim_model", 
+        cond = FALSE, useStdInits = FALSE, nsub = 0 , n3 = nsim, simOnly = TRUE)
+    sim_ans <- siena07(sim_model, data = sienaData, effects = sienaEffects, 
+        batch = TRUE, silent = TRUE, returnDeps = TRUE)
+    object <- sim_ans  # replace object by new simulations
+    if (is.null(groupName)) {
+      groupName <- names(sim_ans$f)[1]
+      if (verbose == TRUE) {
+        message(paste("Group name:", groupName))
+      }
+    }
   }
   
-  # run the simulations, possibly in parallel
+  # save the target object in a list and remove/handle structural zeros
+  #dv <- eval(parse(text = varName))
+  target <- list()
+  for (i in base) {
+    if (outofsample == TRUE) {
+      dv.temp <- sienaData$depvars[[varName]][, , i + 1]
+    } else {
+      #dv.temp <- dv[, , i + 1]
+      dv.temp <- object$f[[groupName]]$depvars[[varName]][, , i + 1]
+    }
+    rownames(dv.temp) <- 1:nrow(dv.temp)
+    colnames(dv.temp) <- 1:ncol(dv.temp)
+    dv.temp <- suppressMessages(handleMissings(dv.temp, na = structzero, 
+        method = "remove", logical = FALSE))
+    target[[length(target) + 1]] <- dv.temp
+  }
+  
+  # define function for extracting all simulations and making them conformable
+  simSiena <- function(i, myobject, mybase, mygroup, mydvname, target) {
+    l <- list(length(target))
+    count <- 0
+    for (j in mybase) {
+      count <- count + 1
+      s <- RSiena::sparseMatrixExtraction(i = i, obsData = myobject$f, 
+          sims = myobject$sims, period = j, groupName = mygroup, 
+          varName = mydvname)
+      rownames(s) <- 1:nrow(s)
+      colnames(s) <- 1:ncol(s)
+      l[[count]] <- Matrix(adjust(as.matrix(s), target[[count]]))
+    }
+    return(l)
+  }
+  
+  # extract the simulations, possibly in parallel
   if (is.null(ncpus) || ncpus == 0) {
     ncpus <- 1
   }
@@ -687,89 +646,50 @@ gof.sienaAlgorithm <- function(object, siena.data, siena.effects,
     if (is.null(cl)) {
       cl <- makeCluster(ncpus)
     }
-    message(paste("Using snow parallelization with", ncpus, "cores."))
-    simulations <- parLapply(cl, 1:nsim, simSiena, mymodel = object, 
-        mydata = siena.data, myeffects = siena.effects, mybase = base, 
-        mydvname = dvname)
+    if (verbose == TRUE) {
+      message(paste("Using snow parallelization with", ncpus, "cores."))
+    }
+    clusterEvalQ(cl, library("xergm.common"))
+    clusterEvalQ(cl, library("Matrix"))
+    sim <- parLapply(cl, 1:length(object$sims), simSiena, 
+        myobject = object, mybase = base, mygroup = groupName, 
+        mydvname = varName, target = target)
   } else if (parallel[1] == "multicore") {
-    message(paste("Using multicore parallelization with", ncpus, "cores."))
-    simulations <- mclapply(1:nsim, simSiena, mymodel = object, 
-        mydata = siena.data, myeffects = siena.effects, mybase = base, 
-        mydvname = dvname, mc.cores = ncpus)
+    if (verbose == TRUE) {
+      message(paste("Using multicore parallelization with", ncpus, "cores."))
+    }
+    sim <- mclapply(1:length(object$sims), simSiena, myobject = object, 
+        mybase = base, mygroup = groupName, mydvname = varName, 
+        target = target, mc.cores = ncpus)
   } else {
-    message("Parallelization is switched off. Simulating sequentially.")
-    simulations <- lapply(1:nsim, simSiena, mymodel = object, 
-        mydata = siena.data, myeffects = siena.effects, mybase = base, 
-        mydvname = dvname)
+    if (verbose == TRUE) {
+      message(paste0("Parallelization is switched off. Extracting ", 
+          "simulations sequentially."))
+    }
+    sim <- lapply(1:length(object$sims), simSiena, myobject = object, 
+        mybase = base, mygroup = groupName, mydvname = varName, target = target)
   }
   
-  # if structural zeros were removed from target, remove them from simulations
-  simulations <- adjust(simulations, target)
-  
-  # correct directed = TRUE --> FALSE
-  isbip <- sapply(simulations, network::is.bipartite)
-  if (!any(isbip == TRUE)) {
-    isdir <- sapply(simulations, network::is.directed)
-    issym <- sapply(simulations, function(x) isSymmetric(as.matrix(x)))
-    if (any(isdir && issym) && length(table(isdir && issym)) == 1 && 
-        !any(sapply(target, network::is.directed))) {
-      for (i in 1:length(simulations)) {
-        if (issym[i] && isdir[i]) {
-          simulations[[i]] <- network::as.network(as.matrix(simulations[[i]]), 
-              directed = FALSE)
-        }
-      }
+  # unpack nested lists of simulations
+  simulations <- list(length(base) * length(object$sims))
+  count <- 1
+  for (t in 1:length(base)) {
+    for (i in 1:length(object$sims)) {
+      simulations[[count]] <- sim[[i]][[t]]
+      count <- count + 1
     }
   }
+  rm(sim)
   
-  # correct properties of the target network
-  if (network::is.directed(target[[1]]) && 
-      !network::is.directed(simulations[[1]])) {
-    target[[1]] <- network::network(as.matrix(target[[1]]), directed = FALSE)
-  } else if (!network::is.directed(target[[1]]) && 
-      network::is.directed(simulations[[1]])) {
-    target[[1]] <- network::network(as.matrix(target[[1]]), directed = TRUE)
-  }
-  if (network::is.bipartite(target[[1]]) && 
-      !network::is.bipartite(simulations[[1]])) {
-    target[[1]] <- network::network(as.matrix(target[[1]]), bipartite = FALSE)
-  } else if (!network::is.bipartite(target[[1]]) && 
-      network::is.bipartite(simulations[[1]])) {
-    target[[1]] <- network::network(as.matrix(target[[1]]), bipartite = TRUE)
-  }
-  
-  # data preparation
-  sptypes <- c("dgCMatrix", "dgTMatrix", "dsCMatrix", "dsTMatrix", "dgeMatrix")
-  
-  directed <- logical()
-  twomode <- logical()
-  for (i in 1:length(target)) {
-    if (class(target[[i]]) == "network") {
-      directed[i] <- is.directed(target[[i]])
-      twomode[i] <- is.bipartite(target[[i]])
-      target[[i]] <- Matrix(as.matrix(target[[i]]))
-    } else if (class(target[[i]]) == "matrix") {
-      directed[i] <- is.mat.directed(target[[i]])
-      twomode[i] <- !is.mat.onemode(target[[i]])
-      target[[i]] <- Matrix(target[[i]])
-    } else if (class(target[[i]]) %in% sptypes) {
-      # OK
-      directed[i] <- is.mat.directed(target[[i]])
-      twomode[i] <- !is.mat.onemode(target[[i]])
-    }
-  }
-  simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
+  # apply auxiliary functions and return list of comparisons
   goflist <- compute.goflist(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
       verbose = verbose)
   return(goflist)
 }
 
-setMethod("gof", signature = className("sienaAlgorithm", "RSiena"), 
-    definition = gof.sienaAlgorithm)
-
-setMethod("gof", signature = className("sienaModel", "RSiena"), 
-    definition = gof.sienaAlgorithm)
+setMethod("gof", signature = className("sienaFit", "RSiena"), 
+    definition = gof.sienaFit)
 
 
 # gof method for dyadic-independence models with custom data and coefficients
