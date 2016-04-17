@@ -583,11 +583,9 @@ gof.sienaFit <- function(object, period = NULL, parallel = c("no",
   
   # out of sample: extract, inject and fix coefficients and simulate networks
   if (outofsample == TRUE) {
+    coefs <- object$theta[object$BasicRateFunction == FALSE]
     numtheta.new <- length(sienaEffects$initialValue[sienaEffects$include])
-    numtheta.old <- length(object$theta)
-    difference <- numtheta.old - numtheta.new
-    sienaEffects$initialValue[sienaEffects$include][2:numtheta.new] <- 
-        object$theta[(numtheta.old - difference + 1):numtheta.old]
+    sienaEffects$initialValue[sienaEffects$include][2:numtheta.new] <- coefs
     sim_model <- RSiena::sienaAlgorithmCreate(projname = "sim_model", 
         cond = FALSE, useStdInits = FALSE, nsub = 0 , n3 = nsim, simOnly = TRUE)
     sim_ans <- siena07(sim_model, data = sienaData, effects = sienaEffects, 
