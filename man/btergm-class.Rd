@@ -44,7 +44,7 @@
   }
 }
 \usage{
-\S4method{summary}{btergm}(object, level = 0.95, ...)
+\S4method{summary}{btergm}(object, level = 0.95, invlogit = FALSE, ...)
 
 \S4method{summary}{mtergm}(object, ...)
 
@@ -56,11 +56,11 @@
 
 \S4method{nobs}{mtergm}(object)
 
-\S4method{coef}{btergm}(object, ...)
+\S4method{coef}{btergm}(object, invlogit = FALSE, ...)
 
-\S4method{coef}{mtergm}(object, ...)
+\S4method{coef}{mtergm}(object, invlogit = FALSE, ...)
 
-\S4method{confint}{btergm}(object, parm, level = 0.95, ...)
+\S4method{confint}{btergm}(object, parm, level = 0.95, invlogit = FALSE, ...)
 
 btergm.se(object, print = FALSE)
 
@@ -81,6 +81,7 @@ Some of these functions or methods are also available for \code{mtergm} objects.
 \item{object}{ A \code{btergm} object. }
 \item{level}{ The significance level for computation of the confidence intervals. The default is \code{0.95} (that is, an alpha value of 0.05). Other common values include \code{0.999}, \code{0.99}, \code{0.9}, and \code{0.5}. }
 \item{parm}{ Parameters (specified by integer position or character string). }
+\item{invlogit}{ Apply inverse logit transformation to the estimates and/or confidence intervals? That is, \code{1 / (1 + exp(-x))}, where \code{x} is the respective value. }
 \item{print}{ Should the formatted coefficient table be printed to the R console along with significance stars (\code{print = TRUE}), or should the plain coefficient matrix be returned (\code{print = FALSE})? }
 \item{...}{ Further arguments to be handed over to subroutines. }
 }

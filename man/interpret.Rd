@@ -12,17 +12,16 @@
 \title{Interpretation functions for ergm and btergm objects}
 \description{Interpretation functions for ergm and btergm objects.}
 \usage{
-\S4method{interpret}{ergm}(object, formula = object$formula, 
-    coefficients = coef(object), target = eval(parse(text = 
-    deparse(formula[[2]]))), type = "tie", i, j, ...)
+\S4method{interpret}{ergm}(object, formula = getformula(object), 
+    coefficients = coef(object), target = NULL, type = "tie", i, j)
 
 \S4method{interpret}{btergm}(object, formula = getformula(object), 
     coefficients = coef(object), target = NULL, type = "tie", i, j, 
-    t = 1:object@time.steps, ...)
+    t = 1:object@time.steps)
 
 \S4method{interpret}{mtergm}(object, formula = getformula(object), 
     coefficients = coef(object), target = NULL, type = "tie", i, j, 
-    t = 1:object@time.steps, ...)
+    t = 1:object@time.steps)
 }
 \details{
 The \code{interpret} function facilitates interpretation of ERGMs and TERGMs at the micro level via block Gibbs sampling, as described in Desmarais and Cranmer (2012). There are generic methods for \code{ergm} objects, \code{btergm} objects, and \code{mtergm} objects. The function can be used to interpret these models at the tie or edge level, dyad level, and block level.
@@ -32,9 +31,13 @@ For example, what is the probability that two specific nodes i (the sender) and 
 Another example: What is the probability that node i has a tie to node j but not vice-versa? Or that i and j maintain a reciprocal tie? Or that they are disconnected? How much more or less likely are i and j reciprocally connected if the \code{mutual} term in the model is fixed at 0 (compared to the model that includes the estimated parameter for reciprocity)? See example below. These dyad-level questions can be answered if the \code{type = "dyad"} argument is used.
 
 Or what is the probability that a specific node i is connected to nodes j1 and j2 but not to j5 and j7? And how likely is any node i to be connected to exactly four j nodes? These node-level questions (focusing on the ties of node i or node j) can be answered by using the \code{type = "node"} argument.
+
+The typical procedure is to manually enumerate all dyads or sender-receiver-time combinations with certain properties and repeat the same thing with some alternative properties for contrasting the two groups. Then apply the \code{interpret} function to the two groups of dyads and compute a measure of central tendency (e.g., mean or median) and possibly some uncertainy measure (i.e., confidence intervals) from the distribution of dyadic probabilities in each group. For example, if there is a gender attribute, one can sample male-male or female-female dyads, compute the distributions of edge probabilities for the two sets of dyads, and create boxplots or barplots with confidence intervals for the two types of dyads in order to contrast edge probabilities for male versus female same-sex dyads.
+
+See also the \link{edgeprob} function for automatic computation of all dyadic edge probabilities.
 }
 \arguments{
-\item{object}{ An \code{ergm} or \code{btergm} object. }
+\item{object}{ An \code{ergm}, \code{btergm}, or \code{mtergm} object. }
 \item{formula}{ The formula to be used for computing probabilities. By default, the formula embedded in the model object is retrieved and used. }
 \item{coefficients}{ The estimates on which probabilities should be based. By default, the coefficients from the model object are retrieved and used. Custom coefficients can be handed over, for example, in order to compare versions of the model where the reciprocity term is fixed at 0 versus versions of the model where the reciprocity term is left as in the empirical result. This is one of the examples described in Desmarais and Cranmer (2012).}
 \item{target}{ The response network on which probabilities are based. Depending on whether the function is applied to an \code{ergm} or \code{btergm}/\code{mtergm} object, this can be either a single network or a list of networks. By default, the (list of) network(s) provided as the left-hand side of the (T)ERGM formula is used.}
@@ -42,7 +45,6 @@ Or what is the probability that a specific node i is connected to nodes j1 and j
 \item{i}{ A single (sender) node i or a set of (sender) nodes i. If \code{type = "node"} is used, this can be more than one node and should be provided as a vector. The \code{i} argument can be either provided as the index of the node in the sociomatrix (e.g., the fourth node would be \code{i = 4}) or the row name of the node in the sociomatrix (e.g., \code{i = "Peter"}). If more than one node is provided and \code{type = "node"}, there can be only one (receiver) node j. The \code{i} and \code{j} arguments are used to specify for which nodes probabilities should be computed. For example, what is the probability that \code{i = 4} is connected to \code{i = 7}? }
 \item{j}{ A single (receiver) node j or a set of (receiver) nodes j. If \code{type = "node"} is used, this can be more than one node and should be provided as a vector. The \code{j} argument can be either provided as the index of the node in the sociomatrix (e.g., the fourth node would be \code{j = 4}) or the row name of the node in the sociomatrix (e.g., \code{j = "Mary"}). If more than one node is provided and \code{type = "node"}, there can be only one (sender) node i. The \code{i} and \code{j} arguments are used to specify for which nodes probabilities should be computed. For example, what is the probability that \code{i = 4} is connected to \code{i = 7}? }
 \item{t}{ A vector of (numerical) time steps for which the probabilities should be computed. This only applies to \code{btergm} objects because \code{ergm} objects are by definition based on a single time step. By default, all available time steps are used. It is, for example, possible to compute probabilities only for a single time step by specifying, e.g., \code{t = 5} in order to compute probabilities for the fifth response network. }
-\item{...}{ Further arguments to be handed over to subroutines. }
 }
 \references{
 Desmarais, Bruce A. and Skyler J. Cranmer (2012):
@@ -51,7 +53,7 @@ Application to Estuary Networks.
 \emph{The Policy Studies Journal} 40(3): 402--434.
 }
 \seealso{
-\link{btergm-package} \link{btergm} \link{timesteps.btergm}
+\link{edgeprob} \link{btergm-package} \link{btergm} \link{timesteps.btergm}
 }
 \examples{
 ##### The following example is a TERGM adaptation of the #####
