@@ -80,8 +80,13 @@ setMethod(f = "show", signature = "mtergm", definition = function(object) {
 
 
 # define coef method for extracting coefficients from btergm objects
-setMethod(f = "coef", signature = "mtergm", definition = function(object, ...) {
-    return(object@coef)
+setMethod(f = "coef", signature = "mtergm", definition = function(object, 
+      invlogit = FALSE, ...) {
+    if (invlogit == FALSE) {
+      return(object@coef)
+    } else {
+      return(1 / (1 + exp(-object@coef)))
+    }
   }
 )
 

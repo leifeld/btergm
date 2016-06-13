@@ -6,7 +6,7 @@
     'Package:  btergm\n', 
     'Version:  ', desc$Version, '\n', 
     'Date:     ', desc$Date, '\n', 
-    'Authors:  Philip Leifeld (Eawag and University of Bern)\n',
+    'Authors:  Philip Leifeld (University of Glasgow)\n',
     '          Skyler J. Cranmer (The Ohio State University)\n',
     '          Bruce A. Desmarais (Penn State University)\n'
   )
@@ -93,8 +93,13 @@ setMethod(f = "show", signature = "btergm", definition = function(object) {
 
 
 # define coef method for extracting coefficients from btergm objects
-setMethod(f = "coef", signature = "btergm", definition = function(object, ...) {
-    return(object@coef)
+setMethod(f = "coef", signature = "btergm", definition = function(object, 
+      invlogit = FALSE, ...) {
+    if (invlogit == FALSE) {
+      return(object@coef)
+    } else {
+      return(1 / (1 + exp(-object@coef)))
+    }
   }
 )
 
@@ -140,8 +145,8 @@ btergm.se <- function(object, print = FALSE) {
 
 # confint method for btergm objects
 setMethod(f = "confint", signature = "btergm", definition = function(object, 
-    parm, level = 0.95, ...) {
-    cf <- coef(object)
+    parm, level = 0.95, invlogit = FALSE, ...) {
+    cf <- coef(object, invlogit = invlogit)
     pnames <- names(cf)
     if (missing(parm)) {
       parm <- pnames
@@ -149,6 +154,9 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
       parm <- pnames[parm]
     }
     samples <- object@bootsamp[complete.cases(object@bootsamp), ]
+    if (invlogit == TRUE) {
+      samples <- apply(samples, 1:2, function(x) 1 / (1 + exp(-x)))
+    }
     if (class(samples) == "numeric") {  # only one model term
       samples <- as.matrix(samples, ncol = 1)
     }
@@ -182,7 +190,7 @@ timesteps.btergm <- function(object) {
 
 # define summary method for pretty output of btergm objects
 setMethod(f = "summary", signature = "btergm", definition = function(object, 
-    level = 0.95, ...) {
+    level = 0.95, invlogit = FALSE, ...) {
     message(paste(rep("=", 26), collapse=""))
     message("Summary of model fit")
     message(paste(rep("=", 26), collapse=""))
@@ -192,7 +200,7 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
     message(paste("Bootstrapping sample size:", object@R, "\n"))
     
     message(paste0("Estimates and ", 100 * level, "% confidence intervals:"))
-    cmat <- confint(object, level = level, ...)
+    cmat <- confint(object, level = level, invlogit = invlogit, ...)
     printCoefmat(cmat, cs.ind = 1, tst.ind = 2:3)
   }
 )
