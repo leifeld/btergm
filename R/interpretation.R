@@ -261,7 +261,7 @@ edgeprob <- function(object, parallel = c("no", "multicore", "snow"),
   } else {
     interpret.parallel <- function(index, subs, env, coefs) {
       dointerpret(env, coefs, type = "tie", i = subs[index, 1], 
-          j = subs[index, 2])
+          j = subs[index, 2], t = 1)
     }
   }
   
