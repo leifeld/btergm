@@ -81,6 +81,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
        stop(paste0("Covariate names are not allowed to have indices: ", x2, 
            ". Please prepare a list object before estimation."))
       }
+      if (grepl("^\"", x2)) next  # ignore built-in matrices b/c conformable
       x3 <- sub(s, "\\6", env$rhs.terms[k], perl = TRUE)  # after the covariate
       x.current <- eval(parse(text = x2))
       type <- class(x.current)
