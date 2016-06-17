@@ -137,5 +137,83 @@ bp <- barplot2(probabilities[1:3, ], beside = TRUE, plot.ci = TRUE,
     col = c("tan", "tan2", "tan3"), ci.col = "grey40", 
     xlab = "Dyadic tie values", ylab = "Estimated Prob./Null Prob.")
 mtext(1, at = bp, text = c("(0,0)", "(0,1)", "(1,1)"), line = 0, cex = 0.5)
+
+
+##### The following examples illustrate the behavior of  #####
+##### the interpret function with undirected and/or      #####
+##### bipartite graphs with or without structural zeros. #####
+
+library("statnet")
+library("btergm")
+
+# micro-level interpretation for undirected network with structural zeros
+set.seed(12345)
+mat <- matrix(rbinom(400, 1, 0.1), nrow = 20, ncol = 20)
+mat[1, 5] <- 1
+mat[10, 7] <- 1
+mat[15, 3] <- 1
+mat[18, 4] < 1
+nw <- network(mat, directed = FALSE, bipartite = FALSE)
+cv <- matrix(rnorm(400), nrow = 20, ncol = 20)
+offsetmat <- matrix(rbinom(400, 1, 0.1), nrow = 20, ncol = 20)
+offsetmat[1, 5] <- 1
+offsetmat[10, 7] <- 1
+offsetmat[15, 3] <- 1
+offsetmat[18, 4] < 1
+model <- ergm(nw ~ edges + kstar(2) + edgecov(cv) + offset(edgecov(offsetmat)), 
+    offset.coef = -Inf)
+summary(model)
+
+# tie-level interpretation (note that dyad interpretation would not make any 
+# sense in an undirected network):
+interpret(model, type = "tie", i = 1, j = 2)  # 0.28 (= normal dyad)
+interpret(model, type = "tie", i = 1, j = 5)  # 0.00 (= structural zero)
+
+# node-level interpretation; note the many 0 probabilities due to the 
+# structural zeros; also note the warning message that the probabilities may 
+# be slightly imprecise because -Inf needs to be approximated by some large 
+# negative number (-9e8):
+interpret(model, type = "node", i = 1, j = 3:5)
+
+# repeat the same exercise for a directed network
+nw <- network(mat, directed = TRUE, bipartite = FALSE)
+model <- ergm(nw ~ edges + istar(2) + edgecov(cv) + offset(edgecov(offsetmat)), 
+    offset.coef = -Inf)
+interpret(model, type = "tie", i = 1, j = 2)  # 0.13 (= normal dyad)
+interpret(model, type = "tie", i = 1, j = 5)  # 0.00 (= structural zero)
+interpret(model, type = "dyad", i = 1, j = 2)  # results for normal dyad
+interpret(model, type = "dyad", i = 1, j = 5)  # results for i->j struct. zero
+interpret(model, type = "node", i = 1, j = 3:5)
+
+# micro-level interpretation for bipartite graph with structural zeros
+set.seed(12345)
+mat <- matrix(rbinom(200, 1, 0.1), nrow = 20, ncol = 10)
+mat[1, 5] <- 1
+mat[10, 7] <- 1
+mat[15, 3] <- 1
+mat[18, 4] < 1
+nw <- network(mat, directed = FALSE, bipartite = TRUE)
+cv <- matrix(rnorm(200), nrow = 20, ncol = 10)  # some covariate
+offsetmat <- matrix(rbinom(200, 1, 0.1), nrow = 20, ncol = 10)
+offsetmat[1, 5] <- 1
+offsetmat[10, 7] <- 1
+offsetmat[15, 3] <- 1
+offsetmat[18, 4] < 1
+model <- ergm(nw ~ edges + b1star(2) + edgecov(cv) 
+    + offset(edgecov(offsetmat)), offset.coef = -Inf)
+summary(model)
+
+# tie-level interpretation; note the index for the second mode starts with 21
+interpret(model, type = "tie", i = 1, j = 21)
+
+# dyad-level interpretation does not make sense because network is undirected; 
+# node-level interpretation prints warning due to structural zeros, but 
+# computes the correct probabilities (though slightly imprecise because -Inf 
+# is approximated by some small number:
+interpret(model, type = "node", i = 1, j = 21:25)
+
+# compute all dyadic probabilities
+dyads <- edgeprob(model)
+dyads
 }
 }
