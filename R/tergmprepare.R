@@ -3,11 +3,11 @@
 # helper function for adjusting matrix dimensions and creating an offset matrix
 tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE, 
     verbose = TRUE) {
-  
   # extract response networks and make sure they are saved in a list
   env <- new.env()
   env$lhs.original <- deparse(formula[[2]])  # for reporting purposes later on
-  env$networks <- eval(parse(text = deparse(formula[[2]])))
+  env$networks <- eval(parse(text = deparse(formula[[2]])), 
+      envir = environment(formula))
   if (class(env$networks) == "list" || class(env$networks) == "network.list") {
     # do nothing
   } else {
@@ -83,7 +83,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
       if (grepl("^\"", x2)) next  # ignore built-in matrices b/c conformable
       x3 <- sub(s, "\\6", env$rhs.terms[k], perl = TRUE)  # after the covariate
-      x.current <- eval(parse(text = x2))
+      x.current <- eval(parse(text = x2), envir = parent.frame(2))
       type <- class(x.current)
       env$covnames <- c(env$covnames, x2)
       env[[x2]] <- x.current

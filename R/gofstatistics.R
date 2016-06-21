@@ -639,7 +639,7 @@ rocprgof <- function(sim, obs, pr.impute = "poly4") {
           r <- symmetrize(r, rule = "upper")
         }
       }
-      rg[length(rg) + 1] <- Matrix(r)
+      rg[length(rg) + 1] <- list(Matrix(r))
     }
   }
   
@@ -756,6 +756,7 @@ roc <- function(sim, obs) {
   class(object) <- "roc"
   object$label <- "Receiver-operating characteristics"
   attributes(object)$label <- object$label
+  print(object)
   return(object)
 }
 
