@@ -756,7 +756,6 @@ roc <- function(sim, obs) {
   class(object) <- "roc"
   object$label <- "Receiver-operating characteristics"
   attributes(object)$label <- object$label
-  print(object)
   return(object)
 }
 
