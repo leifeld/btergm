@@ -58,8 +58,20 @@ dointerpret <- function(env, coefficients, type, i, j, t) {
           coefficients[k] <- 0  # no struct zero dyad; replace -Inf to avoid NaN
         }
       }
-      lp <- t(chgstat) %*% cbind(coefficients)
-      result <- c(1 / (1 + exp(-lp)))
+      inf <- FALSE  # next couple of lines: prevent errors with structural ones
+      for (k in 1:length(coefficients)) {
+        if (coefficients[k] == Inf && chgstat[k] != 0) {
+          inf <- TRUE
+          break
+        }
+      }
+      if (inf == TRUE) {
+        result <- 1
+      } else {  # do the actual probability computations
+        coefficients[coefficients == Inf] <- 0
+        lp <- t(chgstat) %*% cbind(coefficients)
+        result <- c(1 / (1 + exp(-lp)))
+      }
       names(result) <- "i->j = 1"
       results[i] <- result
     }
@@ -71,6 +83,13 @@ dointerpret <- function(env, coefficients, type, i, j, t) {
       warning(paste("There are -Inf coefficients (possibly due to", 
           "offset terms). To yield interpretable results, -Inf is", 
           "approximated by a large negative number (-9e8). Note that", 
+          "this may be imprecise."))
+    }
+    if (Inf %in% coefficients) {
+      coefficients[coefficients == Inf] <- 9e8
+      warning(paste("There are +Inf coefficients (possibly due to", 
+          "offset terms). To yield interpretable results, +Inf is", 
+          "approximated by a large positive number (9e8). Note that", 
           "this may be imprecise."))
     }
     results <- list()
@@ -119,6 +138,13 @@ dointerpret <- function(env, coefficients, type, i, j, t) {
           "approximated by a large negative number (-9e8). Note that", 
           "this may be imprecise."))
     }
+    if (Inf %in% coefficients) {
+      coefficients[coefficients == Inf] <- 9e8
+      warning(paste("There are +Inf coefficients (possibly due to", 
+          "offset terms). To yield interpretable results, +Inf is", 
+          "approximated by a large positive number (9e8). Note that", 
+          "this may be imprecise."))
+    }
     results <- list()
     for (i in t) {
       m <- length(node_i[[i]])
@@ -133,8 +159,8 @@ dointerpret <- function(env, coefficients, type, i, j, t) {
         m <- length(node_i[[i]])
         n <- length(node_j[[i]])
       } else {
-        stop(paste("Either 'i' or 'j' must contain more than one node per",
-            "time step."))
+        stop(paste("Either 'i' or 'j' must contain more than one node (per",
+            "time step)."))
       }
       vecs <- rbind(rep(0, n), rep(1, n))
       base <- rep(0, n)
@@ -182,12 +208,29 @@ dointerpret <- function(env, coefficients, type, i, j, t) {
 interpret.ergm <- function(object, formula = getformula(object), 
     coefficients = coef(object), target = NULL, type = "tie", i, j) {
   
+  if (!is.null(target) && is.numeric(target)) {
+    stop(paste("'target' argument (short: 't') cannot be numeric."))
+  }
+  
   env <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE, 
       verbose = FALSE)
   
   # extract response network and adjust formula
   if (!is.null(target)) {
     env$networks <- list(target)
+  }
+  
+  # warn about indices with bipartite networks
+  if (class(env$networks[[1]]) == "network" 
+      && is.bipartite(env$networks[[1]]) || 
+      class(env$networks[[1]]) == "matrix" 
+      && !is.mat.onemode(env$networks[[1]])) {
+    if (is.numeric(j) && j < nrow(as.matrix(env$networks[[1]])) + 1) {
+      stop(paste0("In this bipartite network, the indices of the 'j' ", 
+          "index start with ", nrow(as.matrix(env$networks[[1]])) + 1, 
+          ". Smaller indices denote within-block entries and do not make ", 
+          "any sense."))
+    }
   }
   
   dointerpret(env, coefficients = coefficients, type = type, i = i, j = j, 
@@ -207,6 +250,21 @@ interpret.btergm <- function(object, formula = getformula(object),
   # extract response networks and adjust formula
   if (!is.null(target)) {
     env$networks <- target
+  }
+  
+  # warn about indices with bipartite networks
+  for (h in t) {
+    if (class(env$networks[[h]]) == "network" 
+        && is.bipartite(env$networks[[h]]) || 
+        class(env$networks[[h]]) == "matrix" 
+        && !is.mat.onemode(env$networks[[h]])) {
+      if (is.numeric(j) && j < nrow(as.matrix(env$networks[[h]])) + 1) {
+        stop(paste0("In this bipartite network, the indices of the 'j' ", 
+            "index start with ", nrow(as.matrix(env$networks[[h]])) + 1, 
+            " at t=", h, ". Smaller indices denote within-block entries and ", 
+            "do not make any sense."))
+      }
+    }
   }
   
   dointerpret(env, coefficients = coefficients, type = type, i = i, j = j, 
@@ -350,7 +408,7 @@ edgeprob <- function(object, parallel = c("no", "multicore", "snow"),
     }
   } else {
     if (verbose == TRUE) {
-      message(paste0("Parallelization is switched off. Computing", 
+      message(paste0("Parallelization is switched off. Computing ", 
           "probabilities sequentially."))
     }
     a <- proc.time()
