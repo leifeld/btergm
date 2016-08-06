@@ -271,6 +271,28 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
     for (i in 1:length(env$networks)) {
       mpli <- ergm::ergmMPLE(env$form)
       Y <- c(Y, mpli$response)
+      
+      # fix different factor levels across time points
+      if (i > 1 && ncol(X) != ncol(mpli$predictor) + 1) {
+        cn.x <- colnames(X)[-ncol(X)]  # exclude last column "i"
+        cn.i <- colnames(mpli$predictor)
+        names.x <- cn.x[which(!cn.x %in% cn.i)]
+        names.i <- cn.i[which(!cn.i %in% cn.x)]
+        if (length(names.x) > 0) {
+          for (nm in 1:length(names.x)) {
+            mpli$predictor <- cbind(mpli$predictor, rep(0, 
+                nrow(mpli$predictor)))
+            colnames(mpli$predictor)[ncol(mpli$predictor)] <- names.x[nm]
+          }
+        }
+        if (length(names.i) > 0) {
+          for (nm in 1:length(names.i)) {
+            X <- cbind(X[, 1:(ncol(X) - 1)], rep(0, nrow(X)), X[, ncol(X)])
+            colnames(X)[ncol(X) - 1] <- names.i[nm]
+          }
+        }
+      }  # end of column fix
+      
       X <- rbind(X, cbind(mpli$predictor, i))
       W <- c(W, mpli$weights)
     }
