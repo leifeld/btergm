@@ -284,8 +284,7 @@ setMethod("interpret", signature = className("mtergm", "btergm"),
 
 
 # a function that creates all tie probabilities along with some other variables
-edgeprob <- function(object, parallel = c("no", "multicore", "snow"), 
-    ncpus = 1, cl = NULL, verbose = TRUE) {
+edgeprob <- function(object, verbose = FALSE) {
   
   # determine if ERGM or TERGM
   if (class(object) == "ergm") {
@@ -343,85 +342,15 @@ edgeprob <- function(object, parallel = c("no", "multicore", "snow"),
   class(dyads[, length(colnames(dyads))]) <- "integer"
   class(dyads[, length(colnames(dyads)) - 1]) <- "integer"
   class(dyads[, length(colnames(dyads)) - 2]) <- "integer"
-  dyads <- dyads[sample(nrow(dyads)), ]
   
-  # define interpret wrapper function for rows of the MPLE predictor matrix
-  if (tergm == TRUE) {
-    interpret.parallel <- function(index, subs, env, coefs) {
-      dointerpret(env, coefs, type = "tie", i = subs[index, 1], 
-          j = subs[index, 2], t = subs[index, 3])
-    }
-  } else {
-    interpret.parallel <- function(index, subs, env, coefs) {
-      dointerpret(env, coefs, type = "tie", i = subs[index, 1], 
-          j = subs[index, 2], t = 1)
-    }
-  }
-  
-  # subset dyads if necessary
-  indices <- 1:nrow(dyads)
-  subs <- cbind(dyads$i, dyads$j, dyads$t)
-  subs <- subs[indices, ]
-  dyads <- dyads[indices, ]
-  
-  # compute probabilities (possibly in parallel)
-  if (is.null(ncpus) || ncpus == 0) {
-    ncpus <- 1
-  }
-  if (!parallel[1] %in% c("no", "multicore", "snow")) {
-    parallel <- "no"
-    warning("'parallel' argument not recognized. Using 'no' instead.")
-  }
-  if (parallel[1] == "snow") {
-    if (is.null(cl)) {
-      created <- TRUE
-      cl <- makeCluster(ncpus)
-    } else {
-      created <- FALSE
-    }
-    if (verbose == TRUE) {
-      message(paste("Using snow parallelization with", ncpus, "cores."))
-    }
-    clusterEvalQ(cl, library("btergm"))
-    a <- proc.time()
-    prob <- parSapply(cl, 1:nrow(subs), interpret.parallel, subs, env, coefs)
-    b <- proc.time()
-    if (created == TRUE) {
-      stopCluster(cl)
-    }
-    if (verbose == TRUE) {
-      message(paste("Time elapsed:"))
-      print(b - a)
-    }
-  } else if (parallel[1] == "multicore") {
-    if (verbose == TRUE) {
-      message(paste("Using multicore parallelization with", ncpus, "cores."))
-    }
-    a <- proc.time()
-    prob <- mclapply(1:nrow(subs), interpret.parallel, subs, env, coefs, 
-        mc.cores = ncpus)
-    prob <- unlist(prob)
-    b <- proc.time()
-    if (verbose == TRUE) {
-      message(paste("Time elapsed:"))
-      print(b - a)
-    }
-  } else {
-    if (verbose == TRUE) {
-      message(paste0("Parallelization is switched off. Computing ", 
-          "probabilities sequentially."))
-    }
-    a <- proc.time()
-    prob <- sapply(1:nrow(subs), interpret.parallel, subs, env, coefs)
-    b <- proc.time()
-    if (verbose == TRUE) {
-      message(paste("Time elapsed:"))
-      print(b - a)
-    }
-  }
+  # compute predicted probabilities
+  cbcoef <- cbind(coef(object))
+  chgstat <- dyads[, 2:(ncol(dyads) - 3)]
+  lp <- apply(chgstat, 1, function(x) t(x) %*% cbcoef)
+  result <- c(1 / (1 + exp(-lp)))
+  dyads <- cbind(dyads, result)
   
   # combine dyads/predictors and probabilities, sort, and return
-  dyads <- cbind(dyads, prob)
   colnames(dyads)[ncol(dyads)] <- "probability"
   dyads <- dyads[order(dyads$t, dyads$i, dyads$j), ]
   rownames(dyads) <- NULL
