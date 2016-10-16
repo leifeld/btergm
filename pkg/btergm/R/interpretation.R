@@ -342,9 +342,19 @@ edgeprob <- function(object, verbose = FALSE) {
   class(dyads[, length(colnames(dyads))]) <- "integer"
   class(dyads[, length(colnames(dyads)) - 1]) <- "integer"
   class(dyads[, length(colnames(dyads)) - 2]) <- "integer"
+
+  # take care of structural zeros and ones
+  cf <- coef(object)
+  cf.length <- length(cf)  
+  cf <- cf[!cf %in% c(Inf, -Inf)]
+  if (length(cf != cf.length)) {
+    warning(paste("There are structural zeros or ones. For these dyads, the",
+        "predicted probabilities are not valid and must be manually replaced",
+        "by 0 or 1, respectively."))
+  }
   
   # compute predicted probabilities
-  cbcoef <- cbind(coef(object))
+  cbcoef <- cbind(cf)
   chgstat <- dyads[, 2:(ncol(dyads) - 3)]
   lp <- apply(chgstat, 1, function(x) t(x) %*% cbcoef)
   result <- c(1 / (1 + exp(-lp)))
