@@ -1,4 +1,4 @@
-citHeader("To cite package 'xergm' in publications use:")
+citHeader("To cite package 'btergm' in publications use:")
 
 year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
 vers <- paste("R package version", meta$Version)
