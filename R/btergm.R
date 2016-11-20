@@ -22,13 +22,16 @@ setClass(Class = "btergm",
         nobs = "numeric", 
         time.steps = "numeric",
         formula = "formula",
+        formula2 = "character", 
         response = "integer",
         effects = "data.frame", 
         weights = "numeric", 
         auto.adjust = "logical", 
         offset = "logical", 
         directed = "logical", 
-        bipartite = "logical"
+        bipartite = "logical", 
+        nvertices = "matrix", 
+        data = "list"
     ), 
     validity = function(object) {
         if (!"numeric" %in% class(object@coef)) {
@@ -74,13 +77,14 @@ setClass(Class = "btergm",
 
 # constructor for btergm objects
 createBtergm <- function(coef, bootsamp, R, nobs, time.steps, 
-    formula, response, effects, weights, auto.adjust, offset, directed, 
-    bipartite) {
+    formula, formula2, response, effects, weights, auto.adjust, offset, 
+    directed, bipartite, nvertices, data) {
   new("btergm", coef = coef, bootsamp = bootsamp,
       R = R, nobs = nobs, time.steps = time.steps, formula = formula, 
-      response = response, effects = effects, weights = weights, 
-      auto.adjust = auto.adjust, offset = offset, directed = directed, 
-      bipartite = bipartite)
+      formula2 = formula2, response = response, effects = effects, 
+      weights = weights, auto.adjust = auto.adjust, offset = offset, 
+      directed = directed, bipartite = bipartite, nvertices = nvertices, 
+      data = data)
 }
 
 
@@ -210,12 +214,16 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no", 
     "multicore", "snow"), ncpus = 1, cl = NULL, verbose = TRUE, ...) {
   
-  # call tergmprepare and integrate results as a child environment in the chain
-  env <- tergmprepare(formula = formula, offset = offset, verbose = verbose)
-  parent.env(env) <- environment()
+  # call tergmprepare and integrate results in local environment
+  l <- tergmprepare(formula = formula, offset = offset, verbose = verbose)
+  for (i in 1:length(l$covnames)) {
+    assign(l$covnames[i], l[[l$covnames[i]]])
+  }
+  assign("offsmat", l$offsmat)
+  form <- as.formula(l$form, env = environment())
   
   # check number of time steps
-  if (env$time.steps == 1) {
+  if (l$time.steps == 1) {
     warning(paste("The confidence intervals and standard errors are",
         "meaningless because only one time step was provided."))
   }
@@ -245,15 +253,15 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
     X <- NULL  # independent variables data frame
     W <- NULL  # weights for each observation
     O <- NULL  # offset term
-    for (i in 1:length(env$networks)) {
-      nw <- ergm::ergm.getnetwork(env$form)
-      model <- ergm::ergm.getmodel(env$form, nw, initialfit = TRUE)
+    for (i in 1:length(l$networks)) {
+      nw <- ergm::ergm.getnetwork(form)
+      model <- ergm::ergm.getmodel(form, nw, initialfit = TRUE)
       Clist <- ergm::ergm.Cprepare(nw, model)
       Clist.miss <- ergm::ergm.design(nw, model, verbose = FALSE)
       pl <- ergm::ergm.pl(Clist, Clist.miss, model, theta.offset = 
-          c(rep(FALSE, length(env$rhs.terms) - 1), TRUE), verbose = FALSE, 
+          c(rep(FALSE, length(l$rhs.terms) - 1), TRUE), verbose = FALSE, 
           control = ergm::control.ergm(init = c(rep(NA, 
-          length(env$rhs.terms) - 1), 1)))
+          length(l$rhs.terms) - 1), 1)))
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
           check.names = FALSE), i))
@@ -268,8 +276,8 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
     X <- NULL
     W <- NULL
     O <- NULL  # will remain NULL and will be fed into GLM
-    for (i in 1:length(env$networks)) {
-      mpli <- ergm::ergmMPLE(env$form)
+    for (i in 1:length(l$networks)) {
+      mpli <- ergm::ergmMPLE(form)
       Y <- c(Y, mpli$response)
       
       # fix different factor levels across time points
@@ -352,9 +360,15 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
   # create and return btergm object
   colnames(coefs) <- term.names[1:(length(term.names) - 1)]
   names(startval) <- colnames(coefs)
+  data <- list()
+  for (i in 1:length(l$covnames)) {
+    data[[l$covnames[i]]] <- l[[l$covnames[i]]]
+  }
+  data$offsmat <- l$offsmat
   
-  btergm.object <- createBtergm(startval, coefs, R, nobs, env$time.steps, 
-      formula, Y, x, W, env$auto.adjust, offset, env$directed, env$bipartite)
+  btergm.object <- createBtergm(startval, coefs, R, nobs, l$time.steps, 
+      formula, l$form, Y, x, W, l$auto.adjust, offset, l$directed, l$bipartite, 
+      nvertices = l$nvertices, data)
   if (verbose == TRUE) {
     message("Done.")
   }
@@ -366,10 +380,11 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
 simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL, 
     formula = getformula(object), coef = object@coef, verbose = TRUE, ...) {
   
-  # call tergmprepare and integrate results as a child environment in the chain
-  env <- tergmprepare(formula = formula, offset = object@offset, 
-      verbose = FALSE)
-  parent.env(env) <- environment()
+  # retrieve data and integrate results locally
+  for (i in 1:length(object@data)) {
+    assign(names(object@data)[i], object@data[[i]])
+  }
+  form <- as.formula(object@formula2, env = environment())
   
   # check and correct index argument
   if (is.null(index)) {
@@ -390,9 +405,9 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   # print formula from which networks are simulated
   if (verbose == TRUE) {
     f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
-        paste(deparse(env$form), collapse = ""))
+        paste(deparse(form), collapse = ""))
     f.i <- gsub("\\s+", " ", f.i)
-    f.i <- gsub("^networks", env$lhs.original, f.i)
+    f.i <- gsub("^networks", deparse(object@formula[[2]]), f.i)
     message(paste("Simulating", nsim, "networks from the following formula:\n", 
         f.i, "\n"))
   }
@@ -401,7 +416,18 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   if (object@offset == TRUE) {
     coef <- c(coef, -Inf)
   }
-  suppressWarnings(ergm::simulate.formula(env$form, nsim = nsim, seed = seed, 
+  s <- suppressWarnings(ergm::simulate.formula(form, nsim = nsim, seed = seed, 
       coef = coef, verbose = verbose, ...))
+  if ("btergm" %in% class(object)) {
+    return(s)
+  } else if ("mtergm" %in% class(object)) {
+    r1 <- sum(object@nvertices[1, 1:(index - 1)]) + 1
+    c1 <- sum(object@nvertices[2, 1:(index - 1)]) + 1
+    r2 <- sum(object@nvertices[1, 1:index])
+    c2 <- sum(object@nvertices[2, 1:index])
+    s <- lapply(s, function(sim) network(as.matrix(sim)[r1:r2, c1:c2], 
+        bipartite = object@bipartite, directed = object@directed))
+    return(s)
+  }
 }
 simulate.mtergm <- simulate.btergm  # create a copy for mtergm objects

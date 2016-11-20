@@ -337,15 +337,27 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   
   # call tergmprepare and integrate results as a child environment in the chain
   if (class(object)[1] == "btergm") {
-    env <- tergmprepare(formula = formula, offset = object@offset, 
+    l <- tergmprepare(formula = formula, offset = object@offset, 
         verbose = verbose)
-    parent.env(env) <- environment()
     offset <- object@offset
+    form <- as.formula(l$form, env = environment())
   } else {
-    env <- tergmprepare(formula = formula, offset = FALSE, verbose = FALSE)
-    parent.env(env) <- environment()
-    offset <- FALSE
+    l <- tergmprepare(formula = formula, offset = FALSE, verbose = FALSE)
+    offset <- TRUE
+    form <- as.formula(paste(l$form, "+ offset(edgecov(offsmat[[i]]))"), 
+        env = environment())
   }
+  for (i in 1:length(l$covnames)) {
+    assign(l$covnames[i], l[[l$covnames[i]]])
+  }
+  assign("offsmat", l$offsmat)
+  
+  # retrieve objects and integrate in local environment
+  #for (i in 1:length(object@data)) {
+  #  assign(names(object@data)[i], object@data[[i]])
+  #}
+  #form <- as.formula(object@formula2, env = environment())
+  #offset <- object@offset
   
   # check and rearrange target network(s)
   if (is.null(target)) {
@@ -353,7 +365,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       message(paste("\nNo 'target' network(s) provided. Using networks on the",
           "left-hand side of the model formula as observed networks.\n"))
     }
-    target <- env$networks
+    target <- l$networks
   } else if (class(target) == "network" || class(target) == "matrix") {
     target <- list(target)
     if (verbose == TRUE) {
@@ -369,7 +381,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   }
   
   # extract coefficients from object
-  if (class(object)[1] == "btergm" && offset == TRUE) {
+  if (offset == TRUE) {
     coefs <- c(coef(object), -Inf)  # -Inf for offset matrix
   } else {
     coefs <- coef(object)
@@ -378,16 +390,16 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   # adjust formula at each step, and simulate networks
   sim <- list()
   degen <- list()
-  for (index in 1:env$time.steps) {
-    i <- index  # index 'i' is used in formula construction in 'env'!
+  for (index in 1:l$time.steps) {
+    i <- index  # index 'i' is used in formula construction!
     # simulations for statnet-style and rocpr GOF
     if (verbose == TRUE) {
       if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
         f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
-            paste(deparse(env$form), collapse = ""))
+            paste(deparse(form), collapse = ""))
         f.i <- gsub("\\s+", " ", f.i)
         if ("btergm" %in% class(object)) {
-          f.i <- gsub("^networks", env$lhs.original, f.i)
+          f.i <- gsub("^networks", l$lhs.original, f.i)
         }
       } else if ("ergm" %in% class(object)) {
         f.i <- paste(deparse(formula), collapse = "")
@@ -403,17 +415,17 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     #    constraints = ~ ., control = control.simulate.formula(MCMC.interval = 
     #    MCMC.interval, MCMC.burnin = MCMC.burnin, parallel = statnet.parallel, 
     #    parallel.type = statnet.parallel.type))
-    sim[[index]] <- simulate.formula(env$form, nsim = nsim, coef = coefs, 
+    sim[[index]] <- simulate.formula(form, nsim = nsim, coef = coefs, 
         constraints = ~ ., control = control.simulate.formula(MCMC.interval = 
         MCMC.interval, MCMC.burnin = MCMC.burnin))
   }
   
   # check basis network(s)
   if (verbose == TRUE) {
-    if (env$time.steps == 1) {
+    if (l$time.steps == 1) {
       message("One network from which simulations are drawn was provided.\n")
     } else {
-      message(paste(env$time.steps, "networks from which simulations are",
+      message(paste(l$time.steps, "networks from which simulations are",
           "drawn were provided.\n"))
     }
   }
@@ -428,26 +440,26 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   rm(sim)
   
   # if NA in target networks, put them in the base network, too, and vice-versa
-  if (length(env$networks) == length(target)) {
-    for (i in 1:env$time.steps) {
-      env$networks[[i]] <- as.matrix(env$networks[[i]])
+  if (length(l$networks) == length(target)) {
+    for (i in 1:l$time.steps) {
+      l$networks[[i]] <- as.matrix(l$networks[[i]])
       target[[i]] <- as.matrix(target[[i]])
-      if (nrow(target[[i]]) != nrow(env$networks[[i]])) {
+      if (nrow(target[[i]]) != nrow(l$networks[[i]])) {
         stop(paste0("Dimensions of observed network and target do not match ", 
-            "at t = ", i, ": observed network has ", nrow(env$networks[[i]]), 
+            "at t = ", i, ": observed network has ", nrow(l$networks[[i]]), 
             " rows while target has ", nrow(target[[i]]), " rows."))
       }
-      if (ncol(target[[i]]) != ncol(env$networks[[i]])) {
+      if (ncol(target[[i]]) != ncol(l$networks[[i]])) {
         stop(paste0("Dimensions of observed network and target do not match ", 
-            "at t = ", i, ": observed network has ", ncol(env$networks[[i]]), 
+            "at t = ", i, ": observed network has ", ncol(l$networks[[i]]), 
             " columns while target has ", ncol(target[[i]]), " columns."))
       }
-      env$networks[[i]][is.na(as.matrix(target[[i]]))] <- NA
-      env$networks[[i]] <- network::network(env$networks[[i]], 
-          directed = env$directed, bipartite = env$bipartite)
-      target[[i]][is.na(as.matrix(env$networks[[i]]))] <- NA
-      target[[i]] <- network::network(target[[i]], directed = env$directed, 
-          bipartite = env$bipartite)
+      l$networks[[i]][is.na(as.matrix(target[[i]]))] <- NA
+      l$networks[[i]] <- network::network(l$networks[[i]], 
+          directed = l$directed, bipartite = l$bipartite)
+      target[[i]][is.na(as.matrix(l$networks[[i]]))] <- NA
+      target[[i]] <- network::network(target[[i]], directed = l$directed, 
+          bipartite = l$bipartite)
     }
   }
   

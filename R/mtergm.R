@@ -10,6 +10,7 @@ setClass(Class = "mtergm",
         nobs = "numeric", 
         time.steps = "numeric",
         formula = "formula",
+        formula2 = "character", 
         auto.adjust = "logical", 
         offset = "logical", 
         directed = "logical", 
@@ -18,7 +19,9 @@ setClass(Class = "mtergm",
         loglik = "numeric", 
         aic = "numeric", 
         bic = "numeric", 
-        ergm = "ergm"
+        ergm = "ergm", 
+        nvertices = "matrix", 
+        data = "list"
     ), 
     validity = function(object) {
         if (!"numeric" %in% class(object@coef)) {
@@ -60,14 +63,14 @@ setClass(Class = "mtergm",
 
 
 # constructor for btergm objects
-createMtergm <- function(coef, se, pval, nobs, time.steps, formula, 
+createMtergm <- function(coef, se, pval, nobs, time.steps, formula, formula2, 
     auto.adjust, offset, directed, bipartite, estimate, loglik, aic, bic, 
-    ergm = ergm) {
+    ergm = ergm, nvertices, data) {
   new("mtergm", coef = coef, se = se, pval = pval, nobs = nobs, 
-      time.steps = time.steps, formula = formula, auto.adjust = auto.adjust, 
-      offset = offset, directed = directed, bipartite = bipartite, 
-      estimate = estimate, loglik = loglik, aic = aic, bic = bic, 
-      ergm = ergm)
+      time.steps = time.steps, formula = formula, formula2 = formula2, 
+      auto.adjust = auto.adjust, offset = offset, directed = directed, 
+      bipartite = bipartite, estimate = estimate, loglik = loglik, aic = aic, 
+      bic = bic, ergm = ergm, nvertices = nvertices, data = data)
 }
 
 
@@ -128,26 +131,30 @@ setMethod(f = "summary", signature = "mtergm", definition = function(object,
 mtergm <- function(formula, constraints = ~ ., verbose = TRUE, ...) {
   
   # call tergmprepare and integrate results as a child environment in the chain
-  env <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE, 
+  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE, 
       verbose = verbose)
-  parent.env(env) <- environment()
+  for (i in 1:length(l$covnames)) {
+    assign(l$covnames[i], l[[l$covnames[i]]])
+  }
+  assign("offsmat", l$offsmat)
+  form <- as.formula(l$form, env = environment())
   
   if (verbose == TRUE) {
     message("Estimating...")
-    e <- ergm(env$form, offset.coef = -Inf, constraints = constraints, 
+    e <- ergm(form, offset.coef = -Inf, constraints = constraints, 
         eval.loglik = TRUE, ...)
   } else {
-    e <- suppressMessages(ergm(env$form, offset.coef = -Inf, 
+    e <- suppressMessages(ergm(form, offset.coef = -Inf, 
         constraints = constraints, eval.loglik = TRUE, ...))
   }
   
   # get coefficients and other details
   cf <- coef(e)
-  mat <- as.matrix(env$networks)
-  if (env$bipartite == TRUE) {
-    dyads <- sum(1 - env$offsmat)
+  mat <- as.matrix(l$networks)
+  if (l$bipartite == TRUE) {
+    dyads <- sum(1 - l$offsmat)
   } else {
-    dyads <- sum(1 - env$offsmat) - nrow(mat)
+    dyads <- sum(1 - l$offsmat) - nrow(mat)
   }
   rdf <- dyads - length(cf)
   asyse <- vcov(e, sources = "all")
@@ -155,23 +162,32 @@ mtergm <- function(formula, constraints = ~ ., verbose = TRUE, ...) {
   tval <- e$coef / se
   pval <- 2 * pt(q = abs(tval), df = rdf, lower.tail = FALSE)
   
+  data <- list()
+  for (i in 1:length(l$covnames)) {
+    data[[l$covnames[i]]] <- l[[l$covnames[i]]]
+  }
+  data$offsmat <- l$offsmat
+  
   # create mtergm object
   object <- createMtergm(
       coef = cf[-length(cf)],  # do not include NA value for offset matrix
       se = se[-length(se)], 
       pval = pval[-length(pval)], 
       nobs = dyads, 
-      time.steps = env$time.steps,
-      formula = formula,  # original formula but with 'networks' on LHS
-      auto.adjust = env$auto.adjust, 
+      time.steps = l$time.steps,
+      formula = formula, 
+      formula2 = l$form, 
+      auto.adjust = l$auto.adjust, 
       offset = TRUE, 
-      directed = env$directed, 
-      bipartite = env$bipartite, 
+      directed = l$directed, 
+      bipartite = l$bipartite, 
       estimate = e$estimate,  # MLE or MPLE
       loglik = e$mle.lik[1], 
       aic = AIC(e), 
       bic = BIC(e), 
-      ergm = e
+      ergm = e, 
+      nvertices = l$nvertices, 
+      data = data
   )
   
   if (verbose == TRUE) {
