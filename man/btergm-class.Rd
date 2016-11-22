@@ -44,7 +44,8 @@
   }
 }
 \usage{
-\S4method{summary}{btergm}(object, level = 0.95, invlogit = FALSE, ...)
+\S4method{summary}{btergm}(object, level = 0.95, type = "perc", 
+    invlogit = FALSE, ...)
 
 \S4method{summary}{mtergm}(object, ...)
 
@@ -60,7 +61,8 @@
 
 \S4method{coef}{mtergm}(object, invlogit = FALSE, ...)
 
-\S4method{confint}{btergm}(object, parm, level = 0.95, invlogit = FALSE, ...)
+\S4method{confint}{btergm}(object, parm, level = 0.95, type = "perc", 
+    invlogit = FALSE, ...)
 
 btergm.se(object, print = FALSE)
 
@@ -71,7 +73,7 @@ timesteps.mtergm(object)
 \details{
 Various generic methods are available for \code{btergm} objects: The \code{coef} and \code{show} methods return the coefficients; the \code{summary} method gives a model summary. The \code{nobs} method returns the number of observations. The {confint} method returns confidence intervals from the bootstrap replications of \code{btergm} objects, and the user can specify the confidence level. The method returns a matrix with three columns: the estimate, the lower bound, and the upper bound of the confidence interval for each model term.
 
-The \code{btergm.se} function computes standard errors and p values for \code{btergm} objects. It returns a matrix with four columns: the estimate, the standard error, the z value, and the p value for each model term. If the argument \code{print = TRUE} is used, the matrix is printed to the R console as a formatted coefficient matrix with significance stars instead. Note that confidence intervals are the preferred way of interpretation for bootstrapped TERGMs; standard errors are only accurate if the bootstrapped data are normally distributed, which is not always the case. Various methods for checking for normality for each model term are available, for example quantile-quantile plots (e.g., \code{qqnorm(x@bootsamp[, 1])} for the first model term in the \code{btergm} object called \code{x}).
+The \code{btergm.se} function computes standard errors and p values for \code{btergm} objects. It returns a matrix with four columns: the estimate, the standard error, the z value, and the p value for each model term. If the argument \code{print = TRUE} is used, the matrix is printed to the R console as a formatted coefficient matrix with significance stars instead. Note that confidence intervals are the preferred way of interpretation for bootstrapped TERGMs; standard errors are only accurate if the bootstrapped data are normally distributed, which is not always the case. Various methods for checking for normality for each model term are available, for example quantile-quantile plots (e.g., \code{qqnorm(x@boot$t[, 1])} for the first model term in the \code{btergm} object called \code{x}).
 
 The \code{timesteps.btergm} function extracts the number of time steps from a \code{btergm} object. The number of time steps is the number of networks being modeled on the left-hand side of the model formula.
 
@@ -81,6 +83,7 @@ Some of these functions or methods are also available for \code{mtergm} objects.
 \item{object}{ A \code{btergm} object. }
 \item{level}{ The significance level for computation of the confidence intervals. The default is \code{0.95} (that is, an alpha value of 0.05). Other common values include \code{0.999}, \code{0.99}, \code{0.9}, and \code{0.5}. }
 \item{parm}{ Parameters (specified by integer position or character string). }
+\item{type}{ Type of confidence interval, e.g., basic bootstrap interval (\code{type = "basic"}), percentile-based interval (\code{type = "perc"}, which is the default option), or bias-adjusted and accelerated confidence interval (\code{type = "bca"}). All options from the \code{type} argument of the \link[boot]{boot.ci} function in the boot package can be used to generate confidence intervals. }
 \item{invlogit}{ Apply inverse logit transformation to the estimates and/or confidence intervals? That is, \code{1 / (1 + exp(-x))}, where \code{x} is the respective value. }
 \item{print}{ Should the formatted coefficient table be printed to the R console along with significance stars (\code{print = TRUE}), or should the plain coefficient matrix be returned (\code{print = FALSE})? }
 \item{...}{ Further arguments to be handed over to subroutines. }
