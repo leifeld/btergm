@@ -719,7 +719,8 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     }
   }
   # convert formula back to character object because environment invalid anyway
-  l$form <- paste(deparse(l$form[[2]]), deparse(l$form[[1]]), 
-      deparse(l$form[[3]]))
+  form3 <- paste(deparse(l$form[[3]]), collapse = "")  # for long formulae
+  form3 <- gsub("\\s+", " ", form3)
+  l$form <- paste(deparse(l$form[[2]]), deparse(l$form[[1]]), form3)
   return(l)  # return the environment with all the data
 }

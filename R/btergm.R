@@ -246,7 +246,7 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
     assign(l$covnames[i], l[[l$covnames[i]]])
   }
   assign("offsmat", l$offsmat)
-  form <- as.formula(l$form, env = environment())
+  form <- as.formula(l$form)
   
   # check number of time steps
   if (l$time.steps == 1) {
