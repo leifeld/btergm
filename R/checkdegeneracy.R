@@ -15,12 +15,16 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
     stop("The 'nsim' argument must be greater than 1.")
   }
   
-  # call tergmprepare and integrate results as a child environment in the chain
-  env <- tergmprepare(formula = getformula(object), offset = object@offset, 
+  # call tergmprepare and integrate results in local environment
+  l <- tergmprepare(formula = getformula(object), offset = object@offset, 
       verbose = verbose)
-  parent.env(env) <- environment()
+  for (i in 1:length(l$covnames)) {
+    assign(l$covnames[i], l[[l$covnames[i]]])
+  }
+  assign("offsmat", l$offsmat)
+  form <- as.formula(l$form)
   offset <- object@offset
-  target <- env$networks
+  target <- l$networks
   
   # extract coefficients from object
   if (class(object)[1] == "btergm" && offset == TRUE) {
@@ -31,53 +35,43 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   
   # adjust formula at each step, and simulate networks
   sim <- list()
-  tstats <- list()
+  target.stats <- list()
   degen <- list()
-  for (index in 1:env$time.steps) {
+  for (index in 1:l$time.steps) {
     i <- index
     if (verbose == TRUE) {
       f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
-          paste(deparse(env$form), collapse = ""))
+          paste(deparse(form), collapse = ""))
       f.i <- gsub("\\s+", " ", f.i)
-      f.i <- gsub("^networks", env$lhs.original, f.i)
+      f.i <- gsub("^networks", l$lhs.original, f.i)
       message(paste("Simulating", nsim, 
           "networks from the following formula:\n", f.i, "\n"))
     }
-    tstats[[index]] <- summary(ergm::remove.offset.formula(env$form), 
+    target.stats[[index]] <- summary(ergm::remove.offset.formula(form), 
         response = NULL)
-    degen[[index]] <- simulate.formula(env$form, nsim = nsim, 
+    degen[[index]] <- simulate.formula(form, nsim = nsim, 
         coef = coefs, statsonly = TRUE, 
         control = control.simulate.formula(MCMC.interval = 
         MCMC.interval, MCMC.burnin = MCMC.burnin))
+    if (offset == TRUE || "mtergm" %in% class(object)) {
+      degen[[i]] <- degen[[i]][, -ncol(degen[[i]])]  # remove offset statistic
+    }
   }
-  
-  degensim <- matrix(nrow = 0, ncol = ncol(degen[[1]]))
-  target.stats <- list()
-  for (i in 1:length(degen)) {
-    degensim <- rbind(degensim, degen[[i]])
-    target.stats[[i]] <- tstats[[i]]
-  }
-  if (offset == TRUE || "mtergm" %in% class(object)) {
-    degensim <- degensim[, -ncol(degensim)]  # get rid of offset statistic
-  }
-  rm(tstats)
-  rm(degen)
   
   if (verbose == TRUE) {
     message("Checking degeneracy...")
   }
   mat <- list()
-  for (i in 1:env$time.steps) {
-    sm <- coda::as.mcmc.list(coda::as.mcmc(degensim))
-    sm <- ergm::sweep.mcmc.list(sm, target.stats[[i]], "-")
-    center <- TRUE
-    ds <- ergm::colMeans.mcmc.list(sm) - if (!center) target.stats[[i]] else 0
-    sds <- apply(degensim, 2, sd)
-    ns <- coda::effectiveSize(sm)
-    se <- sds * sqrt(ns)
-    z <- ds / se
-    p.z <- pnorm(abs(z), lower.tail = FALSE) * 2
-    mat[[i]] <- cbind("obs" = target.stats[[i]], "sim" = colMeans(degensim), 
+  for (i in 1:l$time.steps) {
+    sm <- coda::as.mcmc.list(coda::as.mcmc(degen[[i]]))
+    sm <- ergm::sweep.mcmc.list(sm, target.stats[[i]], "-")  # difference
+    ds <- ergm::colMeans.mcmc.list(sm)  # mean difference for each statistic
+    sds <- apply(degen[[i]], 2, sd)  # standard deviations of sample
+    ns <- coda::effectiveSize(sm)  # instead of dividing by sample size...
+    se <- sds / sqrt(ns)   # divide by effective sample size
+    z <- ds / se  # divide means by SEs
+    p.z <- pnorm(abs(z), lower.tail = FALSE) * 2  # p-values
+    mat[[i]] <- cbind("obs" = target.stats[[i]], "sim" = colMeans(degen[[i]]), 
         "est" = ds, "se" = se, "zval" = z, "pval" = p.z)
   }
   class(mat) <- "degeneracy"
