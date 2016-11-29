@@ -61,24 +61,15 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   if (verbose == TRUE) {
     message("Checking degeneracy...")
   }
-  mat <- list()
-  for (i in 1:l$time.steps) {
-    sm <- coda::as.mcmc.list(coda::as.mcmc(degen[[i]]))
-    sm <- ergm::sweep.mcmc.list(sm, target.stats[[i]], "-")  # difference
-    ds <- ergm::colMeans.mcmc.list(sm)  # mean difference for each statistic
-    sds <- apply(degen[[i]], 2, sd)  # standard deviations of sample
-    ns <- coda::effectiveSize(sm)  # instead of dividing by sample size...
-    se <- sds / sqrt(ns)   # divide by effective sample size
-    z <- ds / se  # divide means by SEs
-    p.z <- pnorm(abs(z), lower.tail = FALSE) * 2  # p-values
-    mat[[i]] <- cbind("obs" = target.stats[[i]], "sim" = colMeans(degen[[i]]), 
-        "est" = ds, "se" = se, "zval" = z, "pval" = p.z)
-  }
   class(mat) <- "degeneracy"
+  object <- list()
+  object$target.stats <- target.stats
+  object$sim <- degen
+  class(object) <- "degeneracy"
   if (verbose == TRUE) {
     message("Done.")
   }
-  return(mat)
+  return(object)
 }
 
 setMethod("checkdegeneracy", signature = className("btergm", "btergm"), 
@@ -86,11 +77,59 @@ setMethod("checkdegeneracy", signature = className("btergm", "btergm"),
 
 
 # print method for 'degeneracy' objects
-print.degeneracy <- function(x, ...) {
-  for (i in 1:length(x)) {
+print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim), 
+    terms = 1:length(x$target.stats[[1]]), ...) {
+  for (i in t) {
     message(paste0("\nDegeneracy check for network ", i, ":"))
-    printCoefmat(x[[i]], digits = 3, P.values = TRUE, has.Pvalue = TRUE, 
-        cs.ind = 3:4, ts.ind = 5)
+    if (center == TRUE) {
+      sm <- coda::as.mcmc.list(coda::as.mcmc(x$sim[[i]]))
+      sm <- ergm::sweep.mcmc.list(sm, x$target.stats[[i]], "-")[[1]] # diff
+      q <- t(apply(as.matrix(sm), 2, function(x) {
+        quantile(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+      }))
+    } else {
+      q <- t(apply(x$sim[[i]], 2, function(x) {
+        quantile(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+      }))
+      q <- cbind("obs" = x$target.stats[[i]], q)
+    }
+    rn <- rownames(q)[terms]
+    cn <- colnames(q)
+    q <- q[terms, ]
+    if (class(q) != "matrix") {
+      q <- matrix(q, nrow = 1)
+      rownames(q) <- rn
+      colnames(q) <- cn
+    }
+    printCoefmat(q)
   }
-  message("\nSmall p-values indicate degenerate results.")
+}
+
+
+# plot method for 'degeneracy' objects
+plot.degeneracy <- function(x, center = TRUE, t = 1:length(x$sim), 
+    terms = 1:length(x$target.stats[[1]]), main = NULL, 
+    xlab = NULL, target.col = "red", target.lwd = 3, ...) {
+  for (i in t) {
+    for (j in terms) {
+      if (is.null(main)) {
+         m <- paste0(colnames(x$sim[[i]])[j], " at t = ", i)
+      } else {
+         m <- main
+      }
+      if (is.null(xlab)) {
+         xl <- colnames(x$sim[[i]])[j]
+      } else {
+         xl <- xlab
+      }
+      if (center == FALSE) {
+        hist(x$sim[[i]][, j], main = m, xlab = xl, ...)
+        abline(v = x$target.stats[[i]][j], col = target.col, lwd = target.lwd)
+      } else {
+        centered <- x$sim[[i]][, j] - x$target.stats[[i]][j]
+        hist(centered, main = m, xlab = xl, ...)
+        abline(v = 0, col = target.col, lwd = target.lwd)
+      }
+    }
+  }
 }
