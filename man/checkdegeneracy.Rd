@@ -25,8 +25,9 @@ The methods for the generic \code{degeneracy} function implement a degeneracy ch
     terms = 1:length(x$target.stats[[1]]), ...)
 
 \method{plot}{degeneracy}(x, center = TRUE, t = 1:length(x$sim), 
-    terms = 1:length(x$target.stats[[1]]), main = NULL, 
-    xlab = NULL, target.col = "red", target.lwd = 3, ...)
+    terms = 1:length(x$target.stats[[1]]), vbar = TRUE, 
+    main = NULL, xlab = NULL, target.col = "red", 
+    target.lwd = 3, ...)
 }
 \arguments{
 \item{object}{ A \code{btergm} or \code{mtergm} object, as estimated using the \code{btergm} or \code{mtergm} function. }
@@ -38,6 +39,7 @@ The methods for the generic \code{degeneracy} function implement a degeneracy ch
 \item{center}{ If \code{TRUE}, print/plot the simulated minus the target statistics, with an expected value of 0 in a non-degenerate model. If \code{FALSE}, print/plot the distribution of simulated statistics and show the target statistic separately. }
 \item{t}{ Time indices to include, e.g., \code{t = 2:4} for time steps 2 to 4. }
 \item{terms}{ Indices of the model terms to include, e.g., \code{terms = 1:3} includes the first three statistics. }
+\item{vbar}{ Show vertical bar for target statistic in histogram. }
 \item{main}{ Main title of the plot. }
 \item{xlab}{ Label on the x-axis. Defaults to the name of the statistic. }
 \item{target.col}{ Color of the vertical bar for the target statistic. Defaults to red. }

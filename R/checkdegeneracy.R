@@ -108,7 +108,7 @@ print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim),
 
 # plot method for 'degeneracy' objects
 plot.degeneracy <- function(x, center = TRUE, t = 1:length(x$sim), 
-    terms = 1:length(x$target.stats[[1]]), main = NULL, 
+    terms = 1:length(x$target.stats[[1]]), vbar = TRUE, main = NULL, 
     xlab = NULL, target.col = "red", target.lwd = 3, ...) {
   for (i in t) {
     for (j in terms) {
@@ -124,11 +124,15 @@ plot.degeneracy <- function(x, center = TRUE, t = 1:length(x$sim),
       }
       if (center == FALSE) {
         hist(x$sim[[i]][, j], main = m, xlab = xl, ...)
-        abline(v = x$target.stats[[i]][j], col = target.col, lwd = target.lwd)
+        if (vbar == TRUE) {
+          abline(v = x$target.stats[[i]][j], col = target.col, lwd = target.lwd)
+        }
       } else {
         centered <- x$sim[[i]][, j] - x$target.stats[[i]][j]
         hist(centered, main = m, xlab = xl, ...)
-        abline(v = 0, col = target.col, lwd = target.lwd)
+        if (vbar == TRUE) {
+          abline(v = 0, col = target.col, lwd = target.lwd)
+        }
       }
     }
   }
