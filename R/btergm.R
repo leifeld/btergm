@@ -382,6 +382,12 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
   #if (nrow(coefs$t) == 1) { # in case there is only one model term
   #  coefs <- t(coefs)
   #}
+  if (ncol(coefs$t) == 1 && length(term.names) > 1 
+      && coefs$t[1, 1] == "glm.fit: algorithm did not converge") {
+    stop(paste("Algorithm did not converge. There might be a collinearity ", 
+        "between predictors and/or dependent networks at one or more time", 
+        "steps."))
+  }
   
   # create and return btergm object
   colnames(coefs$t) <- term.names[1:(length(term.names) - 1)]
