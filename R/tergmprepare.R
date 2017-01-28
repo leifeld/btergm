@@ -56,13 +56,23 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   rhs <- gsub("\\s+", " ", rhs)
   
   # parse rhs of formula and add indices to edgecov and dyadcov terms
-  l$rhs.terms <- strsplit(rhs, "\\s*(\\+|\\*)\\s*")[[1]]
-  rhs.indices <- gregexpr("\\+|\\*", rhs)[[1]]
-  if (length(rhs.indices) == 1 && rhs.indices < 0) {
-    rhs.operators <- character()
-  } else {
-    rhs.operators <- substring(rhs, rhs.indices, rhs.indices)
+  rhsterms <- strsplit(rhs, "\\s*\\+\\s*")[[1]]
+  if (length(rhsterms) > 1) {  # 'transform' in 'timecov' may contain '+'
+    for (i in length(rhsterms):2) {
+      leftbracketmatches <- gregexpr("\\(", rhsterms[i])[[1]]
+      leftbracketmatches <- leftbracketmatches[leftbracketmatches != -1]
+      leftbracketmatches <- length(leftbracketmatches)
+      rightbracketmatches <- gregexpr("\\)", rhsterms[i])[[1]]
+      rightbracketmatches <- rightbracketmatches[rightbracketmatches != -1]
+      rightbracketmatches <- length(rightbracketmatches)
+      if (leftbracketmatches != rightbracketmatches) {
+        rhsterms[i - 1] <- paste(rhsterms[i - 1], rhsterms[i], sep = " + ")
+        rhsterms <- rhsterms[-i]
+      }
+    }
   }
+  l$rhs.terms <- rhsterms
+  rhs.operators <- rep("+", length(l$rhs.terms) - 1)
   
   # preprocess dyadcov and edgecov terms, memory terms, and timecov terms
   covnames <- character()
@@ -305,6 +315,16 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         l$rhs.terms[k] <- paste0("edgecov(", label, "[[i]])")
       }
       l$covnames <- c(l$covnames, label)
+      
+      # reporting
+      if (verbose == TRUE) {
+        timecovreporting <- matrix(sapply(tc, function(x) mean(x[1, 2])), 
+            nrow = 1)
+        colnames(timecovreporting) <- paste0("t=", 1:length(l$networks))
+        rownames(timecovreporting) <- ""
+        message("Mean transformed timecov values:")
+        print(timecovreporting)
+      }
     }
   }
   l$covnames <- c("networks", l$covnames)
