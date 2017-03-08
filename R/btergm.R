@@ -187,10 +187,9 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
           "or 'stud'."))
     }
     ci <- sapply(1:length(cf), function(x) {
-            b <- boot::boot.ci(object@boot, conf = level, type = type, 
-                index = x)
-            b[[type2]][4:5]
-        })
+        b <- boot::boot.ci(object@boot, conf = level, type = type, index = x)
+        b[[type2]][4:5]
+    })
     ci <- cbind(cf, t(ci))
     if (class(ci) == "numeric") {
       ci.nam <- names(ci)
@@ -237,8 +236,9 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 
 
 # TERGM by bootstrapped pseudolikelihood
-btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no", 
-    "multicore", "snow"), ncpus = 1, cl = NULL, verbose = TRUE, ...) {
+btergm <- function(formula, R = 500, offset = FALSE, 
+    returndata = FALSE, parallel = c("no", "multicore", 
+    "snow"), ncpus = 1, cl = NULL, verbose = TRUE, ...) {
   
   # call tergmprepare and integrate results in local environment
   l <- tergmprepare(formula = formula, offset = offset, verbose = verbose)
@@ -255,7 +255,7 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
   }
   
   # verbose reporting
-  if (verbose == TRUE) {
+  if (verbose == TRUE && returndata == FALSE) {
     if (parallel[1] == "no") {
       parallel.msg <- "on a single computing core"
     } else if (parallel[1] == "multicore") {
@@ -270,6 +270,8 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
     }
     message("\nStarting pseudolikelihood estimation ", offset.msg, 
           R, " bootstrapping replications ", parallel.msg, "...")
+  } else if (verbose == TRUE && returndata == TRUE) {
+    message("\nReturning data frame with change statistics.")
   }
   
   # create MPLE data structures
@@ -340,6 +342,10 @@ btergm <- function(formula, R = 500, offset = FALSE, parallel = c("no",
   unique.time.steps <- unique(X$time)
   x <- X[, -ncol(X)]
   x <- as.data.frame(x)  # in case there is only one column/model term
+  
+  if (returndata == TRUE) {
+    return(cbind(Y, x))
+  }
   
   # create sparse matrix and compute start values for GLM
   xsparse <- Matrix(as.matrix(x), sparse = TRUE)

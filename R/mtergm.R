@@ -128,7 +128,8 @@ setMethod(f = "summary", signature = "mtergm", definition = function(object,
 
 
 # MCMC MLE estimation function (basically a wrapper for the ergm function)
-mtergm <- function(formula, constraints = ~ ., verbose = TRUE, ...) {
+mtergm <- function(formula, constraints = ~ ., returndata = FALSE, 
+    verbose = TRUE, ...) {
   
   # call tergmprepare and integrate results as a child environment in the chain
   l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE, 
@@ -138,6 +139,17 @@ mtergm <- function(formula, constraints = ~ ., verbose = TRUE, ...) {
   }
   assign("offsmat", l$offsmat)
   form <- as.formula(l$form, env = environment())
+  
+  # compile data for creating an mtergm object later; return if necessary
+  data <- list()
+  for (i in 1:length(l$covnames)) {
+    data[[l$covnames[i]]] <- l[[l$covnames[i]]]
+  }
+  data$offsmat <- l$offsmat
+  if (returndata == TRUE) {
+    message("Returning a list with data.")
+    return(data)
+  }
   
   if (verbose == TRUE) {
     message("Estimating...")
@@ -161,12 +173,6 @@ mtergm <- function(formula, constraints = ~ ., verbose = TRUE, ...) {
   se <- sqrt(diag(asyse))
   tval <- e$coef / se
   pval <- 2 * pt(q = abs(tval), df = rdf, lower.tail = FALSE)
-  
-  data <- list()
-  for (i in 1:length(l$covnames)) {
-    data[[l$covnames[i]]] <- l[[l$covnames[i]]]
-  }
-  data$offsmat <- l$offsmat
   
   # create mtergm object
   object <- createMtergm(
