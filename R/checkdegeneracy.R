@@ -61,7 +61,6 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   if (verbose == TRUE) {
     message("Checking degeneracy...")
   }
-  class(mat) <- "degeneracy"
   object <- list()
   object$target.stats <- target.stats
   object$sim <- degen
