@@ -1,5 +1,5 @@
 # This file contains gof methods for ergm, btergm, mtergm, Siena, and other 
-# network models. It also contains the compute.goflist function, which accepts 
+# network models. It also contains the createGOF function, which accepts 
 # simulations and target networks and applies gof statistics to them.
 
 
@@ -156,7 +156,8 @@ reduce.matrix <- function(sim, obs) {
 
 
 # evaluate statistics and create gof object
-compute.goflist <- function(simulations, target, statistics, parallel = "no", 
+createGOF <- function(simulations, target, statistics = c(dsp, esp, deg, 
+    ideg, geodesic, rocpr, walktrap.modularity), parallel = "no", 
     ncpus = 1, cl = NULL, verbose = TRUE) {
   
   # prepare parallel processing
@@ -164,6 +165,27 @@ compute.goflist <- function(simulations, target, statistics, parallel = "no",
   if (parallel[1] == "snow" && is.null(cl) && ncpus > 1) {
     cl <- makeCluster(ncpus)
     stop.parallel <- TRUE
+  }
+  
+  # make sure target list is a list of sparse matrices
+  if (class(target) != "list") {
+    stop(paste("The target network(s) must be provided as a list of network", 
+               "objects or sparse matrix objects (using the Matrix package)."))
+  }
+  target <- lapply(target, function(x) {
+    if (!class(x) %in% c("dgCMatrix", "dgTMatrix", "dsCMatrix", "dsTMatrix", 
+                         "dgeMatrix")) {
+      mat <- as.matrix(x)
+      mat <- Matrix(mat)
+      return(mat)
+    }
+  })
+  
+  # make sure simulation list is a list of network objects
+  if (class(simulations) == "network.list") {
+    simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
+  } else if (class(simulations) != "list") {
+    stop("The simulations must be provided as a list of network objects.")
   }
   
   # go through statistics functions and compute results
@@ -484,7 +506,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     }
   }
   simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
-  goflist <- compute.goflist(simulations = simulations, target = target, 
+  goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
       verbose = verbose)
   #if (statnet.stop.parallel == TRUE) {
@@ -692,7 +714,7 @@ gof.sienaFit <- function(object, period = NULL, parallel = c("no",
   rm(sim)
   
   # apply auxiliary functions and return list of comparisons
-  goflist <- compute.goflist(simulations = simulations, target = target, 
+  goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
       verbose = verbose)
   return(goflist)
@@ -830,7 +852,7 @@ gof.network <- function(object, covariates, coef, target = NULL,
       twomode[i] <- !is.mat.onemode(target[[i]])
     }
   }
-  goflist <- compute.goflist(simulations = simulations, target = target, 
+  goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
       verbose = verbose)
   return(goflist)

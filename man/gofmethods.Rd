@@ -15,6 +15,7 @@
 \alias{gof.network}
 \alias{gof.matrix}
 \alias{gof.ergm}
+\alias{createGOF}
 \docType{methods}
 \title{Conduct Goodness-of-Fit Diagnostics on ERGMs, TERGMs, SAOMs, and logit models}
 \description{
@@ -28,6 +29,8 @@ In-sample GOF assessment is the default, which means that the same time steps ar
 Predictive fit can also be assessed for stochastic actor-oriented models (SAOM) as implemented in the \pkg{RSiena} package. After compiling the usual objects (model, data, effects), one of the time steps can be predicted based on the previous time step and the SAOM using the \code{sienaFit} method of the \code{gof} function. By default, however, within-sample fit is used for SAOMs, just like for (T)ERGMs.
 
 The \code{gof} methods for networks and matrices serve to assess the goodness of fit of a dyadic-independence model. To do this, the method requires a vector of coefficients (one coefficient for the intercept or \code{edges} term and one coefficient for each covariate), a list of covariates (in matrix or network shape), and a dependent network or matrix. This is useful for assessing the goodness of fit of QAP-adjusted logistic regression models (as implemented in the \code{netlogit} function in the \pkg{sna} package) or other dyadic-independence models, such as models fitted using \code{glm}. Note that this method only works with cross-sectional models and does not accept lists of networks as input data.
+
+The \code{createGOF} function is used internally by the \code{gof} function in order to create a \code{gof} object from a list of simulated networks and a list of target networks to compare against. It can also be used directly by the end user if the user wants to supply lists of simulated and target networks from other sources.
 }
 \usage{
 \S4method{gof}{btergm}(object, target = NULL, formula = getformula(object), 
@@ -66,6 +69,10 @@ The \code{gof} methods for networks and matrices serve to assess the goodness of
     groupName = object$f$groupNames[[1]], varName = NULL, 
     outofsample = FALSE, sienaData = NULL, sienaEffects = NULL, 
     nsim = NULL, verbose = TRUE, ...)
+
+createGOF(simulations, target, statistics = c(dsp, esp, deg, 
+    ideg, geodesic, rocpr, walktrap.modularity), parallel = "no", 
+    ncpus = 1, cl = NULL, verbose = TRUE)
 }
 \arguments{
 \item{cl}{ An optional \pkg{parallel} or \pkg{snow} cluster for use if \code{parallel = "snow"}. If not supplied, a cluster on the local machine is created temporarily. }
@@ -84,8 +91,9 @@ The \code{gof} methods for networks and matrices serve to assess the goodness of
 \item{period}{ Which transition between time periods should be used for GOF assessment? By default, all transitions between all time periods are used. For example, if there are three consecutive networks, this will extract simulations from the transitions between 1 and 2 and between 2 and 3, respectively, and these simulations will be compared to the networks at time steps 2 and 3, respectively. The time period can be provided as a numeric, e.g., \code{period = 4} for extracting the simulations between time steps 4 and 5 (= the fourth transition) and predicting the fifth network. Values lower than 1 or larger than the number of consecutive networks minus 1 are therefore not permitted. This argument is only used if out-of-sample prediction is switched off. }
 \item{sienaData}{ An object of the class \code{siena}, which is usually created using the \code{sienaDataCreate} function in the \pkg{RSiena} package. This argument is only used for out-of-sample prediction. The object must be based on a \code{sienaDependent} object that contains two networks: the base network from which to simulate forward, and the target network which you want to predict out-of-sample. The object can contain further objects for storing covariates etc. that are necessary for estimating new networks. The best practice is to create an object that is identical to the \code{siena} object used for estimating the model, except that it contains the base and the target network instead of the dependent variable/networks. }
 \item{sienaEffects}{ An object of the class \code{sienaEffects}, which is usually created using the \code{getEffects()} and the \code{includeEffects()} functions in the \code{RSiena} package. The best practice is to provide a \code{sienaEffects} object that is identical to the object used to create the original model (that is, it should contain the same effects), except that it should be based on the \code{siena} object provided through the \code{sienaData} argument. In other words, the \code{sienaEffects} object should be based on the base and target network used for out-of-sample prediction, and it should contain the same effects as those used for the original estimation. This argument is used only for out-of-sample prediction. }
+\item{simulations}{ A list of \code{network} objects or sparse matrices (generated using the \pkg{Matrix} package) representing simulated networks. }
 \item{statistics}{ A list of functions used for comparison of observed and simulated networks. Note that the list should contain the actual functions, not a character representation of them. See \link{gof-statistics} for details. }
-\item{target}{ A network or list of networks to which the simulations are compared. If left empty, the original networks from the \code{btergm} object \code{x} are used as observed networks. }
+\item{target}{ In the \code{gof} function: A network or list of networks to which the simulations are compared. If left empty, the original networks from the \code{btergm} object \code{x} are used as observed networks. In the \code{createGOF} function: a list of sparse matrices (generated using the \pkg{Matrix} package) or a list of \code{network} objects (generated using the \pkg{network} package). The simulations are compared against these target networks. }
 \item{structzero}{ Which value was used for structural zeros (usually nodes that have dropped out of the network or have not yet joined the network) in the dependent variable/network? These nodes are removed from the observed network and the simulations before comparison. Usually, the value \code{10} is used for structural zeros in Siena. }
 \item{varName}{ The variable name that denotes the dependent networks in the Siena model. }
 \item{verbose}{ Print details? }
@@ -119,6 +127,15 @@ g <- gof(fit, statistics = c(triad.directed, esp, maxmod.modularity,
     rocpr), nsim = 50)
 g
 plot(g)  # see ?"gof-plot" for details
+
+# createGOF can also be used with user-supplied simulations:
+library("statnet")
+data(florentine)
+gest <- ergm(flomarriage ~ edges + absdiff("wealth"))
+sim <- simulate(gest, nsim = 50)
+g <- createGOF(sim, list(flomarriage), statistics = c(esp, ideg))
+g
+plot(g)
 }
 }
 \author{
