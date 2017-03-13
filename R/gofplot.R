@@ -179,7 +179,7 @@ plot.boxplot <- function(x, relative = TRUE, transform = function(x) x,
 # plot function for roc objects
 plot.roc <- function(x, add = FALSE, main = x$label, avg = c("none", 
     "horizontal", "vertical", "threshold"), spread.estimate = c("boxplot", 
-    "stderror", "stddev"), lwd = 3, rgraph = TRUE, col = "#bd0017", 
+    "stderror", "stddev"), lwd = 3, rgraph = FALSE, col = "#bd0017", 
     random.col = "#bd001744", ...) {
   
   plot(x$roc, avg = avg[1], spread.estimate = spread.estimate[1], 
@@ -194,7 +194,7 @@ plot.roc <- function(x, add = FALSE, main = x$label, avg = c("none",
 # plot function for pr objects
 plot.pr <- function(x, add = FALSE, main = x$label, avg = c("none", 
     "horizontal", "vertical", "threshold"), spread.estimate = c("boxplot", 
-    "stderror", "stddev"), lwd = 3, rgraph = TRUE, col = "#5886be", 
+    "stderror", "stddev"), lwd = 3, rgraph = FALSE, col = "#5886be", 
     random.col = "#5886be44", pr.poly = 0, ...) {
   
   plot(x$pr, avg = avg[1], spread.estimate = spread.estimate[1], 
@@ -234,10 +234,10 @@ plot.pr <- function(x, add = FALSE, main = x$label, avg = c("none",
 # plot function for rocpr objects
 plot.rocpr <- function(x, main = x$label, roc.avg = c("none", "horizontal", 
     "vertical", "threshold"), roc.spread.estimate = c("boxplot", "stderror", 
-    "stddev"), roc.lwd = 3, roc.rgraph = TRUE, roc.col = "#bd0017", 
+    "stddev"), roc.lwd = 3, roc.rgraph = FALSE, roc.col = "#bd0017", 
     roc.random.col = "#bd001744", pr.avg = c("none", "horizontal", 
     "vertical", "threshold"), pr.spread.estimate = c("boxplot", "stderror", 
-    "stddev"), pr.lwd = 3, pr.rgraph = TRUE, pr.col = "#5886be", 
+    "stddev"), pr.lwd = 3, pr.rgraph = FALSE, pr.col = "#5886be", 
     pr.random.col = "#5886be44", pr.poly = 0, ...) {
   
   plot(x$roc, avg = roc.avg[1], spread.estimate = roc.spread.estimate[1], 
