@@ -178,6 +178,8 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
       mat <- as.matrix(x)
       mat <- Matrix(mat)
       return(mat)
+    } else {
+      return(x)
     }
   })
   
