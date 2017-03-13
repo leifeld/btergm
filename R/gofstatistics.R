@@ -616,7 +616,8 @@ aucpr <- function(pred, precision, recall) {
 }
 
 # GOF function for ROC curves and PR curves
-rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, pr.impute = "poly4", ...) {
+rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE, 
+    pr.impute = "poly4", ...) {
   
   directed <- sapply(obs, xergm.common::is.mat.directed)
   twomode <- !sapply(obs, xergm.common::is.mat.onemode)
@@ -660,20 +661,25 @@ rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, pr.impute = "poly4", ...) {
     sums <- sums / length(sim)
     rg.sums <- rg.sums / length(rg)
     if (directed[[j]] == TRUE || twomode[[j]] == TRUE) {
-      prperf <- c(as.matrix(sums))
+      predicted <- c(as.matrix(sums))
       y <- c(as.matrix(net))
       rg.pr <- c(as.matrix(rg.sums))
     } else {
-      prperf <- sums[lower.tri(sums)]
+      predicted <- sums[lower.tri(sums)]
       y <- as.matrix(net)[lower.tri(as.matrix(net))]
       rg.pr <- rg.sums[lower.tri(rg.sums)]
     }
-    prperf <- prperf[!is.na(y)]
+    predicted <- predicted[!is.na(y)]
     rg.pr <- rg.pr[!is.na(y)]
     y <- y[!is.na(y)]
-    target.pr[[j]] <- prperf
+    target.pr[[j]] <- predicted
     rgraph.pr[[j]] <- rg.pr
     target.y[[j]] <- y
+  }
+  if (joint == TRUE) {  # merge into one single prediction task
+    target.pr <- unlist(target.pr)
+    target.y <- unlist(target.y)
+    rgraph.pr <- unlist(rgraph.pr)
   }
   pred <- prediction(target.pr, target.y)
   rocperf <- performance(pred, "tpr", "fpr")  # ROC curve

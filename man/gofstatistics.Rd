@@ -109,7 +109,8 @@ odeg(mat, ...)
 
 ostar(mat, ...)
 
-rocpr(sim, obs, roc = TRUE, pr = TRUE, pr.impute = "poly4", ...)
+rocpr(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE, 
+    pr.impute = "poly4", ...)
 
 spinglass.modularity(mat, ...)
 
@@ -269,7 +270,7 @@ Receiver-operating characteristics of predicting the community structure in the 
 Precision-recall curve for predicting the community structure in the observed network(s) by the community structure in the simulated networks, as computed by the Spinglass algorithm.
 }
 
-\item{\code{rocpr(sim, obs, roc = TRUE, pr = TRUE, pr.impute = "poly4", ...)}}{
+\item{\code{rocpr(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE, pr.impute = "poly4", ...)}}{
 Receiver-operating characteristics (ROC) and precision-recall curve (PR). Prediction of the dyad states of the observed network(s) by the dyad states of the simulated networks.
 }
 }
@@ -281,6 +282,7 @@ Receiver-operating characteristics (ROC) and precision-recall curve (PR). Predic
 \item{obs}{ A list of observed (= target) networks. Each element in the list should be a sparse matrix as created by the \code{Matrix} function in the \pkg{Matrix} package. }
 \item{roc}{ Compute receiver-operating characteristics (ROC)? }
 \item{pr}{ Compute precision-recall curve (PR)? }
+\item{joint}{ Merge all time steps into a single big prediction task and compute predictive fit (instead of computing GOF for all time steps separately)? }
 \item{pr.impute}{ In some cases, the first precision value of the precision-recall curve is undefined. The \code{pr.impute} argument serves to impute this missing value to ensure that the AUC-PR value is not severely biased. Possible values are \code{"no"} for no imputation, \code{"one"} for using a value of \code{1.0}, \code{"second"} for using the next (= adjacent) precision value, \code{"poly1"} for fitting a straight line through the remaining curve to predict the first value, \code{"poly2"} for fitting a second-order polynomial curve etc. until \code{"poly9"}. Warning: this is a pragmatic solution. Please double-check whether the imputation makes sense. This can be checked by plotting the resulting object and using the \code{pr.poly} argument to plot the predicted curve on top of the actual PR curve. }
 \item{...}{ Additional arguments. This must be present in all auxiliary GOF statistics. }
 }
