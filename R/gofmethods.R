@@ -158,7 +158,7 @@ reduce.matrix <- function(sim, obs) {
 # evaluate statistics and create gof object
 createGOF <- function(simulations, target, statistics = c(dsp, esp, deg, 
     ideg, geodesic, rocpr, walktrap.modularity), parallel = "no", 
-    ncpus = 1, cl = NULL, verbose = TRUE) {
+    ncpus = 1, cl = NULL, verbose = TRUE, ...) {
   
   # prepare parallel processing
   stop.parallel <- FALSE
@@ -193,7 +193,12 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
   # go through statistics functions and compute results
   goflist <- list()
   for (z in 1:length(statistics)) {
-    args <- length(formals(statistics[[z]]))  # determine number of arguments
+    args <- names(formals(statistics[[z]]))  # determine number of arguments
+    if ("sim" %in% args && "obs" %in% args) {
+      args <- 2
+    } else {
+      args <- 1
+    }
     if (args == 1) {  # either sim or obs
       tryCatch(
         expr = {
@@ -204,20 +209,21 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
           }
           
           if (parallel[1] == "no") {
-            simulated <- suppressMessages(sapply(simulations, statistics[[z]]))
-            observed <- suppressMessages(sapply(target, statistics[[z]]))
+            simulated <- suppressMessages(sapply(simulations, statistics[[z]], 
+                                                 ...))
+            observed <- suppressMessages(sapply(target, statistics[[z]], ...))
           } else if (parallel[1] == "multicore") {
             test <- suppressMessages(statistics[[z]](simulations[[1]]))
             if (class(test) == "numeric" && length(test) == 1) {
               simulated <- suppressMessages(unlist(mclapply(simulations, 
-                  statistics[[z]], mc.cores = ncpus)))
+                  statistics[[z]], ..., mc.cores = ncpus)))
               observed <- suppressMessages(unlist(mclapply(target, 
-                  statistics[[z]], mc.cores = ncpus)))
+                  statistics[[z]], ..., mc.cores = ncpus)))
             } else {  # no mcsapply available because different length vectors
               simulated <- suppressMessages(mclapply(simulations, 
-                  statistics[[z]], mc.cores = ncpus))
+                  statistics[[z]], ..., mc.cores = ncpus))
               observed <- suppressMessages(mclapply(target, statistics[[z]], 
-                  mc.cores = ncpus))
+                  ..., mc.cores = ncpus))
               max.length.sim <- max(sapply(simulated, length), na.rm = TRUE)
               max.length.obs <- max(sapply(observed, length), na.rm = TRUE)
               max.length <- max(max.length.sim, max.length.obs, na.rm = TRUE)
@@ -232,9 +238,9 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
             clusterEvalQ(cl, library("ergm"))
             clusterEvalQ(cl, library("xergm.common"))
             simulated <- suppressMessages(parSapply(cl = cl, simulations, 
-                statistics[[z]]))
+                statistics[[z]], ...))
             observed <- suppressMessages(parSapply(cl = cl, target, 
-                statistics[[z]]))
+                statistics[[z]], ...))
           }
           
           # if simulations have different dimensions, convert list to matrix
@@ -290,7 +296,7 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
           if (verbose == TRUE) {
             message(paste("Processing statistic:", label))
           }
-          gofobject <- statistics[[z]](simulations, target)
+          gofobject <- statistics[[z]](sim = simulations, obs = target, ... = ...)
           goflist[[length(goflist) + 1]] <- gofobject
           names(goflist)[length(goflist)] <- label
         }, 
@@ -510,7 +516,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
   goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
-      verbose = verbose)
+      verbose = verbose, ... = ...)
   #if (statnet.stop.parallel == TRUE) {
   #  stopCluster(statnet.parallel)
   #}
@@ -718,7 +724,7 @@ gof.sienaFit <- function(object, period = NULL, parallel = c("no",
   # apply auxiliary functions and return list of comparisons
   goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
-      verbose = verbose)
+      verbose = verbose, ... = ...)
   return(goflist)
 }
 
@@ -856,7 +862,7 @@ gof.network <- function(object, covariates, coef, target = NULL,
   }
   goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
-      verbose = verbose)
+      verbose = verbose, ... = ...)
   return(goflist)
 }
 

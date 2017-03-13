@@ -72,7 +72,7 @@ The \code{createGOF} function is used internally by the \code{gof} function in o
 
 createGOF(simulations, target, statistics = c(dsp, esp, deg, 
     ideg, geodesic, rocpr, walktrap.modularity), parallel = "no", 
-    ncpus = 1, cl = NULL, verbose = TRUE)
+    ncpus = 1, cl = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{cl}{ An optional \pkg{parallel} or \pkg{snow} cluster for use if \code{parallel = "snow"}. If not supplied, a cluster on the local machine is created temporarily. }
@@ -97,7 +97,7 @@ createGOF(simulations, target, statistics = c(dsp, esp, deg,
 \item{structzero}{ Which value was used for structural zeros (usually nodes that have dropped out of the network or have not yet joined the network) in the dependent variable/network? These nodes are removed from the observed network and the simulations before comparison. Usually, the value \code{10} is used for structural zeros in Siena. }
 \item{varName}{ The variable name that denotes the dependent networks in the Siena model. }
 \item{verbose}{ Print details? }
-\item{...}{ Arbitrary further arguments. }
+\item{...}{ Arbitrary further arguments to be passed on to the statistics. See also the help page for the \link{gof-statistics}. }
 }
 \seealso{
 \link{btergm-package} \link{btergm} \link{simulate.btergm} \link[ergm]{simulate.formula} \link{gof} \link{gof-statistics} \link{gof-plot}
@@ -133,7 +133,7 @@ library("statnet")
 data(florentine)
 gest <- ergm(flomarriage ~ edges + absdiff("wealth"))
 sim <- simulate(gest, nsim = 50)
-g <- createGOF(sim, list(flomarriage), statistics = c(esp, ideg))
+g <- createGOF(sim, list(flomarriage), statistics = c(esp, ideg), roc = FALSE)
 g
 plot(g)
 }

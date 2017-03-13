@@ -6,7 +6,7 @@
 
 
 # GOF function for computing dyad-wise shared partner statistics
-dsp <- function(mat) {
+dsp <- function(mat, ...) {
   d <- summary(mat ~ dsp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Dyad-wise shared partners"
@@ -14,7 +14,7 @@ dsp <- function(mat) {
 }
 
 # GOF function for computing edge-wise shared partner statistics
-esp <- function(mat) {
+esp <- function(mat, ...) {
   d <- summary(mat ~ esp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Edge-wise shared partners"
@@ -22,7 +22,7 @@ esp <- function(mat) {
 }
 
 # GOF function for computing non-edge-wise shared partner statistics
-nsp <- function(mat) {
+nsp <- function(mat, ...) {
   d <- summary(mat ~ nsp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Non-edge-wise shared partners"
@@ -30,7 +30,7 @@ nsp <- function(mat) {
 }
 
 # GOF function for computing the degree distribution
-deg <- function(mat) {
+deg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -39,7 +39,7 @@ deg <- function(mat) {
 }
 
 # GOF function for computing the degree distribution for the first mode
-b1deg <- function(mat) {
+b1deg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b1degree(0:nrow(mat)))
   names(d) <- 0:(length(d)- 1)
@@ -48,7 +48,7 @@ b1deg <- function(mat) {
 }
 
 # GOF function for computing the degree distribution for the second mode
-b2deg <- function(mat) {
+b2deg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b2degree(0:ncol(mat)))
   names(d) <- 0:(length(d)- 1)
@@ -57,7 +57,7 @@ b2deg <- function(mat) {
 }
 
 # GOF function for computing the degree distribution
-odeg <- function(mat) {
+odeg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -66,7 +66,7 @@ odeg <- function(mat) {
 }
 
 # GOF function for computing the degree distribution
-ideg <- function(mat) {
+ideg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -75,7 +75,7 @@ ideg <- function(mat) {
 }
 
 # GOF function for computing the k-star distribution
-kstar <- function(mat) {
+kstar <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -84,7 +84,7 @@ kstar <- function(mat) {
 }
 
 # GOF function for computing the k-star distribution on the first mode
-b1star <- function(mat) {
+b1star <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b1star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
@@ -93,7 +93,7 @@ b1star <- function(mat) {
 }
 
 # GOF function for computing the k-star distribution on the second mode
-b2star <- function(mat) {
+b2star <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b2star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
@@ -102,7 +102,7 @@ b2star <- function(mat) {
 }
 
 # GOF function for computing the outgoing k-star distribution
-ostar <- function(mat) {
+ostar <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -111,7 +111,7 @@ ostar <- function(mat) {
 }
 
 # GOF function for computing the incoming k-star distribution
-istar <- function(mat) {
+istar <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) 
       - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -120,7 +120,7 @@ istar <- function(mat) {
 }
 
 # GOF function for computing the degree distribution
-kcycle <- function(mat) {
+kcycle <- function(mat, ...) {
   d <- summary(mat ~ cycle(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Cycle"
@@ -128,7 +128,7 @@ kcycle <- function(mat) {
 }
 
 # GOF function for computing geodesic distances
-geodesic <- function(mat) {
+geodesic <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   fillup <- function(x, another.length) {  # fill up x if shorter
     difference <- length(x) - another.length
@@ -149,7 +149,7 @@ geodesic <- function(mat) {
 }
 
 # GOF function for computing triad census statistics in directed graphs
-triad.directed <- function(mat) {
+triad.directed <- function(mat, ...) {
   tr <- sna::triad.census(network(as.matrix(mat), directed = TRUE), 
       mode = "digraph")[1, ]
   attributes(tr)$label <- "Triad census"
@@ -157,7 +157,7 @@ triad.directed <- function(mat) {
 }
 
 # GOF function for computing triad census statistics in undirected graphs
-triad.undirected <- function(mat) {
+triad.undirected <- function(mat, ...) {
   tr <- sna::triad.census(network(as.matrix(mat), directed = FALSE), 
       mode = "graph")[1, ]
   attributes(tr)$label <- "Triad census"
@@ -180,7 +180,7 @@ comemb <- function(vec) {
 }
 
 # GOF function for computing Walktrap modularity distribution
-walktrap.modularity <- function(mat) {
+walktrap.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
@@ -199,7 +199,7 @@ walktrap.modularity <- function(mat) {
 }
 
 # ROC for Walktrap community detection algorithm
-walktrap.roc <- function(sim, obs) {
+walktrap.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -231,7 +231,7 @@ walktrap.roc <- function(sim, obs) {
 }
 
 # PR for Walktrap community detection algorithm
-walktrap.pr <- function(sim, obs) {
+walktrap.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -264,7 +264,7 @@ walktrap.pr <- function(sim, obs) {
 
 
 # GOF function for computing fast and greedy modularity distribution
-fastgreedy.modularity <- function(mat) {
+fastgreedy.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   if (sum(mat) == 0) {
     mod <- 0
@@ -278,7 +278,7 @@ fastgreedy.modularity <- function(mat) {
 }
 
 # ROC for fast & greedy community detection algorithm
-fastgreedy.roc <- function(sim, obs) {
+fastgreedy.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -304,7 +304,7 @@ fastgreedy.roc <- function(sim, obs) {
 }
 
 # PR for fast & greedy community detection algorithm
-fastgreedy.pr <- function(sim, obs) {
+fastgreedy.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -330,7 +330,7 @@ fastgreedy.pr <- function(sim, obs) {
 }
 
 # GOF function for computing maximal modularity distribution
-maxmod.modularity <- function(mat) {
+maxmod.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
@@ -349,7 +349,7 @@ maxmod.modularity <- function(mat) {
 }
 
 # ROC for maximal modularity community detection algorithm
-maxmod.roc <- function(sim, obs) {
+maxmod.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -381,7 +381,7 @@ maxmod.roc <- function(sim, obs) {
 }
 
 # PR for maximal modularity community detection algorithm
-maxmod.pr <- function(sim, obs) {
+maxmod.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -413,7 +413,7 @@ maxmod.pr <- function(sim, obs) {
 }
 
 # GOF function for computing edge betweenness modularity distribution
-edgebetweenness.modularity <- function(mat) {
+edgebetweenness.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
@@ -432,7 +432,7 @@ edgebetweenness.modularity <- function(mat) {
 }
 
 # ROC for edge betweenness community detection algorithm
-edgebetweenness.roc <- function(sim, obs) {
+edgebetweenness.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -464,7 +464,7 @@ edgebetweenness.roc <- function(sim, obs) {
 }
 
 # PR for edge betweenness community detection algorithm
-edgebetweenness.pr <- function(sim, obs) {
+edgebetweenness.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -496,7 +496,7 @@ edgebetweenness.pr <- function(sim, obs) {
 }
 
 # GOF function for computing spinglass modularity distribution
-spinglass.modularity <- function(mat) {
+spinglass.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   if (xergm.common::is.mat.directed(as.matrix(mat))) {
     m <- "directed"
@@ -515,7 +515,7 @@ spinglass.modularity <- function(mat) {
 }
 
 # ROC for spinglass community detection algorithm
-spinglass.roc <- function(sim, obs) {
+spinglass.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -547,7 +547,7 @@ spinglass.roc <- function(sim, obs) {
 }
 
 # PR for spinglass community detection algorithm
-spinglass.pr <- function(sim, obs) {
+spinglass.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
   }
@@ -616,7 +616,7 @@ aucpr <- function(pred, precision, recall) {
 }
 
 # GOF function for ROC curves and PR curves
-rocprgof <- function(sim, obs, pr.impute = "poly4") {
+rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, pr.impute = "poly4", ...) {
   
   directed <- sapply(obs, xergm.common::is.mat.directed)
   twomode <- !sapply(obs, xergm.common::is.mat.onemode)
@@ -660,70 +660,70 @@ rocprgof <- function(sim, obs, pr.impute = "poly4") {
     sums <- sums / length(sim)
     rg.sums <- rg.sums / length(rg)
     if (directed[[j]] == TRUE || twomode[[j]] == TRUE) {
-      pr <- c(as.matrix(sums))
+      prperf <- c(as.matrix(sums))
       y <- c(as.matrix(net))
       rg.pr <- c(as.matrix(rg.sums))
     } else {
-      pr <- sums[lower.tri(sums)]
+      prperf <- sums[lower.tri(sums)]
       y <- as.matrix(net)[lower.tri(as.matrix(net))]
       rg.pr <- rg.sums[lower.tri(rg.sums)]
     }
-    pr <- pr[!is.na(y)]
+    prperf <- prperf[!is.na(y)]
     rg.pr <- rg.pr[!is.na(y)]
     y <- y[!is.na(y)]
-    target.pr[[j]] <- pr
+    target.pr[[j]] <- prperf
     rgraph.pr[[j]] <- rg.pr
     target.y[[j]] <- y
   }
   pred <- prediction(target.pr, target.y)
-  roc <- performance(pred, "tpr", "fpr")  # ROC curve
-  pr <- performance(pred, "ppv", "tpr")  # precision-recall curve
+  rocperf <- performance(pred, "tpr", "fpr")  # ROC curve
+  prperf <- performance(pred, "ppv", "tpr")  # precision-recall curve
   rg.pred <- prediction(rgraph.pr, target.y)
   rg.roc <- performance(rg.pred, "tpr", "fpr")  # ROC curve
   rg.pr <- performance(rg.pred, "ppv", "tpr")  # precision-recall curve
   
   # impute the first PR value (which is sometimes NaN)
-  for (j in 1:length(pr@y.values)) {
+  for (j in 1:length(prperf@y.values)) {
     fp <- pred@fp[[j]]
     tp <- pred@tp[[j]]
     if (fp[1] == 0 & tp[1] == 0) {
-      pr@y.values[[j]][1] <- 1
+      prperf@y.values[[j]][1] <- 1
     } else if (pr.impute == "no") {
       message(paste0("t = ", j, ": warning -- the first PR value was not ", 
         "imputed; this may lead to underestimated AUC-PR values."))
       # do nothing
-    } else if (is.nan(pr@y.values[[j]][1])) {
+    } else if (is.nan(prperf@y.values[[j]][1])) {
       if (pr.impute == "second") {
         message(paste0("t = ", j, ": imputing the first PR value by the ", 
             "next (= adjacent) value."))
-        pr@y.values[[j]][1] <- pr@y.values[[j]][2]
+        prperf@y.values[[j]][1] <- prperf@y.values[[j]][2]
       } else if (pr.impute == "one") {
         message(paste0("t = ", j, ": imputing the first PR value by the ", 
             "maximum value of 1."))
-        pr@y.values[[j]][1] <- 1
+        prperf@y.values[[j]][1] <- 1
       } else if (grepl("^poly[1-9]", pr.impute)) {
         num <- as.numeric(substr(pr.impute, 5, 5))
         message(paste0("t = ", j, ": imputing the first PR value using a ", 
             "polynomial of order ", num, ". Check the results by plotting ",
             "the GOF object using the \"pr.poly = ", num, "\" argument."))
-        p <- data.frame(poly(pr@x.values[[j]], num, raw = TRUE))
-        fit <- lm(pr@y.values[[j]] ~ ., data = p)
-        pr@y.values[[j]][1] <- predict(fit, newdata = p[1, ])
+        p <- data.frame(poly(prperf@x.values[[j]], num, raw = TRUE))
+        fit <- lm(prperf@y.values[[j]] ~ ., data = p)
+        prperf@y.values[[j]][1] <- predict(fit, newdata = p[1, ])
       } else {
         message(paste0("t = ", j, ": PR imputation method not recognized. ", 
             "Not using any imputation."))
       }
-      if (pr@y.values[[j]][1] < 0) {
-        pr@y.values[[j]][0] <- 0
+      if (prperf@y.values[[j]][1] < 0) {
+        prperf@y.values[[j]][0] <- 0
       }
-      if (pr@y.values[[j]][1] > 1) {
-        pr@y.values[[j]][1] <- 1
+      if (prperf@y.values[[j]][1] > 1) {
+        prperf@y.values[[j]][1] <- 1
       }
     }
   }
   
   auc.roc <- unlist(performance(pred, measure = "auc")@y.values)  # ROC-AUC
-  auc.pr <- aucpr(pred, precision = pr@y.values, recall = pr@x.values)  # PR-AUC
+  auc.pr <- aucpr(pred, precision = prperf@y.values, recall = prperf@x.values)  # PR-AUC
   rg.auc.roc <- unlist(performance(rg.pred, measure = "auc")@y.values)
   rg.auc.pr <- aucpr(rg.pred, precision = rg.pr@y.values, 
       recall = rg.pr@x.values)
@@ -734,36 +734,21 @@ rocprgof <- function(sim, obs, pr.impute = "poly4") {
   rocpr$auc.roc.rgraph <- rg.auc.roc
   rocpr$auc.pr <- auc.pr
   rocpr$auc.pr.rgraph <- rg.auc.pr
-  rocpr$roc <- roc
+  rocpr$roc <- rocperf
   rocpr$roc.rgraph <- rg.roc
-  rocpr$pr <- pr
+  rocpr$pr <- prperf
   rocpr$pr.rgraph <- rg.pr
-  class(rocpr) <- "rocpr"
+  if (roc == TRUE && pr == FALSE) {
+    rocpr <- rocpr[-c(4, 5, 8, 9)]
+    attributes(rocpr)$label <- "Receiver-operating characteristics"
+    class(rocpr) <- "roc"
+  } else if (roc == FALSE && pr == TRUE) {
+    rocpr <- rocpr[-c(2, 3, 6, 7)]
+    attributes(rocpr)$label <- "Precision-recall curve"
+    class(rocpr) <- "pr"
+  } else {
+    attributes(rocpr)$label <- "ROC and PR curve"
+    class(rocpr) <- "rocpr"
+  }
   return(rocpr)
-}
-
-# wrapper function for rocprgof without pr.impute argument (for use with gof)
-rocpr <- function(sim, obs) {
-  object <- suppressMessages(rocprgof(sim, obs))
-  object$label <- "ROC and PR curve"
-  attributes(object)$label <- object$label
-  return(object)
-}
-
-# wrapper function for ROC only (for use with gof)
-roc <- function(sim, obs) {
-  object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
-  class(object) <- "roc"
-  object$label <- "Receiver-operating characteristics"
-  attributes(object)$label <- object$label
-  return(object)
-}
-
-# wrapper function for PR only (for use with gof)
-pr <- function(sim, obs) {
-  object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
-  class(object) <- "pr"
-  object$label <- "Precision-recall curve"
-  attributes(object)$label <- object$label
-  return(object)
 }
