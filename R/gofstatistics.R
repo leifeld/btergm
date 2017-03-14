@@ -585,6 +585,7 @@ aucpr <- function(pred, precision, recall) {
   truepos <- pred@tp
   n.positive <- pred@n.pos
   aucvalues <- numeric()
+  
   for (j in 1:length(precision)) {
     fp <- falsepos[[j]]
     tp <- truepos[[j]]
@@ -724,6 +725,48 @@ rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE,
       }
       if (prperf@y.values[[j]][1] > 1) {
         prperf@y.values[[j]][1] <- 1
+      }
+    }
+  }
+  
+  # impute the first PR value of random graph
+  for (j in 1:length(rg.pr@y.values)) {
+    fp <- rg.pred@fp[[j]]
+    tp <- rg.pred@tp[[j]]
+    if (fp[1] == 0 & tp[1] == 0) {
+      rg.pr@y.values[[j]][1] <- 1
+    } else if (pr.impute == "no") {
+      message(paste0("t = ", j, ": warning -- the first PR value was not ", 
+        "imputed; this may lead to underestimated AUC-PR values for the ", 
+        "random graph."))
+      # do nothing
+    } else if (is.nan(rg.pr@y.values[[j]][1])) {
+      if (pr.impute == "second") {
+        message(paste0("t = ", j, ": imputing the first PR value by the ", 
+            "next (= adjacent) value for the random graph."))
+        rg.pr@y.values[[j]][1] <- rg.pr@y.values[[j]][2]
+      } else if (pr.impute == "one") {
+        message(paste0("t = ", j, ": imputing the first PR value by the ", 
+            "maxmum value of 1 for the random graph."))
+        rg.pr@y.values[[j]][1] <- 1
+      } else if (grepl("^poly[1-9]", pr.impute)) {
+        num <- as.numeric(substr(pr.impute, 5, 5))
+        message(paste0("t = ", j, ": imputing the first PR value using a ", 
+            "polynomial of order ", num, " for the random graph. Check the ", 
+            "results by plotting the GOF object using the \"pr.poly = ", num, 
+            "\" argument."))
+        p <- data.frame(poly(rg.pr@x.values[[j]], num, raw = TRUE))
+        fit <- lm(rg.pr@y.values[[j]] ~ ., data = p)
+        rg.pr@y.values[[j]][1] <- predict(fit, newdata = p[1, ])
+      } else {
+        message(paste0("t = ", j, ": PR imputation method not recognized. ", 
+            "Not using any imputation."))
+      }
+      if (rg.pr@y.values[[j]][1] < 0) {
+        rg.pr@y.values[[j]][0] <- 0
+      }
+      if (rg.pr@y.values[[j]][1] > 1) {
+        rg.pr@y.values[[j]][1] <- 1
       }
     }
   }
