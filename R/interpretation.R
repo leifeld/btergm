@@ -349,7 +349,7 @@ edgeprob <- function(object, verbose = FALSE) {
   cf <- coef(object)
   cf.length <- length(cf)  
   cf <- cf[!cf %in% c(Inf, -Inf)]
-  if (length(cf != cf.length)) {
+  if (length(cf) != cf.length) {
     warning(paste("There are structural zeros or ones. For these dyads, the",
         "predicted probabilities are not valid and must be manually replaced",
         "by 0 or 1, respectively."))
