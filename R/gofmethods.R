@@ -203,7 +203,7 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
       tryCatch(
         expr = {
           label <- suppressMessages(attributes(statistics[[z]](
-              simulations[[1]]))$label)
+              simulations[[1]])))$label
           if (verbose == TRUE) {
             message(paste("Processing statistic:", label))
           }
@@ -271,7 +271,7 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
             reduced <- reduce.matrix(simulated, observed)
             gofobject$type <- "boxplot"
             gofobject$stats <- reduced$comparison
-            gofobject$raw <- Matrix(as.matrix(reduced$sim))
+            gofobject$raw <- Matrix::Matrix(as.matrix(reduced$sim))
             class(gofobject) <- "boxplot"
           } else if (class(simulated) == "numeric") {  # density-type GOF
             gofobject$type <- "univariate"

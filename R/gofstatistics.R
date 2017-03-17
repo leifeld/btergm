@@ -641,7 +641,7 @@ rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE,
           r <- symmetrize(r, rule = "upper")
         }
       }
-      rg[length(rg) + 1] <- list(Matrix(r))
+      rg[length(rg) + 1] <- list(Matrix::Matrix(r))
     }
   }
   
