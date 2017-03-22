@@ -1,11 +1,10 @@
 Package: btergm
 Version: 1.8.3
-Date: 2017-03-13
+Date: 2017-03-22
 Title: Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood
 Authors@R: c(person(given = "Philip", family = "Leifeld", email = "philip.leifeld@glasgow.ac.uk", role = c("aut", "cre")), person(given = c("Skyler", "J."), family = "Cranmer", email = "cranmer.12@osu.edu", role = "ctb"), person(given = c("Bruce", "A."), family = "Desmarais", email = "bdesmarais@psu.edu", role = "ctb"))
 Description: Temporal Exponential Random Graph Models (TERGM) estimated by maximum pseudolikelihood with bootstrapped confidence intervals or Markov Chain Monte Carlo maximum likelihood. Goodness of fit assessment for ERGMs, TERGMs, and SAOMs. Micro-level interpretation of ERGMs and TERGMs.
 URL: http://github.com/leifeld/btergm
 Imports: stats4, utils, methods, graphics, statnet (>= 2015.11.0), statnet.common (>= 3.3.0), network (>= 1.13.0), sna (>= 2.3.2), ergm (>= 3.5.1), texreg (>= 1.34.4), parallel, Matrix (>= 1.2.2), boot (>= 1.3.17), coda (>= 0.18.1), stats, ROCR (>= 1.0.7), speedglm (>= 0.3.1), igraph (>= 0.7.1), RSiena (>= 1.0.12.232)
 Depends: R (>= 2.14.0), xergm.common (>= 1.7.3)
-Suggests: xergm
 License: GPL (>= 2)
