@@ -104,6 +104,12 @@ Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017):
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
 Software}.
+
+Leifeld, Philip and Skyler J. Cranmer (2014): A Theoretical and 
+Empirical Comparison of the Temporal Exponential Random Graph 
+Model and the Stochastic Actor-Oriented Model. Paper presented 
+at the 7th Political Networks Conference, McGill University, 
+Montreal, Canada, May 30. \url{http://arxiv.org/abs/1506.06696}.
 }
 \seealso{
 \link{btergm-package} \link{btergm} \link{simulate.btergm} \link[ergm]{simulate.formula} \link{gof} \link{gof-statistics} \link{gof-plot}
