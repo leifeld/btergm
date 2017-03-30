@@ -304,7 +304,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       # extract transform argument
       s <- "(?:timecov\\(.*transform\\s*=\\s*)(.+?)(?:(?:,|\\)$)]*.*)"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
-        transform <- function(t) 1 + (0 * t) + (0 * t^2)
+        transform <- function(t) t
       } else {
         transform <- eval(parse(text = sub(s, "\\1", l$rhs.terms[k], 
             perl = TRUE)))
