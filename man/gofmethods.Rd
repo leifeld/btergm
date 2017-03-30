@@ -148,6 +148,8 @@ sim <- simulate(gest, nsim = 50)
 g <- createGOF(sim, list(flomarriage), statistics = c(esp, ideg), roc = FALSE)
 g
 plot(g)
+
+# The help page for the Knecht dataset (?knecht) contains another example.
 }
 }
 \author{

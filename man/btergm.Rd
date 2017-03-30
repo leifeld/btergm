@@ -87,7 +87,7 @@ fit2 <- mtergm(networks ~ edges + istar(2) +
 summary(fit2)
 }
 
-# For an example with real data, see help("knecht").
+# For examples with real data, see help("knecht") or help("alliances").
 
 
 # Examples for parallel processing:

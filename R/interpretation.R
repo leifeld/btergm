@@ -368,3 +368,117 @@ edgeprob <- function(object, verbose = FALSE) {
   rownames(dyads) <- NULL
   return(dyads)
 }
+
+# function for marginal effects plots
+marginalplot <- function(model, var1, var2, inter, ci = 0.95, 
+    rug = FALSE, point = FALSE, structzeromat = NULL, 
+    zeroline = TRUE, color = "black", xlab = NULL, ylab = NULL) {
+  
+  # check arguments
+  if (!var1 %in% names(coef(model))) {
+    stop("'var1' not found.")
+  }
+  if (!var2 %in% names(coef(model))) {
+    stop("'var2' not found.")
+  }
+  
+  # change statistics (needed for second variable)
+  ep <- suppressWarnings(edgeprob(model))
+  
+  # remove '[[i]]' from edge covariate names in edgeprob
+  for (i in 1:ncol(ep)) {
+    if (grepl("((edge)|(dyad))cov", colnames(ep)[i])) {
+      colnames(ep)[i] <- substr(colnames(ep)[i], 1, nchar(colnames(ep)[i]) - 5)
+    }
+  }
+  
+  # delete structural zeros from edgeprob output
+  if (!is.null(structzeromat)) {
+    include <- logical(nrow(ep))
+    for (r in 1:length(include)) {
+      if (structzeromat[ep$i[r], ep$j[r] - nrow(structzeromat)] == 1) {
+        include[r] <- FALSE
+      } else {
+        include[r] <- TRUE
+      }
+    }
+    ep <- ep[include == TRUE, ]
+  }
+  
+  # unique values of the second variable
+  v2 <- sort(unlist(unique(ep[var2])))
+  names(v2) <- NULL
+  
+  # coefficients
+  co <- coef(model)
+  beta1 <- co[match(var1, names(co))]
+  beta3 <- co[match(inter, names(co))]
+  
+  # marginal effects
+  delta1 = beta1 + beta3 * v2
+  
+  # variance-covariance matrix
+  vc <- stats::vcov(model)
+  
+  # variances
+  variances1 = vc[var1, var1] + (v2^2) * vc[inter, inter] + 
+      (2 * v2 * vc[var1, inter])
+  
+  # standard errors
+  se1 = sqrt(variances1)
+  
+  # confidence intervals
+  z_score = qnorm(1 - ((1 - ci) / 2))
+  upper = delta1 + z_score * se1
+  lower = delta1 - z_score * se1
+  
+  # aggregate in data frame
+  dta <- data.frame(v2 = v2, delta1 = delta1, upper = upper, lower = lower)
+  
+  # axis labels
+  if (is.null(xlab)) {
+    xlab <- var2
+  }
+  if (is.null(ylab)) {
+    ylab <- var1
+  }
+  
+  # plot error bars or line
+  if (point == TRUE) {
+    if (length(v2) == 2 && v2[1] == 0 && v2[2] == 1 && rug == FALSE) {
+      dta$v2 <- as.factor(dta$v2)
+    }
+    gp <- ggplot(data = dta, aes(x = v2, y = delta1)) + 
+      geom_errorbar(data = dta, 
+                    aes(x = v2, ymin = lower, ymax = upper), 
+                    color = color) + 
+      geom_point(data = dta, aes(x = v2, y = delta1)) + 
+      ylab(ylab) + 
+      xlab(xlab)
+  } else {
+    gp <- ggplot(data = dta, aes(x = v2, y = delta1)) + 
+      geom_line(color = color) + 
+      geom_ribbon(aes_string(ymin = "lower", ymax = "upper"), 
+                  alpha = 0.15, 
+                  fill = color) + 
+      ylab(ylab) + 
+      xlab(xlab)
+  }
+  
+  # add distribution to the plot
+  if (rug == TRUE) {
+    gp <- gp + geom_rug(data = ep[var2], 
+                        aes_string(x = var2), 
+                        inherit.aes = FALSE, 
+                        sides = "b", 
+                        col = color, 
+                        alpha = 0.1)
+  }
+  
+  # add horizontal line for 0
+  if (zeroline == TRUE) {
+    gp <- gp + geom_hline(yintercept = 0, linetype = "dashed")
+  }
+  
+  return(gp)
+}
