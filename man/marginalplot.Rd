@@ -45,6 +45,7 @@ Philip Leifeld (\url{http://www.philipleifeld.com})
 \keyword{marginal effects}
 \keyword{interpretation}
 \examples{
+\dontrun{
 # data preparation
 data("florentine")
 n <- network.size(flobusiness)
@@ -63,4 +64,5 @@ marginalplot(model, var1 = "edgecov.wealth.icov",
     var2 = "edgecov.priorates.icov", inter = "edgecov.interac", 
     color = "darkred", rug = TRUE, point = FALSE, xlab = "Priorates", 
     ylab = "Wealth") + theme_bw() + ggtitle("Interaction effect")
+}
 }
