@@ -1,5 +1,3 @@
-
-
 # helper function for adjusting matrix dimensions and creating an offset matrix
 tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE, 
     verbose = TRUE) {

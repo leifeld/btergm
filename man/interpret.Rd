@@ -47,10 +47,21 @@ See also the \link{edgeprob} function for automatic computation of all dyadic ed
 \item{t}{ A vector of (numerical) time steps for which the probabilities should be computed. This only applies to \code{btergm} objects because \code{ergm} objects are by definition based on a single time step. By default, all available time steps are used. It is, for example, possible to compute probabilities only for a single time step by specifying, e.g., \code{t = 5} in order to compute probabilities for the fifth response network. }
 }
 \references{
+Czarna, Anna Z., Philip Leifeld, Magdalena Smieja, Michael Dufner 
+and Peter Salovey (2016): Do Narcissism and Emotional Intelligence 
+Win Us Friends? Modeling Dynamics of Peer Popularity Using 
+Inferential Network Analysis. \emph{Personality and Social 
+Psychology Bulletin} 42(11): 1588--1599.
+
 Desmarais, Bruce A. and Skyler J. Cranmer (2012):
 Micro-Level Interpretation of Exponential Random Graph Models with
 Application to Estuary Networks.
 \emph{The Policy Studies Journal} 40(3): 402--434.
+
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
 }
 \seealso{
 \link{edgeprob} \link{btergm-package} \link{btergm} \link{timesteps.btergm}

@@ -44,6 +44,11 @@ Desmarais, Bruce A. and Skyler J. Cranmer (2010):
 Consistent Confidence Intervals for Maximum Pseudolikelihood Estimators.
 \emph{Neural Information Processing Systems 2010 Workshop on Computational 
 Social Science and the Wisdom of Crowds}.
+
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
 }
 \seealso{
 \link{btergm-package} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{btergm-class} \link{checkdegeneracy}
@@ -183,7 +188,6 @@ cl <- getMPIcluster()
 
 fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
     R = 100, parallel = "snow", ncpus = 25, cl = cl)
-
 }
 
 }

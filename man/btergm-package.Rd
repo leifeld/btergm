@@ -6,6 +6,12 @@
 \details{
 The \pkg{btergm} package implements TERGMs with MPLE and bootstrapped confidence intervals (\link{btergm} function) or MCMC MLE (\link{mtergm} function). Goodness of fit assessment for ERGMs, TERGMs, SAOMs, and dyadic independence models is possible with the generic \link{gof} function and its various methods. New networks can be simulated from TERGMs using the \link{simulate.btergm} function. The package also implements micro-level interpretation for ERGMs and TERGMs using the \link{interpret} function. Furthermore, the package contains the \link{chemnet} and \link{knecht} datasets for estimating (T)ERGMs. To display citation information, type \code{citation("btergm")}.
 }
+\references{
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
+}
 \seealso{
 \link{btergm} \link{mtergm} \link{simulate.btergm} \link{gof} \link{interpret} \link{btergm-class} \link{checkdegeneracy}
 }

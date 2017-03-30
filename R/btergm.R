@@ -454,8 +454,8 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   if (object@offset == TRUE) {
     coef <- c(coef, -Inf)
   }
-  s <- suppressWarnings(ergm::simulate.formula(form, nsim = nsim, seed = seed, 
-      coef = coef, verbose = verbose, ...))
+  s <- simulate.formula(form, nsim = nsim, seed = seed, coef = coef, 
+      verbose = verbose, ...)
   if ("btergm" %in% class(object)) {
     return(s)
   } else if ("mtergm" %in% class(object)) {

@@ -286,6 +286,12 @@ Receiver-operating characteristics (ROC) and precision-recall curve (PR). Predic
 \item{pr.impute}{ In some cases, the first precision value of the precision-recall curve is undefined. The \code{pr.impute} argument serves to impute this missing value to ensure that the AUC-PR value is not severely biased. Possible values are \code{"no"} for no imputation, \code{"one"} for using a value of \code{1.0}, \code{"second"} for using the next (= adjacent) precision value, \code{"poly1"} for fitting a straight line through the remaining curve to predict the first value, \code{"poly2"} for fitting a second-order polynomial curve etc. until \code{"poly9"}. Warning: this is a pragmatic solution. Please double-check whether the imputation makes sense. This can be checked by plotting the resulting object and using the \code{pr.poly} argument to plot the predicted curve on top of the actual PR curve. }
 \item{...}{ Additional arguments. This must be present in all auxiliary GOF statistics. }
 }
+\references{
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
+}
 \seealso{
 \link{btergm-package} \link{gof} \link{gof-methods}
 }

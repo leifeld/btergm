@@ -22,6 +22,12 @@ The \code{timecov} model term checks for linear or non-linear time trends with r
 }
 }
 }
+\references{
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
+}
 \seealso{
 \link{btergm-package} \link{btergm} \link[ergm]{ergm-terms}
 }

@@ -46,6 +46,16 @@ The methods for the generic \code{degeneracy} function implement a degeneracy ch
 \item{target.lwd}{ Line width of the vertical bar for the target statistic. Defaults to 3. }
 \item{...}{ Arbitrary further arguments. }
 }
+\references{
+Hanneke, Steve, Wenjie Fu and Eric P. Xing (2010): Discrete 
+Temporal Models of Social Networks. \emph{Electronic Journal of 
+Statistics} 4: 585--605.
+
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
+}
 \seealso{
 \link{btergm-package} \link{btergm} \link{gof}
 }

@@ -99,6 +99,12 @@ createGOF(simulations, target, statistics = c(dsp, esp, deg,
 \item{verbose}{ Print details? }
 \item{...}{ Arbitrary further arguments to be passed on to the statistics. See also the help page for the \link{gof-statistics}. }
 }
+\references{
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
+}
 \seealso{
 \link{btergm-package} \link{btergm} \link{simulate.btergm} \link[ergm]{simulate.formula} \link{gof} \link{gof-statistics} \link{gof-plot}
 }

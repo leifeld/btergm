@@ -24,6 +24,23 @@ The first variable in the resulting data frame contains the edge value (i.e., th
 \author{
 Philip Leifeld
 }
+\references{
+Czarna, Anna Z., Philip Leifeld, Magdalena Smieja, Michael Dufner 
+and Peter Salovey (2016): Do Narcissism and Emotional Intelligence 
+Win Us Friends? Modeling Dynamics of Peer Popularity Using 
+Inferential Network Analysis. \emph{Personality and Social 
+Psychology Bulletin} 42(11): 1588--1599.
+
+Desmarais, Bruce A. and Skyler J. Cranmer (2012):
+Micro-Level Interpretation of Exponential Random Graph Models with
+Application to Estuary Networks.
+\emph{The Policy Studies Journal} 40(3): 402--434.
+
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software}.
+}
 \seealso{
 \link{interpret} \link{btergm-package} \link{btergm}
 }
