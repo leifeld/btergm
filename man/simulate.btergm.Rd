@@ -25,10 +25,10 @@ Desmarais, Bruce A. and Skyler J. Cranmer (2012):
  Statistical Mechanics of Networks: Estimation and Uncertainty.
  \emph{Physica A} 391: 1865--1876.
 
-Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017):
- Temporal Exponential Random Graph Models with btergm: Estimation 
- and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
- Software}.
+Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
+Temporal Exponential Random Graph Models with btergm: Estimation 
+and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
+Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm-package} \link{btergm} \link[btergm]{gof}

@@ -10,7 +10,7 @@ The \pkg{btergm} package implements TERGMs with MPLE and bootstrapped confidence
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software}.
+Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm} \link{mtergm} \link{simulate.btergm} \link{gof} \link{interpret} \link{btergm-class} \link{checkdegeneracy}
@@ -20,5 +20,5 @@ Philip Leifeld (\url{http://www.philipleifeld.de})
 
 Skyler J. Cranmer (\url{http://www.skylercranmer.net})
 
-Bruce A. Desmarais (\url{http://polisci.la.psu.edu/people/bruce-desmarais})
+Bruce A. Desmarais (\url{http://brucedesmarais.com/})
 }

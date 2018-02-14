@@ -1,17 +1,21 @@
-citHeader("To cite package 'btergm' in publications use:")
+bibentry(bibtype = "Article",
+  title        = "Temporal Exponential Random Graph Models with {btergm}: Estimation and Bootstrap Confidence Intervals",
+  author       = c(person(given = "Philip",
+                          family = "Leifeld",
+                          email = "philip.leifeld@glasgow.ac.uk"),
+                   person(given = c("Skyler", "J."),
+                          family = "Cranmer",
+                          email = "cranmer.12@osu.edu"),
+                   person(given = c("Bruce", "A."),
+                          family = "Desmarais",
+                          email = "bdesmarais@psu.edu")),
+  journal      = "Journal of Statistical Software",
+  year         = "2018",
+  volume       = "83",
+  number       = "6",
+  pages        = "1--36",
+  doi          = "10.18637/jss.v083.i06",
 
-year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
-vers <- paste("R package version", meta$Version)
-
-citEntry(entry="Manual",
-  title = "btergm: Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood",
-  author = personList(as.person("Philip Leifeld"), 
-                      as.person("Skyler J. Cranmer"), 
-                      as.person("Bruce A. Desmarais")),
-  year = year,
-  note = vers,
-  textVersion = paste("Leifeld, Philip, Skyler J. Cranmer and Bruce A. ",
-      "Desmarais (", year, "). btergm. Temporal Exponential Random ", 
-      " Graph Models by Bootstrapped Pseudolikelihood. ", vers, ".", sep = ""),
-  url = "https://CRAN.R-project.org/package=btergm"
+  header       = "To cite btergm in publications use:"
 )
+

@@ -298,7 +298,7 @@ fastgreedy.roc <- function(sim, obs, ...) {
   obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
   class(object) <- "roc"
-  object$label <- "Fast $ greedy community comembership prediction"
+  object$label <- "Fast & greedy community comembership prediction"
   attributes(object)$label <- object$label
   return(object)
 }
@@ -324,7 +324,90 @@ fastgreedy.pr <- function(sim, obs, ...) {
   obs <- lapply(obs, fun)
   object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
   class(object) <- "pr"
-  object$label <- "Fast $ greedy community comembership prediction"
+  object$label <- "Fast & greedy community comembership prediction"
+  attributes(object)$label <- object$label
+  return(object)
+}
+
+# GOF function for computing Louvain clustering modularity distribution
+louvain.modularity <- function(mat, ...) {
+  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+    m <- "directed"
+  } else {
+    m <- "undirected"
+  }
+  mat[is.na(mat)] <- 0
+  if (sum(mat) == 0) {
+    mod <- 0
+  } else {
+    g <- igraph::graph.adjacency(mat, mode = m)
+    clus <- igraph::cluster_louvain(g)
+    mod <- igraph::modularity(clus)
+  }
+  attributes(mod)$label <- "Modularity (Louvain)"
+  return(mod)
+}
+
+# ROC for Louvain community detection algorithm
+louvain.roc <- function(sim, obs, ...) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
+  fun <- function(x) {
+    m <- xergm.common::is.mat.directed(as.matrix(x))
+    if (m == TRUE) {
+      m <- "directed"
+    } else {
+      m <- "undirected"
+    }
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
+    } else {
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::cluster_louvain(g)$membership
+    }
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
+  object <- suppressMessages(rocpr(sim, obs)[-c(4, 5, 8, 9)])
+  class(object) <- "roc"
+  object$label <- "Louvain community comembership prediction"
+  attributes(object)$label <- object$label
+  return(object)
+}
+
+# PR for Louvain community detection algorithm
+louvain.pr <- function(sim, obs, ...) {
+  for (i in 1:length(sim)) {
+    sim[[i]][is.na(sim[[i]])] <- 0
+  }
+  for (i in 1:length(obs)) {
+    obs[[i]][is.na(obs[[i]])] <- 0
+  }
+  fun <- function(x) {
+    m <- xergm.common::is.mat.directed(as.matrix(x))
+    if (m == TRUE) {
+      m <- "directed"
+    } else {
+      m <- "undirected"
+    }
+    if (sum(x) == 0) {
+      memb <- rep(1, nrow(x))
+    } else {
+      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      memb <- igraph::cluster_louvain(g)$membership
+    }
+    return(comemb(memb))
+  }
+  sim <- lapply(sim, fun)
+  obs <- lapply(obs, fun)
+  object <- suppressMessages(rocpr(sim, obs)[-c(2, 3, 6, 7)])
+  class(object) <- "pr"
+  object$label <- "Louvain community comembership prediction"
   attributes(object)$label <- object$label
   return(object)
 }

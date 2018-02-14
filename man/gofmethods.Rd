@@ -103,7 +103,7 @@ createGOF(simulations, target, statistics = c(dsp, esp, deg,
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software}.
+Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 
 Leifeld, Philip and Skyler J. Cranmer (2014): A Theoretical and 
 Empirical Comparison of the Temporal Exponential Random Graph 

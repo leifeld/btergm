@@ -107,7 +107,7 @@ Social Science and the Wisdom of Crowds}.
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software}.
+Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{getformula} \link{interpret} \link{mtergm}

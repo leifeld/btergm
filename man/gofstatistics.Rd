@@ -32,6 +32,9 @@
 \alias{fastgreedy.modularity}
 \alias{fastgreedy.pr}
 \alias{fastgreedy.roc}
+\alias{louvain.modularity}
+\alias{louvain.pr}
+\alias{louvain.roc}
 \alias{maxmod.modularity}
 \alias{maxmod.pr}
 \alias{maxmod.roc}
@@ -97,6 +100,12 @@ kcycle(mat, ...)
 
 kstar(mat, ...)
 
+louvain.modularity(mat, ...)
+
+louvain.pr(sim, obs, ...)
+
+louvain.roc(sim, obs, ...)
+
 maxmod.modularity(mat, ...)
 
 maxmod.pr(sim, obs, ...)
@@ -140,6 +149,10 @@ Modularity distribution as computed by the Walktrap algorithm.
 
 \item{\code{fastgreedy.modularity(mat, ...)}}{
 Modularity distribution as computed by the fast and greedy algorithm. Only sensible with undirected networks.
+}
+
+\item{\code{louvain.modularity(mat, ...)}}{
+Modularity distribution as computed by the Louvain algorithm.
 }
 
 \item{\code{maxmod.modularity(mat, ...)}}{
@@ -246,6 +259,14 @@ Receiver-operating characteristics of predicting the community structure in the 
 Precision-recall curve for predicting the community structure in the observed network(s) by the community structure in the simulated networks, as computed by the fast and greedy algorithm. Only sensible with undirected networks.
 }
 
+\item{\code{louvain.roc(sim, obs, ...)}}{
+Receiver-operating characteristics of predicting the community structure in the observed network(s) by the community structure in the simulated networks, as computed by the Louvain algorithm.
+}
+
+\item{\code{louvain.pr(sim, obs, ...)}}{
+Precision-recall curve for predicting the community structure in the observed network(s) by the community structure in the simulated networks, as computed by the Louvain algorithm.
+}
+
 \item{\code{maxmod.roc(sim, obs, ...)}}{
 Receiver-operating characteristics of predicting the community structure in the observed network(s) by the community structure in the simulated networks, as computed by the modularity maximization algorithm.
 }
@@ -290,7 +311,7 @@ Receiver-operating characteristics (ROC) and precision-recall curve (PR). Predic
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software}.
+Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm-package} \link{gof} \link{gof-methods}
