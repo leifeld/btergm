@@ -459,12 +459,24 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   if ("btergm" %in% class(object)) {
     return(s)
   } else if ("mtergm" %in% class(object)) {
-    r1 <- sum(object@nvertices[1, 1:(index - 1)]) + 1
-    c1 <- sum(object@nvertices[2, 1:(index - 1)]) + 1
+    if (index == 1) {
+      r1 <- 1
+      c1 <- 1
+    } else {
+      r1 <- sum(object@nvertices[1, 1:(index - 1)]) + 1
+      c1 <- sum(object@nvertices[2, 1:(index - 1)]) + 1
+    }
     r2 <- sum(object@nvertices[1, 1:index])
     c2 <- sum(object@nvertices[2, 1:index])
+    
+    if (is.network(s)) {
+      s <- list(s)
+    }
     s <- lapply(s, function(sim) network(as.matrix(sim)[r1:r2, c1:c2], 
         bipartite = object@bipartite, directed = object@directed))
+    if (length(s) == 1) {
+      s <- s[[1]]
+    }
     return(s)
   }
 }
