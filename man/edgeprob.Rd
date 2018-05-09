@@ -19,7 +19,7 @@ edgeprob(object, verbose = FALSE)
 \item{verbose}{ Print details? }
 }
 \value{
-The first variable in the resulting data frame contains the edge value (i.e., the dependent variable, which is usually binary). The next variables contain all the predictors from the ERGM or TERGM (i.e., the change statistics). The next three variables contain the indices of the sender (i), the receiver (j), and the time step (t). These three indices serve to identify the dyad. The last variable contains the computed edge probabilities.
+The first variable in the resulting data frame contains the edge value (i.e., the dependent variable, which is usually binary). The next variables contain all the predictors from the ERGM or TERGM (i.e., the change statistics). The next five variables contain the indices of the sender (i), the receiver (j), the time step (t), the vertex id of i (i.name), and the vertex id of j (j.name). These five variables serve to identify the dyad. The last variable contains the computed edge probabilities.
 }
 \author{
 Philip Leifeld
