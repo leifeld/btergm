@@ -295,7 +295,7 @@ edgeprob <- function (object, verbose = FALSE)
     tergm <- TRUE
   }
   else {
-    stop(paste("The tieprob function is only applicable to ergm, btergm, and",
+    stop(paste("The edgeprob function is only applicable to ergm, btergm, and",
                "mtergm objects."))
   }
   l <- tergmprepare(formula = getformula(object), offset = FALSE,
@@ -358,12 +358,12 @@ edgeprob <- function (object, verbose = FALSE)
   i.name <- numeric(nrow(dyads))
   j.name <- numeric(nrow(dyads))
   for (t in 1:length(l$networks)) {
-    vnames.t <- colnames(l$networks[[i]][,])
-    dyads.t <- dyads[which(dyads$t==t),]
+    vnames.t <- colnames(l$networks[[i]][, ])
+    dyads.t <- dyads[which(dyads$t == t), ]
     i.name.t <- vnames.t[dyads.t$i]
     j.name.t <- vnames.t[dyads.t$j]
-    i.name[which(dyads$t==t)] <- i.name.t
-    j.name[which(dyads$t==t)] <- j.name.t
+    i.name[which(dyads$t == t)] <- i.name.t
+    j.name[which(dyads$t == t)] <- j.name.t
   }
   dyads$i.name <- i.name
   dyads$j.name <- j.name
