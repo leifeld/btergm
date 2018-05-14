@@ -1,2 +1,5 @@
 *~
 *.backup
+.Rproj.user
+btergm.Rproj
+.Rhistory

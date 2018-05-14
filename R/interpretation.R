@@ -286,30 +286,27 @@ setMethod("interpret", signature = className("mtergm", "btergm"),
 
 
 # a function that creates all tie probabilities along with some other variables
-edgeprob <- function(object, verbose = FALSE) {
-  
-  # determine if ERGM or TERGM
+edgeprob <- function (object, verbose = FALSE)
+{
   if (class(object) == "ergm") {
     tergm <- FALSE
-  } else if (class(object) %in% c("btergm", "mtergm")) {
-    tergm <- TRUE
-  } else {
-    stop(paste("The tieprob function is only applicable to ergm, btergm, and",
-        "mtergm objects."))
   }
-  
-  # prepare data structures in a local environment
-  l <- tergmprepare(formula = getformula(object), offset = FALSE, 
-      blockdiag = FALSE, verbose = FALSE)
+  else if (class(object) %in% c("btergm", "mtergm")) {
+    tergm <- TRUE
+  }
+  else {
+    stop(paste("The edgeprob function is only applicable to ergm, btergm, and",
+               "mtergm objects."))
+  }
+  l <- tergmprepare(formula = getformula(object), offset = FALSE,
+                    blockdiag = FALSE, verbose = FALSE)
   for (cv in 1:length(l$covnames)) {
     assign(l$covnames[cv], l[[l$covnames[cv]]])
   }
   assign("offsmat", l$offsmat)
   form <- as.formula(l$form)
-  covnames <- l$covnames[-1]  # leave out the LHS network(s)
+  covnames <- l$covnames[-1]
   coefs <- coef(object)
-  
-  # create matrix with MPLE predictors and i, j, and t indices
   if (verbose == TRUE) {
     message("Creating data frame with predictors...")
   }
@@ -318,24 +315,25 @@ edgeprob <- function(object, verbose = FALSE) {
   for (i in 1:length(l$networks)) {
     mat <- as.matrix(l$networks[[i]])
     imat <- matrix(rep(1:nrow(mat), ncol(mat)), nrow = nrow(mat))
-    if ((class(l$networks[[i]]) == "network" && 
-        is.bipartite(l$networks[[i]])) || 
-        (class(l$networks[[i]]) == "matrix" && 
-        is.mat.onemode(l$networks[[i]]) == FALSE)) {
+    if ((class(l$networks[[i]]) == "network" && is.bipartite(l$networks[[i]])) ||
+        (class(l$networks[[i]]) == "matrix" && is.mat.onemode(l$networks[[i]]) ==
+         FALSE)) {
       mn <- nrow(mat) + 1
       mx <- nrow(mat) + ncol(mat)
-      jmat <- matrix(rep(mn:mx, nrow(mat)), nrow = nrow(mat), byrow = TRUE)
-    } else {
-      jmat <- matrix(rep(1:ncol(mat), nrow(mat)), nrow = nrow(mat), 
-          byrow = TRUE)
+      jmat <- matrix(rep(mn:mx, nrow(mat)), nrow = nrow(mat),
+                     byrow = TRUE)
+    }
+    else {
+      jmat <- matrix(rep(1:ncol(mat), nrow(mat)), nrow = nrow(mat),
+                     byrow = TRUE)
     }
     f <- as.formula(paste(l$form, " + edgecov(imat) + edgecov(jmat)"))
     mpli <- ergm::ergmMPLE(f)
     Y <- c(Y, mpli$response)
     dyads <- rbind(dyads, cbind(mpli$predictor, i))
   }
-  term.names <- colnames(dyads)[-(length(colnames(dyads)):(length(colnames(
-      dyads)) - 2))]
+  term.names <- colnames(dyads)[-(length(colnames(dyads)):(length(colnames(dyads)) -
+                                                             2))]
   term.names <- c(term.names, "i", "j", "t")
   dyads <- data.frame(dyads)
   colnames(dyads) <- term.names
@@ -344,25 +342,32 @@ edgeprob <- function(object, verbose = FALSE) {
   class(dyads[, length(colnames(dyads))]) <- "integer"
   class(dyads[, length(colnames(dyads)) - 1]) <- "integer"
   class(dyads[, length(colnames(dyads)) - 2]) <- "integer"
-
-  # take care of structural zeros and ones
   cf <- coef(object)
-  cf.length <- length(cf)  
+  cf.length <- length(cf)
   cf <- cf[!cf %in% c(Inf, -Inf)]
   if (length(cf) != cf.length) {
     warning(paste("There are structural zeros or ones. For these dyads, the",
-        "predicted probabilities are not valid and must be manually replaced",
-        "by 0 or 1, respectively."))
+                  "predicted probabilities are not valid and must be manually replaced",
+                  "by 0 or 1, respectively."))
   }
-  
-  # compute predicted probabilities
   cbcoef <- cbind(cf)
   chgstat <- dyads[, 2:(ncol(dyads) - 3)]
   lp <- apply(chgstat, 1, function(x) t(x) %*% cbcoef)
-  result <- c(1 / (1 + exp(-lp)))
+  result <- c(1/(1 + exp(-lp)))
+  # add in vertex ids
+  i.name <- numeric(nrow(dyads))
+  j.name <- numeric(nrow(dyads))
+  for (t in 1:length(l$networks)) {
+    vnames.t <- colnames(l$networks[[i]][, ])
+    dyads.t <- dyads[which(dyads$t == t), ]
+    i.name.t <- vnames.t[dyads.t$i]
+    j.name.t <- vnames.t[dyads.t$j]
+    i.name[which(dyads$t == t)] <- i.name.t
+    j.name[which(dyads$t == t)] <- j.name.t
+  }
+  dyads$i.name <- i.name
+  dyads$j.name <- j.name
   dyads <- cbind(dyads, result)
-  
-  # combine dyads/predictors and probabilities, sort, and return
   colnames(dyads)[ncol(dyads)] <- "probability"
   dyads <- dyads[order(dyads$t, dyads$i, dyads$j), ]
   rownames(dyads) <- NULL
