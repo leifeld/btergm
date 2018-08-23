@@ -445,9 +445,21 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     #    constraints = ~ ., control = control.simulate.formula(MCMC.interval = 
     #    MCMC.interval, MCMC.burnin = MCMC.burnin, parallel = statnet.parallel, 
     #    parallel.type = statnet.parallel.type))
-    sim[[index]] <- simulate.formula(form, nsim = nsim, coef = coefs, 
-        constraints = ~ ., control = control.simulate.formula(MCMC.interval = 
-        MCMC.interval, MCMC.burnin = MCMC.burnin))
+    tryCatch(
+      {
+        sim[[index]] <- simulate.formula(form, nsim = nsim, coef = coefs, 
+            constraints = ~ ., control = control.simulate.formula(
+            MCMC.interval = MCMC.interval, MCMC.burnin = MCMC.burnin))
+      }, error = function(cond) {
+        sim[[index]] <- NULL
+        warning("There was a problem with the simulation at t = ", index, 
+                ". Sometimes this may be due to node attributes being ",
+                "incomplete at some time steps. For example, not all levels ", 
+                "of a nodefactor term may be present at all time steps. ", 
+                "Original error message: ", cond)
+      }
+    )
+    
   }
   
   # check basis network(s)
