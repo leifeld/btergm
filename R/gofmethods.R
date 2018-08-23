@@ -513,6 +513,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       twomode[i] <- !is.mat.onemode(target[[i]])
     }
   }
+  
   simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
   goflist <- createGOF(simulations = simulations, target = target, 
       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 

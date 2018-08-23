@@ -1,8 +1,6 @@
 import("utils")
 import("methods")
 importFrom("graphics", "boxplot", "hist", "abline")
-import("statnet")
-import("statnet.common")
 import("network")
 importFrom("RSiena", "sienaAlgorithmCreate")
 importFrom("RSiena", "siena07")

@@ -56,7 +56,7 @@ Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 \examples{
 # A simple toy example:
 
-library("statnet")
+library("network")
 set.seed(5)
 
 networks <- list()

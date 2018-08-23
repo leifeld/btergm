@@ -35,7 +35,7 @@ Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \examples{
 # fit a TERGM to some toy data
-library("statnet")
+library("network")
 set.seed(5)
 networks <- list()
 for(i in 1:10){            # create 10 random networks with 10 actors
