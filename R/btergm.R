@@ -240,6 +240,13 @@ btergm <- function(formula, R = 500, offset = FALSE,
     returndata = FALSE, parallel = c("no", "multicore", 
     "snow"), ncpus = 1, cl = NULL, verbose = TRUE, ...) {
   
+  args <- list(...)
+  if("control" %in% names(args)){
+    control <- args$control
+  } else {
+    control <- ergm::control.ergm()
+  }
+  
   # call tergmprepare and integrate results in local environment
   l <- tergmprepare(formula = formula, offset = offset, verbose = verbose)
   for (i in 1:length(l$covnames)) {
@@ -286,10 +293,10 @@ btergm <- function(formula, R = 500, offset = FALSE,
       model <- ergm::ergm.getmodel(form, nw, initialfit = TRUE)
       Clist <- ergm::ergm.Cprepare(nw, model)
       Clist.miss <- ergm::ergm.design(nw, model, verbose = FALSE)
+      control$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
       pl <- ergm::ergm.pl(Clist, Clist.miss, model, theta.offset = 
           c(rep(FALSE, length(l$rhs.terms) - 1), TRUE), verbose = FALSE, 
-          control = ergm::control.ergm(init = c(rep(NA, 
-          length(l$rhs.terms) - 1), 1)))
+          control = control)
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
           check.names = FALSE), i))
@@ -305,7 +312,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
     W <- NULL
     O <- NULL  # will remain NULL and will be fed into GLM
     for (i in 1:length(l$networks)) {
-      mpli <- ergm::ergmMPLE(form)
+      mpli <- ergm::ergmMPLE(form, control=control)
       Y <- c(Y, mpli$response)
       
       # fix different factor levels across time points
