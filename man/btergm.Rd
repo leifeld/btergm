@@ -7,7 +7,7 @@
 \usage{
 btergm(formula, R = 500, offset = FALSE, returndata = FALSE, 
     parallel = c("no", "multicore", "snow"), ncpus = 1, 
-    cl = NULL, verbose = TRUE, ...)
+    cl = NULL, verbose = TRUE, control.ergm = NULL, ...)
 
 mtergm(formula, constraints = ~ ., returndata = FALSE, 
     verbose = TRUE, ...)
@@ -27,6 +27,7 @@ The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected
 \item{cl}{ An optional \pkg{parallel} or \pkg{snow} cluster for use if \code{parallel = "snow"}. If not supplied, a PSOCK cluster is created temporarily on the local machine. }
 \item{constraints}{ Constraints of the ERGM. See \code{\link[ergm]{ergm}} for details. }
 \item{verbose}{ Print details about data preprocessing and estimation settings. }
+\item{control.ergm}{ ergm controls for ergmMPLE calls. See \code{\link[ergm]{control.ergm}} for details.}
 \item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call) or the boot function (in the case of a btergm call). }
 }
 \references{

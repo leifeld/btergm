@@ -295,7 +295,8 @@ btergm <- function(formula, R = 500, offset = FALSE,
       control.ergm$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
       pl <- ergm::ergm.pl(Clist, Clist.miss, model, theta.offset = 
           c(rep(FALSE, length(l$rhs.terms) - 1), TRUE), verbose = FALSE, 
-          control = control.ergm)
+          maxMPLEsamplesize = control.ergm$MPLE.max.dyad.types, 
+          control=control.ergm)
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
           check.names = FALSE), i))
