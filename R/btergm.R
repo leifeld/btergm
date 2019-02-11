@@ -241,7 +241,6 @@ btergm <- function(formula, R = 500, offset = FALSE,
     "snow"), ncpus = 1, cl = NULL, verbose = TRUE, 
     control.ergm = NULL, ...) {
   
-  args <- list(...)
   if(is.null(control.ergm)){
     control.ergm <- ergm::control.ergm()
   } 
