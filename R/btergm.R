@@ -441,10 +441,11 @@ btergm <- function(formula, R = 500, offset = FALSE,
   }
 
   # run the estimation (single-core or parallel)
-  coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
-                Wi = W, Oi = O, timei = X$time, startvali = startval, 
-                parallel = parallel, ncpus = ncpus, cl = cl, ...)
+  time <- X$time
   rm(X)
+  coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
+                Wi = W, Oi = O, timei = time, startvali = startval, 
+                parallel = parallel, ncpus = ncpus, cl = cl, ...)
   #if (nrow(coefs$t) == 1) { # in case there is only one model term
   #  coefs <- t(coefs)
   #}
