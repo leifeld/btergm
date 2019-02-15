@@ -372,10 +372,10 @@ btergm <- function(formula, R = 500, offset = FALSE,
       indic <- unlist(lapply(bsi, function(x) which(timei == x)))
       tryCatch(
         expr = {
-          return(fastglm(y = Yi[indic], X = as.matrix(x)[indic, ], 
+          return(fastglm(y = Yi[indic], x = as.matrix(x)[indic, ], 
                                     weights = Wi[indic], offset = Oi[indic], 
                                     family = binomial(link = logit), 
-                         start = startvali)$coefficients, method=3)
+                         start = startvali, method=3)$coefficients)
         }, 
         error = function(e) {
           # when fitted probabilities of 0 or 1 occur or when the algorithm does 
@@ -446,6 +446,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
   coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
                 Wi = W, Oi = O, timei = time, startvali = startval, 
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
+
   #if (nrow(coefs$t) == 1) { # in case there is only one model term
   #  coefs <- t(coefs)
   #}
