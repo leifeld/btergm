@@ -7,7 +7,7 @@ Description: Temporal Exponential Random Graph Models (TERGM) estimated by maxim
 URL: http://github.com/leifeld/btergm
 Imports: stats4, utils, methods, graphics, network (>= 1.13.0), sna (>= 2.3.2), ergm (>= 3.5.1), texreg (>= 1.34.4), parallel, Matrix (>= 1.2.2), boot (>= 1.3.17), coda (>= 0.18.1), stats, ROCR (>= 1.0.7), speedglm (>= 0.3.1), igraph (>= 0.7.1), RSiena (>= 1.0.12.232),
     fastglm
-Remotes: Jared Huling/fastglm
+Remotes: jaredhuling/fastglm
 Depends: R (>= 2.14.0), xergm.common (>= 1.7.7), ggplot2 (>= 2.0.0)
 License: GPL (>= 2)
 RoxygenNote: 6.1.0
