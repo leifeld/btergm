@@ -380,12 +380,9 @@ btergm <- function(formula, R = 500, offset = FALSE,
         error = function(e) {
           # when fitted probabilities of 0 or 1 occur or when the algorithm does 
           # not converge, use glm because it only throws a warning, not an error
-          return(coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ], 
+          return(as.vector(coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ], 
                               weights = Wi[indic], offset = Oi[indic], 
-                              family = binomial(link = logit))))
-        }, 
-        warning = function(w) {
-          warning(w)
+                              family = binomial(link = logit)))))
         }, 
         finally = {}
       )
@@ -443,6 +440,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
   # run the estimation (single-core or parallel)
   time <- X$time
   rm(X)
+  print("Starting bootstrap")
   coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
                 Wi = W, Oi = O, timei = time, startvali = startval, 
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
