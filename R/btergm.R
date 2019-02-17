@@ -354,11 +354,12 @@ btergm <- function(formula, R = 500, offset = FALSE,
   }
   
   # create sparse matrix and compute start values for GLM
-  xsparse <- Matrix(as.matrix(x), sparse = TRUE)
-  if (ncol(xsparse) == 1) {
+  if (ncol(x) == 1) {
     stop("At least two model terms must be provided to estimate a TERGM.")
   }
   if(usefastglm){
+    xsparse <- NULL
+    
     est <- fastglm(y = Y, x = as.matrix(x), 
                          weights = W, offset = O, 
                          family = binomial(link = logit), 
@@ -390,6 +391,8 @@ btergm <- function(formula, R = 500, offset = FALSE,
     
     
   } else {
+    xsparse <- Matrix(as.matrix(x), sparse = TRUE)
+    
     est <-  tryCatch(
       expr = {
         speedglm.wfit(y = Y, X = xsparse, 
