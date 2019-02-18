@@ -348,7 +348,8 @@ btergm <- function(formula, R = 500, offset = FALSE,
   unique.time.steps <- unique(X$time)
   x <- X[, -ncol(X)]
   x <- as.data.frame(x)  # in case there is only one column/model term
-  
+  time <- X$time
+  rm(X)
   if (returndata == TRUE) {
     return(cbind(Y, x))
   }
@@ -369,7 +370,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
     nobs <- length(est$fitted.values)
     
     estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
-                         Wi = W, Oi = O, timei = X$time, startvali = startval) {
+                         Wi = W, Oi = O, timei = time, startvali = startval) {
       indic <- unlist(lapply(bsi, function(x) which(timei == x)))
       fastglm(y = Yi[indic], x = as.matrix(x)[indic, ], 
                                     weights = Wi[indic], offset = Oi[indic], 
@@ -386,7 +387,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
     nobs <- est$n
     # define function for bootstrapping and estimation
     estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
-                         Wi = W, Oi = O, timei = X$time, startvali = startval) {
+                         Wi = W, Oi = O, timei = time, startvali = startval) {
       indic <- unlist(lapply(bsi, function(x) which(timei == x)))
       tryCatch(
         expr = {
@@ -411,7 +412,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
   }
   
   coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
-                Wi = W, Oi = O, timei = X$time, startvali = startval, 
+                Wi = W, Oi = O, timei = time, startvali = startval, 
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
 
   #if (nrow(coefs$t) == 1) { # in case there is only one model term
