@@ -371,47 +371,17 @@ btergm <- function(formula, R = 500, offset = FALSE,
     estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
                          Wi = W, Oi = O, timei = X$time, startvali = startval) {
       indic <- unlist(lapply(bsi, function(x) which(timei == x)))
-      tryCatch(
-        expr = {
-          return(fastglm(y = Yi[indic], x = as.matrix(x)[indic, ], 
+      fastglm(y = Yi[indic], x = as.matrix(x)[indic, ], 
                                     weights = Wi[indic], offset = Oi[indic], 
-                                    family = binomial(link = logit), 
-                         start = startvali, method=3)$coefficients)
-        }, 
-        error = function(e) {
-          # when fitted probabilities of 0 or 1 occur or when the algorithm does 
-          # not converge, use glm because it only throws a warning, not an error
-          return(as.vector(coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ], 
-                              weights = Wi[indic], offset = Oi[indic], 
-                              family = binomial(link = logit)))))
-        }, 
-        finally = {}
-      )
+                                    family = binomial(link = logit),  method=3)$coefficients
     }
     
     
   } else {
     xsparse <- Matrix(as.matrix(x), sparse = TRUE)
+    est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O, 
+                         family = binomial(link = logit), sparse = TRUE)
     
-    est <-  tryCatch(
-      expr = {
-        speedglm.wfit(y = Y, X = xsparse, 
-                             weights = W, offset = O, 
-                             family = binomial(link = logit), 
-                             sparse = TRUE)
-      }, 
-      error = function(e) {
-        # when fitted probabilities of 0 or 1 occur or when the algorithm does 
-        # not converge, use glm because it only throws a warning, not an error
-        glm.fit(y = Y, x = as.matrix(x), 
-                       weights = W, offset = O, 
-                       family = binomial(link = logit))
-      }, 
-      warning = function(w) {
-        warning(w)
-      }, 
-      finally = {}
-    )
     startval <- coef(est)
     nobs <- est$n
     # define function for bootstrapping and estimation
@@ -420,40 +390,36 @@ btergm <- function(formula, R = 500, offset = FALSE,
       indic <- unlist(lapply(bsi, function(x) which(timei == x)))
       tryCatch(
         expr = {
-          return(coef(speedglm.wfit(y = Yi[indic], X = xsparsei[indic, ], 
-                                    weights = Wi[indic], offset = Oi[indic], 
-                                    family = binomial(link = logit), sparse = TRUE, start = startvali)))
-        }, 
+          coef(speedglm.wfit(y = Yi[indic], X = xsparsei[indic, ],
+                                    weights = Wi[indic], offset = Oi[indic],
+                                    family = binomial(link = logit), sparse = TRUE))
+        },
         error = function(e) {
-          # when fitted probabilities of 0 or 1 occur or when the algorithm does 
+          # when fitted probabilities of 0 or 1 occur or when the algorithm does
           # not converge, use glm because it only throws a warning, not an error
-          return(coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ], 
-                              weights = Wi[indic], offset = Oi[indic], 
-                              family = binomial(link = logit))))
-        }, 
+          coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ],
+                              weights = Wi[indic], offset = Oi[indic],
+                              family = binomial(link = logit)))
+        },
         warning = function(w) {
           warning(w)
-        }, 
+        },
         finally = {}
       )
     }
 
   }
-
-  # run the estimation (single-core or parallel)
-  time <- X$time
-  rm(X)
-  print("Starting bootstrap")
+  
   coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
-                Wi = W, Oi = O, timei = time, startvali = startval, 
+                Wi = W, Oi = O, timei = X$time, startvali = startval, 
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
 
   #if (nrow(coefs$t) == 1) { # in case there is only one model term
   #  coefs <- t(coefs)
   #}
 
-  if (ncol(coefs$t) == 1 && length(term.names) > 1 
-      && coefs$t[1, 1] == "glm.fit: algorithm did not converge") {
+  if (coefs$t[1, 1] == "glm.fit: algorithm did not converge" ||
+      sum(is.na(coefs$t))>0 ) {
     stop(paste("Algorithm did not converge. There might be a collinearity ", 
         "between predictors and/or dependent networks at one or more time", 
         "steps."))
