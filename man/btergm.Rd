@@ -7,7 +7,8 @@
 \usage{
 btergm(formula, R = 500, offset = FALSE, returndata = FALSE, 
     parallel = c("no", "multicore", "snow"), ncpus = 1, 
-    cl = NULL, verbose = TRUE, control.ergm = NULL, ...)
+    cl = NULL, verbose = TRUE, control.ergm = NULL,
+    usefastglm = FALSE, ...)
 
 mtergm(formula, constraints = ~ ., returndata = FALSE, 
     verbose = TRUE, ...)
@@ -28,6 +29,7 @@ The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected
 \item{constraints}{ Constraints of the ERGM. See \code{\link[ergm]{ergm}} for details. }
 \item{verbose}{ Print details about data preprocessing and estimation settings. }
 \item{control.ergm}{ ergm controls for ergmMPLE calls. See \code{\link[ergm]{control.ergm}} for details.}
+\item{usefastglm}{ Controls whether to use estimation routine from the \code{\link[fastglm]{fastglm}} package with \code{method=3}. Defaults to \code{FALSE} and uses \code{\link[speedglm]{speedglm.wfit}}. }
 \item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call) or the boot function (in the case of a btergm call). }
 }
 \references{
