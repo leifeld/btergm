@@ -236,12 +236,19 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 
 
 # TERGM by bootstrapped pseudolikelihood
-btergm <- function(formula, R = 500, offset = FALSE, 
-    returndata = FALSE, parallel = c("no", "multicore", 
-    "snow"), ncpus = 1, cl = NULL, verbose = TRUE, 
-    control.ergm = NULL, usefastglm=FALSE, ...) {
+btergm <- function(formula,
+                   R = 500,
+                   offset = FALSE,
+                   returndata = FALSE,
+                   parallel = c("no", "multicore", "snow"),
+                   ncpus = 1,
+                   cl = NULL,
+                   control.ergm = NULL,
+                   usefastglm = FALSE,
+                   verbose = TRUE,
+                   ...) {
   
-  if(is.null(control.ergm)){
+  if (is.null(control.ergm)) {
     control.ergm <- ergm::control.ergm()
   } 
   
@@ -292,10 +299,13 @@ btergm <- function(formula, R = 500, offset = FALSE,
       Clist <- ergm::ergm.Cprepare(nw, model)
       Clist.miss <- ergm::ergm.design(nw, model, verbose = FALSE)
       control.ergm$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
-      pl <- ergm::ergm.pl(Clist, Clist.miss, model, theta.offset = 
-          c(rep(FALSE, length(l$rhs.terms) - 1), TRUE), verbose = FALSE, 
-          maxMPLEsamplesize = control.ergm$MPLE.max.dyad.types, 
-          control=control.ergm)
+      pl <- ergm::ergm.pl(Clist,
+                          Clist.miss,
+                          model,
+                          theta.offset = c(rep(FALSE, length(l$rhs.terms) - 1), TRUE),
+                          verbose = FALSE,
+                          maxMPLEsamplesize = control.ergm$MPLE.max.dyad.types,
+                          control = control.ergm)
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
           check.names = FALSE), i))
@@ -311,7 +321,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
     W <- NULL
     O <- NULL  # will remain NULL and will be fed into GLM
     for (i in 1:length(l$networks)) {
-      mpli <- ergm::ergmMPLE(form, control=control.ergm)
+      mpli <- ergm::ergmMPLE(form, control = control.ergm)
       Y <- c(Y, mpli$response)
       
       # fix different factor levels across time points
@@ -358,26 +368,40 @@ btergm <- function(formula, R = 500, offset = FALSE,
   if (ncol(x) == 1) {
     stop("At least two model terms must be provided to estimate a TERGM.")
   }
-  if(usefastglm){
-    xsparse <- NULL
-    
-    est <- fastglm(y = Y, x = as.matrix(x), 
-                         weights = W, offset = O, 
-                         family = binomial(link = logit), 
-                         sparse = TRUE, method=3)
-    
-    startval <- est$coefficients
-    nobs <- length(est$fitted.values)
-    
-    estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
-                         Wi = W, Oi = O, timei = time, startvali = startval) {
-      indic <- unlist(lapply(bsi, function(x) which(timei == x)))
-      fastglm(y = Yi[indic], x = as.matrix(x)[indic, ], 
-                                    weights = Wi[indic], offset = Oi[indic], 
-                                    family = binomial(link = logit),  method=3)$coefficients
+  
+  if (isTRUE(usefastglm)) {
+    if (requireNamespace("fastglm")) {
+      xsparse <- NULL
+      est <- fastglm::fastglm(y = Y,
+                              x = as.matrix(x), 
+                              weights = W,
+                              offset = O,
+                              family = binomial(link = logit),
+                              sparse = TRUE,
+                              method = 3)
+      
+      startval <- est$coefficients
+      nobs <- length(est$fitted.values)
+      
+      estimate <- function(unique.time.steps,
+                           bsi,
+                           Yi = Y,
+                           xsparsei = xsparse,
+                           Wi = W,
+                           Oi = O,
+                           timei = time,
+                           startvali = startval) {
+        indic <- unlist(lapply(bsi, function(x) which(timei == x)))
+        fastglm::fastglm(y = Yi[indic],
+                         x = as.matrix(x)[indic, ],
+                         weights = Wi[indic],
+                         offset = Oi[indic],
+                         family = binomial(link = logit),
+                         method = 3)$coefficients
+      }
+    } else {
+      stop("The 'fastglm' package was not found.")
     }
-    
-    
   } else {
     xsparse <- Matrix(as.matrix(x), sparse = TRUE)
     est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O, 
@@ -408,16 +432,11 @@ btergm <- function(formula, R = 500, offset = FALSE,
         finally = {}
       )
     }
-
   }
   
   coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
                 Wi = W, Oi = O, timei = time, startvali = startval, 
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
-
-  #if (nrow(coefs$t) == 1) { # in case there is only one model term
-  #  coefs <- t(coefs)
-  #}
 
   if (coefs$t[1, 1] == "glm.fit: algorithm did not converge" ||
       sum(is.na(coefs$t))>0 ) {
