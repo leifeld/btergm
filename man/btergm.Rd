@@ -7,7 +7,8 @@
 \usage{
 btergm(formula, R = 500, offset = FALSE, returndata = FALSE, 
     parallel = c("no", "multicore", "snow"), ncpus = 1, 
-    cl = NULL, verbose = TRUE, ...)
+    cl = NULL, control.ergm = NULL, usefastglm = FALSE, verbose = TRUE,
+    ...)
 
 mtergm(formula, constraints = ~ ., returndata = FALSE, 
     verbose = TRUE, ...)
@@ -26,6 +27,8 @@ The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected
 \item{ncpus}{ The number of CPU cores used for parallel computing (only if \code{parallel} is activated). If the number of cores should be detected automatically on the machine where the code is executed, one can set \code{ncpus = detectCores()} after loading the \pkg{parallel} package. On some HPC clusters, the number of available cores is saved as an environment variable; for example, if MOAB is used, the number of available cores can sometimes be accessed using \code{Sys.getenv("MOAB_PROCCOUNT")}, depending on the implementation. }
 \item{cl}{ An optional \pkg{parallel} or \pkg{snow} cluster for use if \code{parallel = "snow"}. If not supplied, a PSOCK cluster is created temporarily on the local machine. }
 \item{constraints}{ Constraints of the ERGM. See \code{\link[ergm]{ergm}} for details. }
+\item{control.ergm}{ ergm controls for ergmMPLE calls. See \code{\link[ergm]{control.ergm}} for details. }
+\item{usefastglm}{ Controls whether to use the \code{\link[fastglm]{fastglm}} estimation routine from the \pkg{fastglm} package with \code{method = 3}. Defaults to \code{FALSE} (and then uses \code{\link[speedglm]{speedglm.wfit}} instead). }
 \item{verbose}{ Print details about data preprocessing and estimation settings. }
 \item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call) or the boot function (in the case of a btergm call). }
 }

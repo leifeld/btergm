@@ -236,9 +236,21 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 
 
 # TERGM by bootstrapped pseudolikelihood
-btergm <- function(formula, R = 500, offset = FALSE, 
-    returndata = FALSE, parallel = c("no", "multicore", 
-    "snow"), ncpus = 1, cl = NULL, verbose = TRUE, ...) {
+btergm <- function(formula,
+                   R = 500,
+                   offset = FALSE,
+                   returndata = FALSE,
+                   parallel = c("no", "multicore", "snow"),
+                   ncpus = 1,
+                   cl = NULL,
+                   control.ergm = NULL,
+                   usefastglm = FALSE,
+                   verbose = TRUE,
+                   ...) {
+  
+  if (is.null(control.ergm)) {
+    control.ergm <- ergm::control.ergm()
+  } 
   
   # call tergmprepare and integrate results in local environment
   l <- tergmprepare(formula = formula, offset = offset, verbose = verbose)
@@ -286,10 +298,14 @@ btergm <- function(formula, R = 500, offset = FALSE,
       model <- ergm::ergm.getmodel(form, nw, initialfit = TRUE)
       Clist <- ergm::ergm.Cprepare(nw, model)
       Clist.miss <- ergm::ergm.design(nw, model, verbose = FALSE)
-      pl <- ergm::ergm.pl(Clist, Clist.miss, model, theta.offset = 
-          c(rep(FALSE, length(l$rhs.terms) - 1), TRUE), verbose = FALSE, 
-          control = ergm::control.ergm(init = c(rep(NA, 
-          length(l$rhs.terms) - 1), 1)))
+      control.ergm$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
+      pl <- ergm::ergm.pl(Clist,
+                          Clist.miss,
+                          model,
+                          theta.offset = c(rep(FALSE, length(l$rhs.terms) - 1), TRUE),
+                          verbose = FALSE,
+                          maxMPLEsamplesize = control.ergm$MPLE.max.dyad.types,
+                          control = control.ergm)
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
           check.names = FALSE), i))
@@ -305,7 +321,7 @@ btergm <- function(formula, R = 500, offset = FALSE,
     W <- NULL
     O <- NULL  # will remain NULL and will be fed into GLM
     for (i in 1:length(l$networks)) {
-      mpli <- ergm::ergmMPLE(form)
+      mpli <- ergm::ergmMPLE(form, control = control.ergm)
       Y <- c(Y, mpli$response)
       
       # fix different factor levels across time points
@@ -342,54 +358,88 @@ btergm <- function(formula, R = 500, offset = FALSE,
   unique.time.steps <- unique(X$time)
   x <- X[, -ncol(X)]
   x <- as.data.frame(x)  # in case there is only one column/model term
-  
+  time <- X$time
+  rm(X)
   if (returndata == TRUE) {
     return(cbind(Y, x))
   }
   
   # create sparse matrix and compute start values for GLM
-  xsparse <- Matrix(as.matrix(x), sparse = TRUE)
-  if (ncol(xsparse) == 1) {
+  if (ncol(x) == 1) {
     stop("At least two model terms must be provided to estimate a TERGM.")
   }
-  est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O, 
-      family = binomial(link = logit), sparse = TRUE)
-  startval <- coef(est)
-  nobs <- est$n
-  # define function for bootstrapping and estimation
-  estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
-      Wi = W, Oi = O, timei = X$time, startvali = startval) {
-    indic <- unlist(lapply(bsi, function(x) which(timei == x)))
-    tryCatch(
-      expr = {
-        return(coef(speedglm.wfit(y = Yi[indic], X = xsparsei[indic, ], 
-            weights = Wi[indic], offset = Oi[indic], 
-            family = binomial(link = logit), sparse = TRUE, start = startvali)))
-      }, 
-      error = function(e) {
-        # when fitted probabilities of 0 or 1 occur or when the algorithm does 
-        # not converge, use glm because it only throws a warning, not an error
-        return(coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ], 
-            weights = Wi[indic], offset = Oi[indic], 
-            family = binomial(link = logit))))
-      }, 
-      warning = function(w) {
-        warning(w)
-      }, 
-      finally = {}
-    )
+  
+  if (isTRUE(usefastglm)) {
+    if (requireNamespace("fastglm")) {
+      xsparse <- NULL
+      est <- fastglm::fastglm(y = Y,
+                              x = as.matrix(x), 
+                              weights = W,
+                              offset = O,
+                              family = binomial(link = logit),
+                              sparse = TRUE,
+                              method = 3)
+      
+      startval <- est$coefficients
+      nobs <- length(est$fitted.values)
+      
+      estimate <- function(unique.time.steps,
+                           bsi,
+                           Yi = Y,
+                           xsparsei = xsparse,
+                           Wi = W,
+                           Oi = O,
+                           timei = time,
+                           startvali = startval) {
+        indic <- unlist(lapply(bsi, function(x) which(timei == x)))
+        fastglm::fastglm(y = Yi[indic],
+                         x = as.matrix(x)[indic, ],
+                         weights = Wi[indic],
+                         offset = Oi[indic],
+                         family = binomial(link = logit),
+                         method = 3)$coefficients
+      }
+    } else {
+      stop("The 'fastglm' package was not found.")
+    }
+  } else {
+    xsparse <- Matrix(as.matrix(x), sparse = TRUE)
+    est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O, 
+                         family = binomial(link = logit), sparse = TRUE)
+    
+    startval <- coef(est)
+    nobs <- est$n
+    # define function for bootstrapping and estimation
+    estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
+                         Wi = W, Oi = O, timei = time, startvali = startval) {
+      indic <- unlist(lapply(bsi, function(x) which(timei == x)))
+      tryCatch(
+        expr = {
+          coef(speedglm.wfit(y = Yi[indic], X = xsparsei[indic, ],
+                                    weights = Wi[indic], offset = Oi[indic],
+                                    family = binomial(link = logit), sparse = TRUE))
+        },
+        error = function(e) {
+          # when fitted probabilities of 0 or 1 occur or when the algorithm does
+          # not converge, use glm because it only throws a warning, not an error
+          coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ],
+                              weights = Wi[indic], offset = Oi[indic],
+                              family = binomial(link = logit)))
+        },
+        warning = function(w) {
+          warning(w)
+        },
+        finally = {}
+      )
+    }
   }
   
-  # run the estimation (single-core or parallel)
   coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
-      Wi = W, Oi = O, timei = X$time, startvali = startval, 
-      parallel = parallel, ncpus = ncpus, cl = cl, ...)
-  rm(X)
-  #if (nrow(coefs$t) == 1) { # in case there is only one model term
-  #  coefs <- t(coefs)
-  #}
-  if (ncol(coefs$t) == 1 && length(term.names) > 1 
-      && coefs$t[1, 1] == "glm.fit: algorithm did not converge") {
+                Wi = W, Oi = O, timei = time, startvali = startval, 
+                parallel = parallel, ncpus = ncpus, cl = cl, ...)
+
+  if (coefs$t[1, 1] == "glm.fit: algorithm did not converge" ||
+      sum(is.na(coefs$t))>0 ) {
     stop(paste("Algorithm did not converge. There might be a collinearity ", 
         "between predictors and/or dependent networks at one or more time", 
         "steps."))
