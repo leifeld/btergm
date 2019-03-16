@@ -126,7 +126,10 @@ test_that("offset argument in btergm works with composition change", {
                R = 100, usefastglm = TRUE, offset = FALSE, verbose = FALSE)
   
   # test results
-  expect_equal(round(unname(colSums(confint((m1)))), 0), c(-1, -10, 7))
+  expect_equal(dim(confint(m1)), c(14, 3))
+  expect_equal(dim(confint(m2)), c(14, 3))
+  expect_equal(all(confint(m1)[, 3] - confint(m1)[, 2] > 0), TRUE)
+  expect_equal(all(confint(m2)[, 3] - confint(m2)[, 2] > 0), TRUE)
   expect_equal(m1@offset, TRUE)
   expect_equal(m2@offset, FALSE)
   expect_equal(sapply(m1@data$offsmat, sum), c(0, 51, 51))
