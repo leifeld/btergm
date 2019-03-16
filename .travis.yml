@@ -16,7 +16,11 @@ r_check_args: --as-cran
 
 r_github_packages:
   - leifeld/xergm.common
+  - statnet/ergm
 
+r_packages:
+  - covr
+  
 notifications:
   email:
     recipients:
@@ -25,4 +29,4 @@ notifications:
     on_failure: change
 
 after_success:
-- Rscript -e 'covr::codecov()'
+- Rscript -e 'library(covr); codecov()'
