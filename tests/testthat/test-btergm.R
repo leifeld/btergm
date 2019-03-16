@@ -45,12 +45,12 @@ test_that("btergm estimation works", {
   expect_equal(fit@directed, TRUE)
   expect_equal(fit@bipartite, FALSE)
   expect_equal(unname(rowSums(fit@nvertices)), c(100, 100))
-  expect_equal(round(confint(fit)[1, 2], 4), -1.3915)
-  expect_equal(round(confint(fit)[1, 3], 4), -0.8063)
-  expect_equal(round(confint(fit)[2, 2], 4), -0.0519)
-  expect_equal(round(confint(fit)[2, 3], 4), 0.1264)
-  expect_equal(round(confint(fit)[3, 2], 4), -0.1085)
-  expect_equal(round(confint(fit)[3, 3], 4), 0.1397)
+  expect_equal(round(confint(fit)[1, 2], 1), -1.4)
+  expect_equal(round(confint(fit)[1, 3], 1), -0.8)
+  expect_equal(round(confint(fit)[2, 2], 0), 0)
+  expect_equal(round(confint(fit)[2, 3], 1), 0.1)
+  expect_equal(round(confint(fit)[3, 2], 1), -0.1)
+  expect_equal(round(confint(fit)[3, 3], 1), 0.1)
 })
 
 test_that("fastglm works like speedglm", {
@@ -126,7 +126,7 @@ test_that("offset argument in btergm works with composition change", {
                R = 100, usefastglm = TRUE, offset = FALSE, verbose = FALSE)
   
   # test results
-  expect_equal(round(unname(colSums(confint((m1)))), 4), c(-0.6009, -9.6528, 7.2468))
+  expect_equal(round(unname(colSums(confint((m1)))), 0), c(-1, -10, 7))
   expect_equal(m1@offset, TRUE)
   expect_equal(m2@offset, FALSE)
   expect_equal(sapply(m1@data$offsmat, sum), c(0, 51, 51))
