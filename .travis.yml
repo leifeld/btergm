@@ -17,6 +17,7 @@ r_check_args: --as-cran
 r_github_packages:
   - leifeld/xergm.common
   - statnet/ergm
+  - jaredhuling/fastglm
 
 r_packages:
   - covr
