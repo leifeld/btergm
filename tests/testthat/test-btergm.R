@@ -19,6 +19,7 @@ for (i in 1:10) {          # create 10 matrices as covariate
 }
 
 test_that("btergm estimation works", {
+  set.seed(12345)
   fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
   expect_equal(round(unname(coef(fit)), 4), c(-1.1707, 0.0543, 0.0045))
   expect_equal(names(coef(fit)), c("edges", "istar2", "edgecov.covariates[[i]]"))
@@ -44,12 +45,12 @@ test_that("btergm estimation works", {
   expect_equal(fit@directed, TRUE)
   expect_equal(fit@bipartite, FALSE)
   expect_equal(unname(rowSums(fit@nvertices)), c(100, 100))
-  expect_equal(round(confint(fit)[1, 2], 4), -1.431)
-  expect_equal(round(confint(fit)[1, 3], 4), -0.7743)
-  expect_equal(round(confint(fit)[2, 2], 4), -0.0793)
-  expect_equal(round(confint(fit)[2, 3], 4), 0.1459)
-  expect_equal(round(confint(fit)[3, 2], 4), -0.1221)
-  expect_equal(round(confint(fit)[3, 3], 4), 0.1188)
+  expect_equal(round(confint(fit)[1, 2], 4), -1.3915)
+  expect_equal(round(confint(fit)[1, 3], 4), -0.8063)
+  expect_equal(round(confint(fit)[2, 2], 4), -0.0519)
+  expect_equal(round(confint(fit)[2, 3], 4), 0.1264)
+  expect_equal(round(confint(fit)[3, 2], 4), -0.1085)
+  expect_equal(round(confint(fit)[3, 3], 4), 0.1397)
 })
 
 test_that("fastglm works like speedglm", {
