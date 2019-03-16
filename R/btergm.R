@@ -6,7 +6,7 @@
     'Package:  btergm\n', 
     'Version:  ', desc$Version, '\n', 
     'Date:     ', desc$Date, '\n', 
-    'Authors:  Philip Leifeld (University of Glasgow)\n',
+    'Authors:  Philip Leifeld (University of Essex)\n',
     '          Skyler J. Cranmer (The Ohio State University)\n',
     '          Bruce A. Desmarais (Pennsylvania State University)\n'
   )
@@ -116,7 +116,7 @@ setMethod(f = "nobs", signature = "btergm", definition = function(object) {
     n <- object@nobs
     t <- object@time.steps
     rep <- object@R
-    return(c("Number of time steps" = t, "Number of observations" = n, 
+    return(c("Number of time steps" = t, "Number of dyads" = n, 
         "Bootstrap replications" = rep))
   }
 )
@@ -295,11 +295,11 @@ btergm <- function(formula,
     O <- NULL  # offset term
     for (i in 1:length(l$networks)) {
       nw <- ergm::ergm.getnetwork(form)
-      model <- ergm::ergm.getmodel(form, nw, initialfit = TRUE)
-      Clist <- ergm::ergm.Cprepare(nw, model)
-      Clist.miss <- ergm::ergm.design(nw, model, verbose = FALSE)
+      model <- ergm::ergm_model(form, nw, initialfit = TRUE)
+      #Clist <- ergm::ergm.Cprepare(nw, model)
+      Clist.miss <- ergm::ergm.design(nw, verbose = FALSE)
       control.ergm$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
-      pl <- ergm::ergm.pl(Clist,
+      pl <- ergm::ergm.pl(nw,
                           Clist.miss,
                           model,
                           theta.offset = c(rep(FALSE, length(l$rhs.terms) - 1), TRUE),
@@ -307,8 +307,7 @@ btergm <- function(formula,
                           maxMPLEsamplesize = control.ergm$MPLE.max.dyad.types,
                           control = control.ergm)
       Y <- c(Y, pl$zy[pl$foffset == 0])
-      X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], 
-          check.names = FALSE), i))
+      X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], check.names = FALSE), i))
       W <- c(W, pl$wend[pl$foffset == 0])
       O <- c(O, pl$foffset[pl$foffset == 0])
     }
@@ -381,7 +380,6 @@ btergm <- function(formula,
                               method = 3)
       
       startval <- est$coefficients
-      nobs <- length(est$fitted.values)
       
       estimate <- function(unique.time.steps,
                            bsi,
@@ -408,7 +406,6 @@ btergm <- function(formula,
                          family = binomial(link = logit), sparse = TRUE)
     
     startval <- coef(est)
-    nobs <- est$n
     # define function for bootstrapping and estimation
     estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
                          Wi = W, Oi = O, timei = time, startvali = startval) {
@@ -453,6 +450,17 @@ btergm <- function(formula,
     data[[l$covnames[i]]] <- l[[l$covnames[i]]]
   }
   data$offsmat <- l$offsmat
+  
+  if (isTRUE(l$bipartite)) {
+    nobs <- sum(sapply(data$offsmat, function(x) {
+      length(x[x == 0])
+    }))
+  } else {
+    nobs <- sum(sapply(data$offsmat, function(x) {
+      diag(x) <- 1
+      length(x[x == 0])
+    }))
+  }
   
   btergm.object <- createBtergm(startval, coefs, R, nobs, l$time.steps, 
       formula, l$form, Y, x, W, l$auto.adjust, offset, l$directed, l$bipartite, 
@@ -504,7 +512,7 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
   if (object@offset == TRUE) {
     coef <- c(coef, -Inf)
   }
-  s <- simulate.formula(form, nsim = nsim, seed = seed, coef = coef, 
+  s <- simulate(form, nsim = nsim, seed = seed, coef = coef, 
       verbose = verbose, ...)
   if ("btergm" %in% class(object)) {
     return(s)

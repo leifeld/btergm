@@ -16,6 +16,6 @@ bibentry(bibtype = "Article",
   pages        = "1--36",
   doi          = "10.18637/jss.v083.i06",
 
-  header       = "To cite btergm in publications use:"
+  header       = "To cite btergm in publications, use:"
 )
 

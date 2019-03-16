@@ -440,16 +440,14 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       message(paste("Simulating", nsim, 
           "networks from the following formula:\n", f.i, "\n"))
     }
-    # parallel processing in simulate.formula is SLOW!
-    #sim[[index]] <- simulate.formula(env$form, nsim = nsim, coef = coefs, 
-    #    constraints = ~ ., control = control.simulate.formula(MCMC.interval = 
-    #    MCMC.interval, MCMC.burnin = MCMC.burnin, parallel = statnet.parallel, 
-    #    parallel.type = statnet.parallel.type))
     tryCatch(
       {
-        sim[[index]] <- simulate.formula(form, nsim = nsim, coef = coefs, 
-            constraints = ~ ., control = control.simulate.formula(
-            MCMC.interval = MCMC.interval, MCMC.burnin = MCMC.burnin))
+        sim[[index]] <- simulate(form,
+                                 nsim = nsim,
+                                 coef = coefs,
+                                 constraints = ~ .,
+                                 control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                    MCMC.burnin = MCMC.burnin))
       }, error = function(cond) {
         sim[[index]] <- NULL
         warning("There was a problem with the simulation at t = ", index, 
@@ -832,10 +830,12 @@ gof.network <- function(object, covariates, coef, target = NULL,
       "networks from the following formula:\n", 
       gsub("\\s+", " ", paste(deparse(form), collapse = "")), "\n"))
   if (mcmc == TRUE) {  # TODO: IMPLEMENT PARALLEL PROCESSING HERE
-    simulations <- simulate.formula(form, nsim = nsim, coef = coef, 
-        constraints = ~ ., 
-        control = control.simulate.formula(MCMC.interval = MCMC.interval, 
-        MCMC.burnin = MCMC.burnin))
+    simulations <- simulate(form,
+                            nsim = nsim,
+                            coef = coef,
+                            constraints = ~ .,
+                            control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                               MCMC.burnin = MCMC.burnin))
   } else {
     dat <- sapply(covariates, function(x) c(as.matrix(x)))
     dat <- cbind(rep(1, nrow(dat)), dat)

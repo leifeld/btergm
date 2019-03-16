@@ -13,3 +13,4 @@ Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2018): Temporal Expon
 [![downloads](http://cranlogs.r-pkg.org/badges/btergm)](http://cranlogs.r-pkg.org/badges/btergm)
 [![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/btergm)](http://cranlogs.r-pkg.org/badges/grand-total/btergm)
 [![Research software impact](http://depsy.org/api/package/cran/btergm/badge.svg)](http://depsy.org/package/r/btergm)
+[![Coverage status](https://codecov.io/gh/leifeld/btergm/branch/master/graph/badge.svg)](https://codecov.io/github/leifeld/btergm?branch=master)

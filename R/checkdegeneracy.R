@@ -49,10 +49,12 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
     }
     target.stats[[index]] <- summary(ergm::remove.offset.formula(form), 
         response = NULL)
-    degen[[index]] <- simulate.formula(form, nsim = nsim, 
-        coef = coefs, statsonly = TRUE, 
-        control = control.simulate.formula(MCMC.interval = 
-        MCMC.interval, MCMC.burnin = MCMC.burnin))
+    degen[[index]] <- simulate(form,
+                               nsim = nsim,
+                               coef = coefs,
+                               statsonly = TRUE,
+                               control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                  MCMC.burnin = MCMC.burnin))
     if (offset == TRUE || "mtergm" %in% class(object)) {
       degen[[i]] <- degen[[i]][, -ncol(degen[[i]])]  # remove offset statistic
     }
@@ -82,7 +84,7 @@ print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim),
     message(paste0("\nDegeneracy check for network ", i, ":"))
     if (center == TRUE) {
       sm <- coda::as.mcmc.list(coda::as.mcmc(x$sim[[i]]))
-      sm <- ergm::sweep.mcmc.list(sm, x$target.stats[[i]], "-")[[1]] # diff
+      sm <- statnet.common::sweep.mcmc.list(sm, x$target.stats[[i]], "-")[[1]] # diff
       q <- t(apply(as.matrix(sm), 2, function(x) {
         quantile(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
       }))
