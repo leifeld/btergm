@@ -14,3 +14,10 @@ Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2018): Temporal Expon
 [![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/btergm)](http://cranlogs.r-pkg.org/badges/grand-total/btergm)
 [![Research software impact](http://depsy.org/api/package/cran/btergm/badge.svg)](http://depsy.org/package/r/btergm)
 [![Coverage status](https://codecov.io/gh/leifeld/btergm/branch/master/graph/badge.svg)](https://codecov.io/github/leifeld/btergm?branch=master)
+[<img src="http://img.shields.io/liberapay/receives/leifeld.svg?logo=liberapay">](https://liberapay.com/leifeld)
+
+Please contribute to the software development in the following ways:
+
+Fix [issues](https://github.com/leifeld/issues) or add functions through pull requests. Cite our article in the Journal of Statistical Software and tell other people about the software. Contribute financially to support the software development by the package maintainer:
+
+<a href="https://liberapay.com/leifeld/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
