@@ -440,12 +440,20 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       message(paste("Simulating", nsim, 
           "networks from the following formula:\n", f.i, "\n"))
     }
-    sim[[index]] <- simulate(form,
-                             nsim = nsim,
-                             coef = coefs,
-                             constraints = ~ .,
-                             control = control.simulate.formula(MCMC.interval = MCMC.interval,
-                                                                MCMC.burnin = MCMC.burnin))
+    tryCatch(
+      expr = {
+        sim[[index]] <- simulate(form,
+                                 nsim = nsim,
+                                 coef = coefs,
+                                 constraints = ~ .,
+                                 control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                    MCMC.burnin = MCMC.burnin))
+      }, 
+      error = function(e) {
+        stop("Could not simulate any networks. One known reason for this is a namespace conflict with the 'lme4' package. Do not load 'lme4', 'tnam', or 'xergm' while using the 'btergm' package for now. Or remove the 'lme4' package before using 'btergm'. A better fix may be provided at some point.")
+      }, 
+      finally = {}
+    )
   }
   
   # check basis network(s)

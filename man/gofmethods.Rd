@@ -135,7 +135,7 @@ fit <- btergm(networks ~ edges + istar(2) +
     edgecov(covariates), R = 100)
 
 # Then assess the goodness of fit:
-g <- gof(fit, statistics = c(triad.directed, esp, maxmod.modularity, 
+g <- gof(fit, statistics = c(triad.directed, esp, fastgreedy.modularity, 
     rocpr), nsim = 50)
 g
 plot(g)  # see ?"gof-plot" for details
