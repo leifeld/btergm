@@ -2,7 +2,7 @@
 # transform a covariate using a function of time
 timecov <- function(covariate, minimum = 1, maximum = length(covariate), 
     transform = function(t) 1 + (0 * t) + (0 * t^2), onlytime = FALSE) {
-  if (class(covariate) != "list") {
+  if (!"list" %in% class(covariate)) {
     stop("'covariate' must be a list of matrices or network objects.")
   }
   for (i in 1:length(covariate)) {

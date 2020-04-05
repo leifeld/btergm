@@ -99,10 +99,8 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
     results <- list()
     for (i in t) {
       # print error if undirected
-      if ((class(l$networks[[i]]) == "network" && 
-          !is.directed(l$networks[[i]])) || 
-          (class(l$networks[[i]]) == "matrix" && 
-          is.mat.directed(l$networks[[i]]) == FALSE)) {
+      if ((is.network(l$networks[[i]]) && !is.directed(l$networks[[i]])) || 
+          (is.matrix(l$networks[[i]]) && is.mat.directed(l$networks[[i]]) == FALSE)) {
         stop(paste0("Network at t=", i, " is undirected. Dyadic ", 
             "probabilities do not make sense in undirected networks. Try ", 
             "type = \"tie\" instead!"))
@@ -225,10 +223,8 @@ interpret.ergm <- function(object, formula = getformula(object),
   }
   
   # warn about indices with bipartite networks
-  if (class(l$networks[[1]]) == "network" 
-      && is.bipartite(l$networks[[1]]) || 
-      class(l$networks[[1]]) == "matrix" 
-      && !is.mat.onemode(l$networks[[1]])) {
+  if (is.network(l$networks[[1]]) && is.bipartite(l$networks[[1]]) || 
+      is.matrix(l$networks[[1]]) && !is.mat.onemode(l$networks[[1]])) {
     if (is.numeric(j) && j < nrow(as.matrix(l$networks[[1]])) + 1) {
       stop(paste0("In this bipartite network, the indices of the 'j' ", 
           "index start with ", nrow(as.matrix(l$networks[[1]])) + 1, 
@@ -257,9 +253,8 @@ interpret.btergm <- function(object, formula = getformula(object),
   
   # warn about indices with bipartite networks
   for (h in t) {
-    if (class(l$networks[[h]]) == "network" && is.bipartite(l$networks[[h]]) || 
-        class(l$networks[[h]]) == "matrix" 
-        && !is.mat.onemode(l$networks[[h]])) {
+    if (is.network(l$networks[[h]]) && is.bipartite(l$networks[[h]]) || 
+        is.matrix(l$networks[[h]]) && !is.mat.onemode(l$networks[[h]])) {
       if (is.numeric(j) && j < nrow(as.matrix(l$networks[[h]])) + 1) {
         stop(paste0("In this bipartite network, the indices of the 'j' ", 
             "index start with ", nrow(as.matrix(l$networks[[h]])) + 1, 
@@ -286,12 +281,11 @@ setMethod("interpret", signature = className("mtergm", "btergm"),
 
 
 # a function that creates all tie probabilities along with some other variables
-edgeprob <- function (object, verbose = FALSE)
-{
-  if (class(object) == "ergm") {
+edgeprob <- function (object, verbose = FALSE) {
+  if ("ergm" %in% class(object)) {
     tergm <- FALSE
   }
-  else if (class(object) %in% c("btergm", "mtergm")) {
+  else if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
     tergm <- TRUE
   }
   else {
@@ -315,9 +309,8 @@ edgeprob <- function (object, verbose = FALSE)
   for (i in 1:length(l$networks)) {
     mat <- as.matrix(l$networks[[i]])
     imat <- matrix(rep(1:nrow(mat), ncol(mat)), nrow = nrow(mat))
-    if ((class(l$networks[[i]]) == "network" && is.bipartite(l$networks[[i]])) ||
-        (class(l$networks[[i]]) == "matrix" && is.mat.onemode(l$networks[[i]]) ==
-         FALSE)) {
+    if ((is.network(l$networks[[i]]) && is.bipartite(l$networks[[i]])) ||
+        (is.matrix(l$networks[[i]]) && is.mat.onemode(l$networks[[i]]) == FALSE)) {
       mn <- nrow(mat) + 1
       mx <- nrow(mat) + ncol(mat)
       jmat <- matrix(rep(mn:mx, nrow(mat)), nrow = nrow(mat),
@@ -332,8 +325,7 @@ edgeprob <- function (object, verbose = FALSE)
     Y <- c(Y, mpli$response)
     dyads <- rbind(dyads, cbind(mpli$predictor, i))
   }
-  term.names <- colnames(dyads)[-(length(colnames(dyads)):(length(colnames(dyads)) -
-                                                             2))]
+  term.names <- colnames(dyads)[-(length(colnames(dyads)):(length(colnames(dyads)) - 2))]
   term.names <- c(term.names, "i", "j", "t")
   dyads <- data.frame(dyads)
   colnames(dyads) <- term.names

@@ -27,7 +27,7 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   target <- l$networks
   
   # extract coefficients from object
-  if (class(object)[1] == "btergm" && offset == TRUE) {
+  if ("btergm" %in% class(object) && offset == TRUE) {
     coefs <- c(coef(object), -Inf)  # -Inf for offset matrix
   } else {
     coefs <- coef(object)
@@ -97,7 +97,7 @@ print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim),
     rn <- rownames(q)[terms]
     cn <- colnames(q)
     q <- q[terms, ]
-    if (class(q) != "matrix") {
+    if (!is.matrix(q)) {
       q <- matrix(q, nrow = 1)
       rownames(q) <- rn
       colnames(q) <- cn

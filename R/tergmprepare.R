@@ -6,7 +6,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   l$lhs.original <- deparse(formula[[2]])  # for reporting purposes later on
   l$networks <- eval(parse(text = deparse(formula[[2]])), 
       envir = environment(formula))
-  if (class(l$networks) == "list" || class(l$networks) == "network.list") {
+  if ("list" %in% class(l$networks) || "network.list" %in% class(l$networks)) {
     # do nothing
   } else {
     l$networks <- list(l$networks)
@@ -14,7 +14,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   
   # convert list elements to matrices if unknown data type
   for (i in 1:length(l$networks)) {
-    if (!class(l$networks[[i]]) %in% c("network", "matrix", "list")) {
+    if (!is.network(l$networks[[i]]) && !is.matrix(l$networks[[i]]) && !"list" %in% class(l$networks[[i]])) {
       tryCatch(
         {
           l$networks[[i]] <- as.matrix(l$networks[[i]])
@@ -92,7 +92,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       if (grepl("^\"", x2)) next  # ignore built-in matrices b/c conformable
       x3 <- sub(s, "\\6", l$rhs.terms[k], perl = TRUE)  # after the covariate
       x.current <- eval(parse(text = x2), envir = environment(formula))
-      type <- class(x.current)
+      type <- class(x.current)[1]
       l$covnames <- c(l$covnames, x2)
       l[[x2]] <- x.current
       if (grepl("\\[i\\]+$", x2)) {
@@ -490,13 +490,13 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
                   "labels for all networks and covariates."))
             } else {
               if (is.null(rn.j) && !is.null(rn.k) && nr.j == nr.k) {
-                if (class(nw.j) == "network") {
+                if (is.network(nw.j)) {
                   network::set.vertex.attribute(nw.j, "vertex.names", rn.k)
                 } else {
                   rownames(nw.j) <- rn.k
                 }
               } else if (is.null(rn.k) && !is.null(rn.j) && nr.j == nr.k) {
-                if (class(nw.k) == "network") {
+                if (is.network(nw.k)) {
                   network::set.vertex.attribute(nw.k, "vertex.names", rn.j)
                 } else {
                   rownames(nw.k) <- rn.j
@@ -726,7 +726,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     rm(bdoffset)
     l$offsmat[l$offsmat > 0] <- 1
     # make dependent network block-diagonal
-    if (class(l$networks[[1]]) == "network") {  # network
+    if (is.network(l$networks[[1]])) {  # network
       attrnames <- network::list.vertex.attributes(l$networks[[1]])
       attributes <- list()
       for (i in 1:length(l$networks)) {

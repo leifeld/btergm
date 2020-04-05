@@ -191,14 +191,14 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
         b[[type2]][4:5]
     })
     ci <- cbind(cf, t(ci))
-    if (class(ci) == "numeric") {
+    if ("numeric" %in% class(ci)) {
       ci.nam <- names(ci)
       ci <- matrix(ci, nrow = 1)
       colnames(ci) <- ci.nam
       rownames(ci) <- names(cf)
     }
     ci <- ci[parm, ]
-    if (class(ci) != "matrix") {
+    if (!is.matrix(ci)) {
       ci <- matrix(ci, ncol = 3)
       rownames(ci) <- parm
     }
@@ -488,7 +488,7 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
     if (verbose == TRUE) {
       message("\nNo index provided. Simulating from the last time step.")
     }
-  } else if (!is.numeric(index)) {
+  } else if (!"numeric" %in% class(index)) {
     stop(paste("The 'index' argument must contain a numeric time point from", 
         "which to simulate new networks."))
   } else if (index > object@time.steps) {

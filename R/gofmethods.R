@@ -28,7 +28,7 @@ reduce.matrix <- function(sim, obs) {
     geo <- TRUE
     inf.sim <- sim[nrow(sim), ]  # put aside this row for now and reuse later
     sim <- sim[-nrow(sim), ]
-    if (class(obs) == "matrix") {
+    if (is.matrix(obs)) {
       inf.obs <- obs[nrow(obs), ]
       obs <- matrix(obs[-nrow(obs), ], ncol = numobs)
     } else {
@@ -48,7 +48,7 @@ reduce.matrix <- function(sim, obs) {
     }
   }
   
-  if (class(obs) != "matrix") {  # one network is compared
+  if (!is.matrix(obs)) {  # one network is compared
     obs.remove <- length(obs)
     for (i in (length(obs) - 1):1) {
       if (obs[i] == 0 && obs.remove == (i + 1)) {
@@ -67,7 +67,7 @@ reduce.matrix <- function(sim, obs) {
   rem <- max(c(obs.remove, sim.remove), na.rm = TRUE)  # which one is longer?
   
   # remove unnecessary rows
-  if (class(obs) != "matrix") {  # get rid of empty observations or rows of obs
+  if (!is.matrix(obs)) {  # get rid of empty observations or rows of obs
     obs <- matrix(obs[-(rem:length(obs))], ncol = numobs)
   } else {
     obs <- matrix(obs[-(rem:nrow(obs)), ], ncol = numobs)
@@ -168,12 +168,12 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
   }
   
   # make sure target list is a list of sparse matrices
-  if (class(target) != "list") {
+  if (!"list" %in% class(target)) {
     stop(paste("The target network(s) must be provided as a list of network", 
                "objects or sparse matrix objects (using the Matrix package)."))
   }
   target <- lapply(target, function(x) {
-    if (!class(x) %in% c("dgCMatrix", "dgTMatrix", "dsCMatrix", "dsTMatrix", 
+    if (!class(x)[1] %in% c("dgCMatrix", "dgTMatrix", "dsCMatrix", "dsTMatrix", 
                          "dgeMatrix")) {
       mat <- as.matrix(x)
       mat <- Matrix(mat)
@@ -184,9 +184,9 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
   })
   
   # make sure simulation list is a list of network objects
-  if (class(simulations) == "network.list") {
+  if ("network.list" %in% class(simulations)) {
     simulations <- lapply(simulations, function(x) Matrix(as.matrix(x)))
-  } else if (class(simulations) != "list") {
+  } else if (!"list" %in% class(simulations)) {
     stop("The simulations must be provided as a list of network objects.")
   }
   
@@ -214,7 +214,7 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
             observed <- suppressMessages(sapply(target, statistics[[z]], ...))
           } else if (parallel[1] == "multicore") {
             test <- suppressMessages(statistics[[z]](simulations[[1]]))
-            if (class(test) == "numeric" && length(test) == 1) {
+            if (is.numeric(test) && length(test) == 1) {
               simulated <- suppressMessages(unlist(mclapply(simulations, 
                   statistics[[z]], ..., mc.cores = ncpus)))
               observed <- suppressMessages(unlist(mclapply(target, 
@@ -244,7 +244,7 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
           }
           
           # if simulations have different dimensions, convert list to matrix
-          if (class(simulated) == "list") {
+          if ("list" %in% class(simulated)) {
             lengths <- sapply(simulated, length)
             l <- max(lengths)
             index <- which(lengths == l)[1]
@@ -254,7 +254,7 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
             })
             rownames(simulated) <- rn
           }
-          if (class(observed) == "list") {
+          if ("list" %in% class(observed)) {
             lengths <- sapply(observed, length)
             l <- max(lengths)
             index <- which(lengths == l)[1]
@@ -267,13 +267,13 @@ createGOF <- function(simulations, target, statistics = c(dsp, esp, deg,
           
           gofobject <- list()
           gofobject$label <- label
-          if (class(simulated) == "matrix") {  # boxplot-type GOF
+          if (is.matrix(simulated)) {  # boxplot-type GOF
             reduced <- reduce.matrix(simulated, observed)
             gofobject$type <- "boxplot"
             gofobject$stats <- reduced$comparison
             gofobject$raw <- Matrix::Matrix(as.matrix(reduced$sim))
             class(gofobject) <- "boxplot"
-          } else if (class(simulated) == "numeric") {  # density-type GOF
+          } else if (is.numeric(simulated)) {  # density-type GOF
             gofobject$type <- "univariate"
             gofobject$obs <- observed
             gofobject$sim <- simulated
@@ -366,7 +366,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   }
   
   # call tergmprepare and integrate results as a child environment in the chain
-  if (class(object)[1] == "btergm") {
+  if ("btergm" %in% class(object)) {
     l <- tergmprepare(formula = formula, offset = object@offset, 
         verbose = verbose)
     offset <- object@offset
@@ -396,12 +396,12 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
           "left-hand side of the model formula as observed networks.\n"))
     }
     target <- l$networks
-  } else if (class(target) == "network" || class(target) == "matrix") {
+  } else if (is.network(target) || is.matrix(target)) {
     target <- list(target)
     if (verbose == TRUE) {
       message("\nOne observed ('target') network was provided.\n")
     }
-  } else if (class(target) == "list") {
+  } else if ("list" %in% class(target)) {
     if (verbose == TRUE) {
       message(paste("\n", length(target), "observed ('target') networks were",
           "provided.\n"))
@@ -435,29 +435,17 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
         f.i <- paste(deparse(formula), collapse = "")
         f.i <- gsub("\\s+", " ", f.i)
       } else {
-        stop(paste("Unknown object type:", class(object)))
+        stop(paste("Unknown object type:", paste(class(object), collapse = ", ")))
       }
       message(paste("Simulating", nsim, 
           "networks from the following formula:\n", f.i, "\n"))
     }
-    tryCatch(
-      {
-        sim[[index]] <- simulate(form,
-                                 nsim = nsim,
-                                 coef = coefs,
-                                 constraints = ~ .,
-                                 control = control.simulate.formula(MCMC.interval = MCMC.interval,
-                                                                    MCMC.burnin = MCMC.burnin))
-      }, error = function(cond) {
-        sim[[index]] <- NULL
-        warning("There was a problem with the simulation at t = ", index, 
-                ". Sometimes this may be due to node attributes being ",
-                "incomplete at some time steps. For example, not all levels ", 
-                "of a nodefactor term may be present at all time steps. ", 
-                "Original error message: ", cond)
-      }
-    )
-    
+    sim[[index]] <- simulate(form,
+                             nsim = nsim,
+                             coef = coefs,
+                             constraints = ~ .,
+                             control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                MCMC.burnin = MCMC.burnin))
   }
   
   # check basis network(s)
@@ -509,15 +497,15 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   directed <- logical()
   twomode <- logical()
   for (i in 1:length(target)) {
-    if (class(target[[i]]) == "network") {
+    if (is.network(target[[i]])) {
       directed[i] <- is.directed(target[[i]])
       twomode[i] <- is.bipartite(target[[i]])
       target[[i]] <- Matrix(as.matrix(target[[i]]))
-    } else if (class(target[[i]]) == "matrix") {
+    } else if (is.matrix(target[[i]])) {
       directed[i] <- is.mat.directed(target[[i]])
       twomode[i] <- !is.mat.onemode(target[[i]])
       target[[i]] <- Matrix(target[[i]])
-    } else if (class(target[[i]]) %in% sptypes) {
+    } else if (class(target[[i]])[1] %in% sptypes) {
       # OK
       directed[i] <- is.mat.directed(target[[i]])
       twomode[i] <- !is.mat.onemode(target[[i]])
@@ -577,7 +565,7 @@ gof.sienaFit <- function(object, period = NULL, parallel = c("no",
       }
     }
   } else {  # check if all data are there for out-of-sample prediction
-    if (is.null(sienaData) || class(sienaData) != "siena") {
+    if (is.null(sienaData) || !"siena" %in% class(sienaData)) {
       stop(paste("For out-of-sample prediction, the 'sienaData'", 
           "argument should provide a 'siena' object (as created by the", 
           "'sienaDependent' function), and this object should contain two", 
@@ -589,7 +577,7 @@ gof.sienaFit <- function(object, period = NULL, parallel = c("no",
           "should contain only two networks: the base network to simulate", 
           "from and the target network to be predicted."))
     }
-    if (is.null(sienaEffects) || class(sienaEffects) != "sienaEffects") {
+    if (is.null(sienaEffects) || !"sienaEffects" %in% class(sienaEffects)) {
       stop(paste("For out-of-sample GOF assessment, a 'sienaEffects' object", 
           "must be provided. This object must contain the same effects that", 
           "were used in the original estimation, and it must be based on", 
@@ -756,10 +744,10 @@ gof.network <- function(object, covariates, coef, target = NULL,
   
   # check dependent network
   nw <- object
-  if (class(nw) == "network") {
+  if (is.network(nw)) {
     directed <- network::is.directed(nw)
     bipartite <- network::is.bipartite(nw)
-  } else if (class(nw) == "matrix") {
+  } else if (is.matrix(nw)) {
     directed <- !isSymmetric(nw)
     if (nrow(nw) == ncol(nw)) {
       bipartite <- FALSE
@@ -780,18 +768,18 @@ gof.network <- function(object, covariates, coef, target = NULL,
           "left-hand side of the model formula as observed networks.\n"))
     }
     target <- nw
-  } else if (class(target) == "network" || class(target) == "matrix") {
+  } else if (is.network(target) || is.matrix(target)) {
     # do nothing
     if (verbose == TRUE) {
       message("\nOne observed ('target') network was provided.\n")
     }
-  } else if (class(target) == "list") {
+  } else if ("list" %in% class(target)) {
     if (verbose == TRUE) {
       message(paste("\n", length(target), "observed ('target') networks were",
           "provided. Using the first network\n"))
     }
     target <- target[[1]]
-    if (class(target) != "matrix" && class(target) != network) {
+    if (!is.matrix(target) && !is.network(target)) {
       stop("First target network was not a matrix or network object.")
     }
   } else {
@@ -799,7 +787,7 @@ gof.network <- function(object, covariates, coef, target = NULL,
   }
   
   # check predictors and assemble formula
-  if (class(covariates) != "list") {
+  if (!"list" %in% class(covariates)) {
     stop("Covariates must be provided as a list of matrices.")
   }
   numcov <- length(covariates)
@@ -811,7 +799,7 @@ gof.network <- function(object, covariates, coef, target = NULL,
   }
   rhs <- "edges"
   for (i in 1:numcov) {
-    if (!class(covariates[[i]]) %in% c("network", "matrix")) {
+    if (!is.network(covariates[[i]]) && !is.matrix(covariates[[i]])) {
       stop(paste("Covariate", i, "is not a matrix or network object."))
     }
     if (nrow(as.matrix(covariates[[i]])) != nrow(as.matrix(nw))) {
@@ -859,15 +847,15 @@ gof.network <- function(object, covariates, coef, target = NULL,
   directed <- logical()
   twomode <- logical()
   for (i in 1:length(target)) {
-    if (class(target[[i]]) == "network") {
+    if (is.network(target[[i]])) {
       directed[i] <- is.directed(target[[i]])
       twomode[i] <- is.bipartite(target[[i]])
       target[[i]] <- Matrix(as.matrix(target[[i]]))
-    } else if (class(target[[i]]) == "matrix") {
+    } else if (is.matrix(target[[i]])) {
       directed[i] <- is.mat.directed(target[[i]])
       twomode[i] <- !is.mat.onemode(target[[i]])
       target[[i]] <- Matrix(target[[i]])
-    } else if (class(target[[i]]) %in% sptypes) {
+    } else if (class(target[[i]])[1] %in% sptypes) {
       # OK
       directed[i] <- is.mat.directed(target[[i]])
       twomode[i] <- !is.mat.onemode(target[[i]])
