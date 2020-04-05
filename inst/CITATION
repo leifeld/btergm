@@ -2,7 +2,7 @@ bibentry(bibtype = "Article",
   title        = "Temporal Exponential Random Graph Models with {btergm}: Estimation and Bootstrap Confidence Intervals",
   author       = c(person(given = "Philip",
                           family = "Leifeld",
-                          email = "philip.leifeld@glasgow.ac.uk"),
+                          email = "philip.leifeld@essex.ac.uk"),
                    person(given = c("Skyler", "J."),
                           family = "Cranmer",
                           email = "cranmer.12@osu.edu"),
@@ -18,4 +18,3 @@ bibentry(bibtype = "Article",
 
   header       = "To cite btergm in publications, use:"
 )
-
