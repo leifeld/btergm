@@ -28,7 +28,7 @@ The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected
 \item{cl}{ An optional \pkg{parallel} or \pkg{snow} cluster for use if \code{parallel = "snow"}. If not supplied, a PSOCK cluster is created temporarily on the local machine. }
 \item{constraints}{ Constraints of the ERGM. See \code{\link[ergm]{ergm}} for details. }
 \item{control.ergm}{ ergm controls for ergmMPLE calls. See \code{\link[ergm]{control.ergm}} for details. }
-\item{usefastglm}{ Controls whether to use the \code{\link[fastglm]{fastglm}} estimation routine from the \pkg{fastglm} package with \code{method = 3}. Defaults to \code{FALSE} (and then uses \code{\link[speedglm]{speedglm.wfit}} instead). }
+\item{usefastglm}{ Controls whether to use the \code{\link[fastglm]{fastglm}} estimation routine from the \pkg{fastglm} package with \code{method = 3}. Defaults to \code{FALSE} (and then uses \code{\link[speedglm:speedglm]{speedglm.wfit}} instead). }
 \item{verbose}{ Print details about data preprocessing and estimation settings. }
 \item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call) or the boot function (in the case of a btergm call). }
 }
