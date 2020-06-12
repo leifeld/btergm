@@ -21,5 +21,5 @@ Extract the model formula from ergm or btergm objects.
 \item{x}{ A model object, for example a \code{btergm} or an \code{ergm} object. }
 }
 \seealso{
-\link[btergm]{gof}
+\link[btergm]{gofmethods}
 }

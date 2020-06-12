@@ -110,6 +110,6 @@ and Bootstrap Confidence Intervals. \emph{Journal of Statistical
 Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
-\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{getformula} \link{interpret} \link{mtergm}
+\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gofmethods} \link{knecht} \link{getformula} \link{interpret} \link{mtergm}
 }
 \keyword{classes}

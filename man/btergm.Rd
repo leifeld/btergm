@@ -54,7 +54,7 @@ and Bootstrap Confidence Intervals. \emph{Journal of Statistical
 Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
-\link{btergm-package} \link{simulate.btergm} \link[btergm]{gof} \link{knecht} \link{btergm-class} \link{checkdegeneracy}
+\link{btergm-package} \link{simulate.btergm} \link[btergm]{gofmethods} \link{knecht} \link{btergm-class} \link{checkdegeneracy}
 }
 \examples{
 # A simple toy example:
