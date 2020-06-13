@@ -8,7 +8,7 @@
     coef = object@coef, verbose = TRUE, ...)
 }
 \details{
-The \code{simulate.btergm} function is a wrapper for the \code{"formula"} method of the \code{\link[ergm]{simulate}} function in the \pkg{ergm} package (see \code{help("simulate.formula")}). It can be used to simulate new networks from a \code{btergm} object. The \code{index} argument specifies from which of the original networks the new network(s) should be simulated. For example, if \code{object} is an estimation based on cosponsorship networks from the 99th to the 107th Congress (as in Desmarais and Cranmer 2012), and the cosponsorship network in the 108th Congress should be predicted using the \code{simulate.btergm} function, then the argument \code{index = 9} should be passed to the function because the network should be based on the 9th network in the list (that is, the latest network, which is the cosponsorship network for the 107th Congress). Note that all relevant objects (the networks and the covariates) must be present in the workspace (as was the case during the estimation of the model).
+The \code{simulate.btergm} function is a wrapper for the \code{"formula"} method of the \code{\link[ergm]{simulate.ergm}} function in the \pkg{ergm} package (see \code{help("simulate.ergm")}). It can be used to simulate new networks from a \code{btergm} object. The \code{index} argument specifies from which of the original networks the new network(s) should be simulated. For example, if \code{object} is an estimation based on cosponsorship networks from the 99th to the 107th Congress (as in Desmarais and Cranmer 2012), and the cosponsorship network in the 108th Congress should be predicted using the \code{simulate.btergm} function, then the argument \code{index = 9} should be passed to the function because the network should be based on the 9th network in the list (that is, the latest network, which is the cosponsorship network for the 107th Congress). Note that all relevant objects (the networks and the covariates) must be present in the workspace (as was the case during the estimation of the model).
 }
 \arguments{
 \item{object}{ A \code{btergm} object, resulting from a call of the \code{\link{btergm}} function. }
@@ -18,7 +18,7 @@ The \code{simulate.btergm} function is a wrapper for the \code{"formula"} method
 \item{index}{ Index of the network from which the new network(s) should be simulated. The index refers to the list of response networks on the left-hand side of the model formula. Note that more recent networks are located at the end of the list. By default, the last (= most recent) network is used. }
 \item{coef}{ A vector of parameter estimates. By default, the coefficients are extracted from the given btergm \code{object}. }
 \item{verbose}{ Print additional details while running the simulations? }
-\item{...}{ Arbitrary further arguments are handed over to the \code{\link[ergm]{simulate}} function (and its \code{"formula"} method) in the \pkg{ergm} package. For details, refer to the \code{\link[ergm]{simulate}} help page. }
+\item{...}{ Arbitrary further arguments are handed over to the \code{simulate} function (and its \code{formula} method) in the \pkg{ergm} package. For details, refer to the \code{\link[ergm]{simulate.ergm}} help page. }
 }
 \references{
 Desmarais, Bruce A. and Skyler J. Cranmer (2012):

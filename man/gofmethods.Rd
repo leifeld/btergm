@@ -112,7 +112,7 @@ at the 7th Political Networks Conference, McGill University,
 Montreal, Canada, May 30. \url{http://arxiv.org/abs/1506.06696}.
 }
 \seealso{
-\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[ergm]{simulate} \link{gof} \link{gof-statistics} \link{gof-plot}
+\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[ergm]{simulate.ergm} \link{gof} \link{gof-statistics} \link{gof-plot}
 }
 \examples{
 \dontrun{
