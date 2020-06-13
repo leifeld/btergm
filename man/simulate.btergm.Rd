@@ -13,7 +13,7 @@ The \code{simulate.btergm} function is a wrapper for the \code{"formula"} method
 \arguments{
 \item{object}{ A \code{btergm} object, resulting from a call of the \code{\link{btergm}} function. }
 \item{nsim}{ The number of networks to be simulated. Note that for values greater than one, a \code{network.list} object is returned, which can be indexed just like a \code{list} object, for example \code{mynetworks[[1]]} for the first simulated network in the object \code{mynetworks}. }
-\item{seed}{ Random number integer seed. See \link[base]{set.seed}. }
+\item{seed}{ Random number integer seed. See \link[base:Random]{set.seed}. }
 \item{formula}{ A model formula from which the new network(s) should be simulated. By default, the formula is taken from the btergm \code{object}. }
 \item{index}{ Index of the network from which the new network(s) should be simulated. The index refers to the list of response networks on the left-hand side of the model formula. Note that more recent networks are located at the end of the list. By default, the last (= most recent) network is used. }
 \item{coef}{ A vector of parameter estimates. By default, the coefficients are extracted from the given btergm \code{object}. }
