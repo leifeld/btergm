@@ -78,6 +78,7 @@ test_that("offset argument in btergm works without composition change", {
 })
 
 test_that("offset argument in btergm works with composition change", {
+  skip_on_cran()
   # example taken from 2018 JSS article
   require("sna")
   data("knecht")
