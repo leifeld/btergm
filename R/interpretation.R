@@ -284,11 +284,9 @@ setMethod("interpret", signature = className("mtergm", "btergm"),
 edgeprob <- function (object, verbose = FALSE) {
   if ("ergm" %in% class(object)) {
     tergm <- FALSE
-  }
-  else if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
+  } else if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
     tergm <- TRUE
-  }
-  else {
+  } else {
     stop(paste("The edgeprob function is only applicable to ergm, btergm, and",
                "mtergm objects."))
   }
@@ -315,15 +313,34 @@ edgeprob <- function (object, verbose = FALSE) {
       mx <- nrow(mat) + ncol(mat)
       jmat <- matrix(rep(mn:mx, nrow(mat)), nrow = nrow(mat),
                      byrow = TRUE)
-    }
-    else {
+    } else {
       jmat <- matrix(rep(1:ncol(mat), nrow(mat)), nrow = nrow(mat),
                      byrow = TRUE)
     }
     f <- stats::as.formula(paste(l$form, " + edgecov(imat) + edgecov(jmat)"))
     mpli <- ergm::ergmMPLE(f)
     Y <- c(Y, mpli$response)
-    dyads <- rbind(dyads, cbind(mpli$predictor, i))
+    mpli$predictor <- cbind(mpli$predictor, i)
+    # TODO: the previous line might say something like: "Note: Term nodeofactor("edu") skipped because it contributes no statistics." when a covariate is full of zeros.
+    if (is.null(dyads)) {
+      dyads <- mpli$predictor
+    } else { # before rbind can be use, we need to check if some covariate levels were absent either before or now
+      newColumns <- which(sapply(colnames(mpli$predictor), function(x) x %in% colnames(dyads)) == FALSE)
+      if (length(newColumns) > 0) {
+        for (j in 1:length(newColumns)) {
+          dyads <- cbind(dyads[, 1:(newColumns[j] - 1)], 0, dyads[, newColumns[j]:ncol(dyads)])
+          colnames(dyads)[newColumns[j]] <- names(newColumns)[j]
+        }
+      }
+      notPresentAnymore <- which(sapply(colnames(dyads), function(x) x %in% colnames(mpli$predictor)) == FALSE)
+      if (length(notPresentAnymore) > 0) {
+        for (j in 1:length(notPresentAnymore)) {
+          mpli$predictor <- cbind(mpli$predictor[, 1:(notPresentAnymore[j] - 1)], 0, mpli$predictor[, notPresentAnymore[j]:ncol(mpli$predictor)])
+          colnames(mpli$predictor)[notPresentAnymore[j]] <- names(notPresentAnymore)[j]
+        }
+      }
+      dyads <- rbind(dyads, mpli$predictor)
+    }
   }
   term.names <- colnames(dyads)[-(length(colnames(dyads)):(length(colnames(dyads)) - 2))]
   term.names <- c(term.names, "i", "j", "t")
