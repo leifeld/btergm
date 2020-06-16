@@ -269,7 +269,7 @@ fastgreedy.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(mat, mode = "undirected")
+    g <- igraph::graph.adjacency(as.matrix(mat), mode = "undirected")
     wt <- igraph::fastgreedy.community(g)
     mod <- igraph::modularity(wt)
   }
@@ -340,7 +340,7 @@ louvain.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(mat, mode = m)
+    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
     clus <- igraph::cluster_louvain(g)
     mod <- igraph::modularity(clus)
   }
@@ -423,7 +423,7 @@ maxmod.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(mat, mode = m)
+    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
     wt <- igraph::optimal.community(g)
     mod <- igraph::modularity(wt)
   }
@@ -506,7 +506,7 @@ edgebetweenness.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(mat, mode = m)
+    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
     eb <- igraph::edge.betweenness.community(g)
     mod <- igraph::modularity(eb)
   }
@@ -589,7 +589,7 @@ spinglass.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(mat, mode = m)
+    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
     eb <- igraph::spinglass.community(g)
     mod <- igraph::modularity(eb)
   }
