@@ -440,6 +440,37 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       message(paste("Simulating", nsim, 
           "networks from the following formula:\n", f.i, "\n"))
     }
+    
+    # check for mismatch in coefficients and data
+    if (length(coefs[!is.infinite(coefs)]) > ncol(ergm::ergmMPLE(form)$predictor)) {
+      mismatch <- names(coefs)[which(!names(coefs) %in% colnames(ergm::ergmMPLE(form)$predictor))]
+      mismatch <- mismatch[mismatch != ""]
+      msg <- paste0("At t = ", i, ", at least one of the covariates has missing ",
+                    "levels for which coefficients but no data were available. ",
+                    "This can happen, for example, when a categorical node ",
+                    "variable has levels 0 to 2, but at a specific time step ",
+                    "only levels 0 and 2 are found while level 1 is absent from ",
+                    "the network. In this case, the coefficient from the TERGM ",
+                    "for that absent level is present, causing a mismatch ",
+                    "between the number of coefficients and the data structure. ",
+                    "At the moment, this problem cannot be fixed because it ",
+                    "would require changes in another package outside of the ",
+                    "control of the btergm package authors. The only known fix ",
+                    "at this point is to make sure that all variable levels are ",
+                    "present at least once at each time point. Here is a list of ",
+                    "model terms which cause the mismatch at t = ", i, ":")
+      for (j in 1:length(mismatch)) {
+        msg <- paste(msg, mismatch[j])
+        if (j == length(mismatch)) {
+          msg <- paste0(msg, ". Aborting now.")
+        } else {
+          msg <- paste0(msg, "; ")
+        }
+      }
+      message(paste0(strwrap(msg), collapse = "\n"))
+      stop("Coefficient mismatch error.")
+    }
+    
     tryCatch(
       expr = {
         sim[[index]] <- simulate(form,
