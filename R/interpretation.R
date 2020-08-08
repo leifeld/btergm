@@ -413,7 +413,7 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
   }
   
   # change statistics (needed for second variable)
-  ep <- suppressWarnings(edgeprob(model))
+  ep <- edgeprob(model)
   
   # remove '[[i]]' from edge covariate names in edgeprob
   for (i in 1:ncol(ep)) {
