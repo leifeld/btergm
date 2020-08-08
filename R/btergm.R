@@ -63,7 +63,7 @@ setClass(Class = "btergm",
           stop("'effects' must be a 'data.frame'.")
         }
         if (nrow(object@boot$t) != object@R) {
-          stop("The sample size does not correspond to the 'R' parameter.")
+          error("The sample size does not correspond to the 'R' parameter.")
         }
         if (length(object@coef) != ncol(object@boot$t)) {
           stop("Number of terms differs between 'boot' and 'coef'")
@@ -435,11 +435,13 @@ btergm <- function(formula,
                 Wi = W, Oi = O, timei = time, startvali = startval, 
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
 
-  if (coefs$t[1, 1] == "glm.fit: algorithm did not converge" ||
-      sum(is.na(coefs$t))>0 ) {
+  if (coefs$t[1, 1] == "glm.fit: algorithm did not converge") {
     stop(paste("Algorithm did not converge. There might be a collinearity ", 
         "between predictors and/or dependent networks at one or more time", 
         "steps."))
+  }
+  if (sum(is.na(coefs$t)) > 0) {
+    stop("NAs generated during bootstrap. This may be an indication of collinearity between predictors and/or dependent networks at one or more time steps.")
   }
   
   # create and return btergm object
