@@ -482,7 +482,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
       }, 
       error = function(e) {
         if (grep("elements, while the model requires", as.character(e))) {
-          message("Error: The number of ERGM coefficients does not correspond to the number of parameters the simulation function is expecting. This can occur if you employ curved model terms, such as gwesp, gwdegree etc., without explicitly adding ', fixed = TRUE' to the model term, for example '+ gwesp(0.5, fixed = TRUE). If that's the case, this is caused by a bug in the ergm package. Please add ', fixed = TRUE' to the respective model term(s) while estimating the model and then use the gof function again. The original error message from the ergm package will follow.")
+          message("Error: The number of ERGM coefficients does not correspond to the number of parameters the simulation function is expecting. This can occur if you employ curved model terms, such as gwesp, gwdegree etc., without explicitly adding ', fixed = TRUE' to the model term, for example '+ gwesp(0.5, fixed = TRUE). The MPLE-based estimation strategy currently does not permit curved terms (i.e., the parameters must be fixed). Please add ', fixed = TRUE' to the respective model term(s) while estimating the model and then use the gof function again. The original error message from the ergm package will follow.")
           stop(e)
         }
         stop("Error: Could not simulate any networks. One known reason for this is a namespace conflict with the 'lme4' package. Do not load 'lme4', 'tnam', or 'xergm' while using the 'btergm' package for now. Or remove the 'lme4' package before using 'btergm'. A better fix may be provided at some point.")

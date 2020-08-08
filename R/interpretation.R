@@ -403,7 +403,7 @@ edgeprob <- function (object, verbose = FALSE) {
 marginalplot <- function(model, var1, var2, inter, ci = 0.95, 
     rug = FALSE, point = FALSE, structzeromat = NULL, 
     zeroline = TRUE, color = "black", xlab = NULL, ylab = NULL) {
-  
+
   # check arguments
   if (!var1 %in% names(coef(model))) {
     stop("'var1' not found.")
@@ -411,10 +411,10 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
   if (!var2 %in% names(coef(model))) {
     stop("'var2' not found.")
   }
-  
+
   # change statistics (needed for second variable)
   ep <- edgeprob(model)
-  
+
   # remove '[[i]]' from edge covariate names in edgeprob
   for (i in 1:ncol(ep)) {
     if (grepl("((edge)|(dyad))cov", colnames(ep)[i])) {
@@ -448,6 +448,9 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
   delta1 = beta1 + beta3 * v2
   
   # variance-covariance matrix
+  if ("mtergm" %in% class(model)) {
+    model <- model@ergm
+  }
   vc <- stats::vcov(model)
   
   # variances
