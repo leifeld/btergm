@@ -12,4 +12,4 @@ Suggests:
     testthat
 Depends: R (>= 3.5), xergm.common (>= 1.7.7), ggplot2 (>= 2.0.0)
 License: GPL (>= 2)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
