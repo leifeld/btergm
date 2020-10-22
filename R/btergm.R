@@ -3,9 +3,9 @@
 .onAttach <- function(libname, pkgname) {
   desc  <- packageDescription(pkgname, libname)
   packageStartupMessage(
-    'Package:  btergm\n', 
-    'Version:  ', desc$Version, '\n', 
-    'Date:     ', desc$Date, '\n', 
+    'Package:  btergm\n',
+    'Version:  ', desc$Version, '\n',
+    'Date:     ', desc$Date, '\n',
     'Authors:  Philip Leifeld (University of Essex)\n',
     '          Skyler J. Cranmer (The Ohio State University)\n',
     '          Bruce A. Desmarais (Pennsylvania State University)\n'
@@ -18,25 +18,25 @@ setOldClass(c("boot", "boot"))
 
 
 # an S4 class for btergm objects
-setClass(Class = "btergm", 
+setClass(Class = "btergm",
     representation = representation(
         coef = "numeric",
         boot = "boot",
         R = "numeric",
-        nobs = "numeric", 
+        nobs = "numeric",
         time.steps = "numeric",
         formula = "formula",
-        formula2 = "character", 
+        formula2 = "character",
         response = "integer",
-        effects = "data.frame", 
-        weights = "numeric", 
-        auto.adjust = "logical", 
-        offset = "logical", 
-        directed = "logical", 
-        bipartite = "logical", 
-        nvertices = "matrix", 
+        effects = "data.frame",
+        weights = "numeric",
+        auto.adjust = "logical",
+        offset = "logical",
+        directed = "logical",
+        bipartite = "logical",
+        nvertices = "matrix",
         data = "list"
-    ), 
+    ),
     validity = function(object) {
         if (!"numeric" %in% class(object@coef)) {
           stop("'coef' must be a 'numeric' object.")
@@ -80,13 +80,13 @@ setClass(Class = "btergm",
 
 
 # constructor for btergm objects
-createBtergm <- function(coef, boot, R, nobs, time.steps, formula, 
-    formula2, response, effects, weights, auto.adjust, offset, 
+createBtergm <- function(coef, boot, R, nobs, time.steps, formula,
+    formula2, response, effects, weights, auto.adjust, offset,
     directed, bipartite, nvertices, data) {
-  new("btergm", coef = coef, boot = boot, R = R, nobs = nobs, 
-      time.steps = time.steps, formula = formula, formula2 = formula2, 
-      response = response, effects = effects, weights = weights, 
-      auto.adjust = auto.adjust, offset = offset, directed = directed, 
+  new("btergm", coef = coef, boot = boot, R = R, nobs = nobs,
+      time.steps = time.steps, formula = formula, formula2 = formula2,
+      response = response, effects = effects, weights = weights,
+      auto.adjust = auto.adjust, offset = offset, directed = directed,
       bipartite = bipartite, nvertices = nvertices, data = data)
 }
 
@@ -100,7 +100,7 @@ setMethod(f = "show", signature = "btergm", definition = function(object) {
 
 
 # define coef method for extracting coefficients from btergm objects
-setMethod(f = "coef", signature = "btergm", definition = function(object, 
+setMethod(f = "coef", signature = "btergm", definition = function(object,
       invlogit = FALSE, ...) {
     if (invlogit == FALSE) {
       return(object@coef)
@@ -116,7 +116,7 @@ setMethod(f = "nobs", signature = "btergm", definition = function(object) {
     n <- object@nobs
     t <- object@time.steps
     rep <- object@R
-    return(c("Number of time steps" = t, "Number of dyads" = n, 
+    return(c("Number of time steps" = t, "Number of dyads" = n,
         "Bootstrap replications" = rep))
   }
 )
@@ -151,7 +151,7 @@ btergm.se <- function(object, print = FALSE) {
 
 
 # confint method for btergm objects
-setMethod(f = "confint", signature = "btergm", definition = function(object, 
+setMethod(f = "confint", signature = "btergm", definition = function(object,
     parm, level = 0.95, type = "perc", invlogit = FALSE, ...) {
     cf <- coef(object, invlogit = invlogit)
     pnames <- names(cf)
@@ -165,7 +165,7 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
     n.ret <- nrow(object@boot$t)
     perc <- 100 * (n.orig - n.ret) / n.orig
     if (n.orig != n.ret) {
-      warning(paste0("Too little variation in the model. ", n.orig - n.ret, 
+      warning(paste0("Too little variation in the model. ", n.orig - n.ret,
           " replications (", perc, "%) are dropped from CI estimation."))
     }
     if (invlogit == TRUE) {
@@ -183,7 +183,7 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
     } else if (type == "bca") {
       type2 <- "bca"
     } else {
-      stop(paste("'type' not supported. Use 'perc', 'bca', 'norm', 'basic',", 
+      stop(paste("'type' not supported. Use 'perc', 'bca', 'norm', 'basic',",
           "or 'stud'."))
     }
     ci <- sapply(1:length(cf), function(x) {
@@ -217,18 +217,18 @@ timesteps.btergm <- function(object) {
 
 
 # define summary method for pretty output of btergm objects
-setMethod(f = "summary", signature = "btergm", definition = function(object, 
+setMethod(f = "summary", signature = "btergm", definition = function(object,
     level = 0.95, type = "perc", invlogit = FALSE, ...) {
     message(paste(rep("=", 26), collapse=""))
     message("Summary of model fit")
     message(paste(rep("=", 26), collapse=""))
-    message(paste("\nFormula:  ", gsub("\\s+", " ", 
+    message(paste("\nFormula:  ", gsub("\\s+", " ",
         paste(deparse(object@formula), collapse = "")), "\n"))
     message(paste("Time steps:", object@time.steps, "\n"))
     message(paste("Bootstrapping sample size:", object@R, "\n"))
-    
+
     message(paste0("Estimates and ", 100 * level, "% confidence intervals:"))
-    cmat <- confint(object, level = level, type = type, invlogit = invlogit, 
+    cmat <- confint(object, level = level, type = type, invlogit = invlogit,
         ...)
     printCoefmat(cmat, cs.ind = 1, tst.ind = 2:3)
   }
@@ -247,11 +247,11 @@ btergm <- function(formula,
                    usefastglm = FALSE,
                    verbose = TRUE,
                    ...) {
-  
+
   if (is.null(control.ergm)) {
     control.ergm <- ergm::control.ergm()
-  } 
-  
+  }
+
   # call tergmprepare and integrate results in local environment
   l <- tergmprepare(formula = formula, offset = offset, verbose = verbose)
   for (i in 1:length(l$covnames)) {
@@ -259,13 +259,13 @@ btergm <- function(formula,
   }
   assign("offsmat", l$offsmat)
   form <- as.formula(l$form)
-  
+
   # check number of time steps
   if (l$time.steps == 1) {
     warning(paste("The confidence intervals and standard errors are",
         "meaningless because only one time step was provided."))
   }
-  
+
   # verbose reporting
   if (verbose == TRUE && returndata == FALSE) {
     if (parallel[1] == "no") {
@@ -280,12 +280,12 @@ btergm <- function(formula,
     } else {
       offset.msg <- "with "
     }
-    message("\nStarting pseudolikelihood estimation ", offset.msg, 
+    message("\nStarting pseudolikelihood estimation ", offset.msg,
           R, " bootstrapping replications ", parallel.msg, "...")
   } else if (verbose == TRUE && returndata == TRUE) {
     message("\nReturning data frame with change statistics.")
   }
-  
+
   # create MPLE data structures
   if (offset == TRUE) {  # via structural zeros and an offset term
     # create the data for MPLE with structural zeros
@@ -304,7 +304,6 @@ btergm <- function(formula,
                           model,
                           theta.offset = c(rep(FALSE, length(l$rhs.terms) - 1), TRUE),
                           verbose = FALSE,
-                          maxMPLEsamplesize = control.ergm$MPLE.max.dyad.types,
                           control = control.ergm)
       Y <- c(Y, pl$zy[pl$foffset == 0])
       X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], check.names = FALSE), i))
@@ -322,7 +321,7 @@ btergm <- function(formula,
     for (i in 1:length(l$networks)) {
       mpli <- ergm::ergmMPLE(form, control = control.ergm)
       Y <- c(Y, mpli$response)
-      
+
       # fix different factor levels across time points
       if (i > 1 && ncol(X) != ncol(mpli$predictor) + 1) {
         cn.x <- colnames(X)[-ncol(X)]  # exclude last column "i"
@@ -331,7 +330,7 @@ btergm <- function(formula,
         names.i <- cn.i[which(!cn.i %in% cn.x)]
         if (length(names.x) > 0) {
           for (nm in 1:length(names.x)) {
-            mpli$predictor <- cbind(mpli$predictor, rep(0, 
+            mpli$predictor <- cbind(mpli$predictor, rep(0,
                 nrow(mpli$predictor)))
             colnames(mpli$predictor)[ncol(mpli$predictor)] <- names.x[nm]
           }
@@ -343,7 +342,7 @@ btergm <- function(formula,
           }
         }
       }  # end of column fix
-      
+
       X <- rbind(X, cbind(mpli$predictor, i))
       W <- c(W, mpli$weights)
     }
@@ -352,7 +351,7 @@ btergm <- function(formula,
     X <- data.frame(X)
     colnames(X) <- term.names
   }
-  
+
   # remove time variable for estimation
   unique.time.steps <- unique(X$time)
   x <- X[, -ncol(X)]
@@ -362,25 +361,25 @@ btergm <- function(formula,
   if (returndata == TRUE) {
     return(cbind(Y, x))
   }
-  
+
   # create sparse matrix and compute start values for GLM
   if (ncol(x) == 1) {
     stop("At least two model terms must be provided to estimate a TERGM.")
   }
-  
+
   if (isTRUE(usefastglm)) {
     if (requireNamespace("fastglm")) {
       xsparse <- NULL
       est <- fastglm::fastglm(y = Y,
-                              x = as.matrix(x), 
+                              x = as.matrix(x),
                               weights = W,
                               offset = O,
                               family = binomial(link = logit),
                               sparse = TRUE,
                               method = 3)
-      
+
       startval <- est$coefficients
-      
+
       estimate <- function(unique.time.steps,
                            bsi,
                            Yi = Y,
@@ -402,12 +401,12 @@ btergm <- function(formula,
     }
   } else {
     xsparse <- Matrix(as.matrix(x), sparse = TRUE)
-    est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O, 
+    est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O,
                          family = binomial(link = logit), sparse = TRUE)
-    
+
     startval <- coef(est)
     # define function for bootstrapping and estimation
-    estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse, 
+    estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse,
                          Wi = W, Oi = O, timei = time, startvali = startval) {
       indic <- unlist(lapply(bsi, function(x) which(timei == x)))
       tryCatch(
@@ -430,20 +429,20 @@ btergm <- function(formula,
       )
     }
   }
-  
-  coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse, 
-                Wi = W, Oi = O, timei = time, startvali = startval, 
+
+  coefs <- boot(unique.time.steps, estimate, R = R, Yi = Y, xsparsei = xsparse,
+                Wi = W, Oi = O, timei = time, startvali = startval,
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
 
   if (coefs$t[1, 1] == "glm.fit: algorithm did not converge") {
-    stop(paste("Algorithm did not converge. There might be a collinearity ", 
-        "between predictors and/or dependent networks at one or more time", 
+    stop(paste("Algorithm did not converge. There might be a collinearity ",
+        "between predictors and/or dependent networks at one or more time",
         "steps."))
   }
   if (sum(is.na(coefs$t)) > 0) {
     stop("NAs generated during bootstrap. This may be an indication of collinearity between predictors and/or dependent networks at one or more time steps.")
   }
-  
+
   # create and return btergm object
   colnames(coefs$t) <- term.names[1:(length(term.names) - 1)]
   names(startval) <- colnames(coefs$t)
@@ -452,7 +451,7 @@ btergm <- function(formula,
     data[[l$covnames[i]]] <- l[[l$covnames[i]]]
   }
   data$offsmat <- l$offsmat
-  
+
   if (isTRUE(l$bipartite)) {
     nobs <- sum(sapply(data$offsmat, function(x) {
       length(x[x == 0])
@@ -463,9 +462,9 @@ btergm <- function(formula,
       length(x[x == 0])
     }))
   }
-  
-  btergm.object <- createBtergm(startval, coefs, R, nobs, l$time.steps, 
-      formula, l$form, Y, x, W, l$auto.adjust, offset, l$directed, l$bipartite, 
+
+  btergm.object <- createBtergm(startval, coefs, R, nobs, l$time.steps,
+      formula, l$form, Y, x, W, l$auto.adjust, offset, l$directed, l$bipartite,
       nvertices = l$nvertices, data)
   if (verbose == TRUE) {
     message("Done.")
@@ -475,15 +474,15 @@ btergm <- function(formula,
 
 
 # simulation of new networks based on a btergm fit
-simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL, 
+simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
     formula = getformula(object), coef = object@coef, verbose = TRUE, ...) {
-  
+
   # retrieve data and integrate results locally
   for (i in 1:length(object@data)) {
     assign(names(object@data)[i], object@data[[i]])
   }
   form <- as.formula(object@formula2, env = environment())
-  
+
   # check and correct index argument
   if (is.null(index)) {
     index <- object@time.steps
@@ -491,30 +490,30 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
       message("\nNo index provided. Simulating from the last time step.")
     }
   } else if (!"numeric" %in% class(index)) {
-    stop(paste("The 'index' argument must contain a numeric time point from", 
+    stop(paste("The 'index' argument must contain a numeric time point from",
         "which to simulate new networks."))
   } else if (index > object@time.steps) {
     index <- object@time.steps
-    message(paste("Index larger than the number of time steps. Simulating", 
+    message(paste("Index larger than the number of time steps. Simulating",
         "from the last time step."))
   }
   i <- index
-  
+
   # print formula from which networks are simulated
   if (verbose == TRUE) {
-    f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
+    f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"),
         paste(deparse(form), collapse = ""))
     f.i <- gsub("\\s+", " ", f.i)
     f.i <- gsub("^networks", deparse(object@formula[[2]]), f.i)
-    message(paste("Simulating", nsim, "networks from the following formula:\n", 
+    message(paste("Simulating", nsim, "networks from the following formula:\n",
         f.i, "\n"))
   }
-  
+
   # simulate
   if (object@offset == TRUE) {
     coef <- c(coef, -Inf)
   }
-  s <- simulate(form, nsim = nsim, seed = seed, coef = coef, 
+  s <- simulate(form, nsim = nsim, seed = seed, coef = coef,
       verbose = verbose, ...)
   if ("btergm" %in% class(object)) {
     return(s)
@@ -528,11 +527,11 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
     }
     r2 <- sum(object@nvertices[1, 1:index])
     c2 <- sum(object@nvertices[2, 1:index])
-    
+
     if (is.network(s)) {
       s <- list(s)
     }
-    s <- lapply(s, function(sim) network(as.matrix(sim)[r1:r2, c1:c2], 
+    s <- lapply(s, function(sim) network(as.matrix(sim)[r1:r2, c1:c2],
         bipartite = object@bipartite, directed = object@directed))
     if (length(s) == 1) {
       s <- s[[1]]
