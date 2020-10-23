@@ -4,19 +4,19 @@ checkdegeneracy.mtergm <- function(object, ...) {
   mcmc.diagnostics(object@ergm, ...)
 }
 
-setMethod("checkdegeneracy", signature = className("mtergm", "btergm"), 
+setMethod("checkdegeneracy", signature = className("mtergm", "btergm"),
     definition = checkdegeneracy.mtergm)
 
 
 # checkdegeneracy function for btergm objects
-checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000, 
+checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
     MCMC.burnin = 10000, verbose = FALSE) {
   if (nsim < 2) {
     stop("The 'nsim' argument must be greater than 1.")
   }
-  
+
   # call tergmprepare and integrate results in local environment
-  l <- tergmprepare(formula = getformula(object), offset = object@offset, 
+  l <- tergmprepare(formula = getformula(object), offset = object@offset,
       verbose = verbose)
   for (i in 1:length(l$covnames)) {
     assign(l$covnames[i], l[[l$covnames[i]]])
@@ -25,14 +25,14 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   form <- as.formula(l$form)
   offset <- object@offset
   target <- l$networks
-  
+
   # extract coefficients from object
   if ("btergm" %in% class(object) && offset == TRUE) {
     coefs <- c(coef(object), -Inf)  # -Inf for offset matrix
   } else {
     coefs <- coef(object)
   }
-  
+
   # adjust formula at each step, and simulate networks
   sim <- list()
   target.stats <- list()
@@ -40,14 +40,14 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   for (index in 1:l$time.steps) {
     i <- index
     if (verbose == TRUE) {
-      f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
+      f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"),
           paste(deparse(form), collapse = ""))
       f.i <- gsub("\\s+", " ", f.i)
       f.i <- gsub("^networks", l$lhs.original, f.i)
-      message(paste("Simulating", nsim, 
+      message(paste("Simulating", nsim,
           "networks from the following formula:\n", f.i, "\n"))
     }
-    target.stats[[index]] <- summary(ergm::remove.offset.formula(form), 
+    target.stats[[index]] <- summary(statnet.common::filter_rhs.formula(form),
         response = NULL)
     degen[[index]] <- simulate(form,
                                nsim = nsim,
@@ -59,7 +59,7 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
       degen[[i]] <- degen[[i]][, -ncol(degen[[i]])]  # remove offset statistic
     }
   }
-  
+
   if (verbose == TRUE) {
     message("Checking degeneracy...")
   }
@@ -73,12 +73,12 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
   return(object)
 }
 
-setMethod("checkdegeneracy", signature = className("btergm", "btergm"), 
+setMethod("checkdegeneracy", signature = className("btergm", "btergm"),
     definition = checkdegeneracy.btergm)
 
 
 # print method for 'degeneracy' objects
-print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim), 
+print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim),
     terms = 1:length(x$target.stats[[1]]), ...) {
   for (i in t) {
     message(paste0("\nDegeneracy check for network ", i, ":"))
@@ -108,8 +108,8 @@ print.degeneracy <- function(x, center = FALSE, t = 1:length(x$sim),
 
 
 # plot method for 'degeneracy' objects
-plot.degeneracy <- function(x, center = TRUE, t = 1:length(x$sim), 
-    terms = 1:length(x$target.stats[[1]]), vbar = TRUE, main = NULL, 
+plot.degeneracy <- function(x, center = TRUE, t = 1:length(x$sim),
+    terms = 1:length(x$target.stats[[1]]), vbar = TRUE, main = NULL,
     xlab = NULL, target.col = "red", target.lwd = 3, ...) {
   for (i in t) {
     for (j in terms) {
