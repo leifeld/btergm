@@ -60,5 +60,5 @@ Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 \link{btergm-package} \link{btergm} \link{gof}
 }
 \author{
-Philip Leifeld (\url{http://www.philipleifeld.com})
+Philip Leifeld (\url{https://www.philipleifeld.com})
 }

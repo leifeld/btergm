@@ -351,7 +351,7 @@ ideg <- function(mat, ...) {
 # See the gofstatistics.R file in the package for more complex examples.
 }
 \author{
-Philip Leifeld (\url{http://www.philipleifeld.com})
+Philip Leifeld (\url{https://www.philipleifeld.com})
 }
 \keyword{statistics}
 \keyword{gof}

@@ -40,7 +40,7 @@ marginalplot(model, var1, var2, inter, ci = 0.95, rug = FALSE,
 \link{btergm-package} \link{interpret} \link{edgeprob}
 }
 \author{
-Philip Leifeld (\url{http://www.philipleifeld.com})
+Philip Leifeld (\url{https://www.philipleifeld.com})
 }
 \keyword{marginal effects}
 \keyword{interpretation}
