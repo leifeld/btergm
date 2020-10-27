@@ -5,6 +5,7 @@
 \alias{getformula,ergm-method}
 \alias{getformula,btergm-method}
 \alias{getformula,mtergm-method}
+\alias{getformula,tbergm-method}
 \title{Extract the formula from a model.}
 \description{Extract the model formula from ergm or btergm objects.}
 \usage{
@@ -13,6 +14,8 @@
 \S4method{getformula}{btergm}(x)
 
 \S4method{getformula}{mtergm}(x)
+
+\S4method{getformula}{tbergm}(x)
 }
 \details{
 Extract the model formula from ergm or btergm objects.

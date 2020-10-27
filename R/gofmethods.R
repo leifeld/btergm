@@ -9,6 +9,9 @@ setMethod("getformula", signature = className("btergm", "btergm"),
 setMethod("getformula", signature = className("mtergm", "btergm"), 
     definition = function(x) x@formula)
 
+setMethod("getformula", signature = className("tbergm", "btergm"), 
+          definition = function(x) x@formula)
+
 setMethod("getformula", signature = className("ergm", "ergm"), 
     definition = function(x) x$formula)
 
@@ -411,10 +414,18 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   }
   
   # extract coefficients from object
-  if (offset == TRUE) {
-    coefs <- c(coef(object), -Inf)  # -Inf for offset matrix
+  if ("tbergm" %in% class(object)) {
+    coefs <- object@bergm$Theta[sample(1:nrow(object@bergm$Theta), nsim), ,
+                                drop = FALSE]
+    if (isFALSE(offset)) {
+      coefs <- coefs[, -ncol(coefs)]
+    }
   } else {
-    coefs <- coef(object)
+    if (offset == TRUE) {
+      coefs <- c(coef(object), -Inf)  # -Inf for offset matrix
+    } else {
+      coefs <- coef(object)
+    }
   }
   
   # adjust formula at each step, and simulate networks
@@ -424,7 +435,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     i <- index  # index 'i' is used in formula construction!
     # simulations for statnet-style and rocpr GOF
     if (verbose == TRUE) {
-      if ("btergm" %in% class(object) || "mtergm" %in% class(object)) {
+      if ("btergm" %in% class(object) || "mtergm" %in% class(object) || "tbergm" %in% class(object)) {
         f.i <- gsub("\\[\\[i\\]\\]", paste0("[[", index, "]]"), 
             paste(deparse(form), collapse = ""))
         f.i <- gsub("\\s+", " ", f.i)
@@ -442,7 +453,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     }
     
     # check for mismatch in coefficients and data
-    if (length(coefs[!is.infinite(coefs)]) > ncol(ergm::ergmMPLE(form)$predictor)) {
+    if (!"tbergm" %in% class(object) && length(coefs[!is.infinite(coefs)]) > ncol(ergm::ergmMPLE(form)$predictor)) {
       mismatch <- names(coefs)[which(!names(coefs) %in% colnames(ergm::ergmMPLE(form)$predictor))]
       mismatch <- mismatch[mismatch != ""]
       msg <- paste0("At t = ", i, ", at least one of the covariates has missing ",
@@ -473,19 +484,32 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     
     tryCatch(
       expr = {
-        sim[[index]] <- simulate(form,
-                                 nsim = nsim,
-                                 coef = coefs,
-                                 constraints = ~ .,
-                                 control = control.simulate.formula(MCMC.interval = MCMC.interval,
-                                                                    MCMC.burnin = MCMC.burnin))
+        if ("tbergm" %in% class(object)) {
+          sim[[index]] <- apply(coefs, 1, function(x) {
+            simulate(form,
+                     nsim = 1,
+                     coef = x,
+                     constraints = ~ .,
+                     control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                        MCMC.burnin = MCMC.burnin))
+          })
+        } else {
+          sim[[index]] <- simulate(form,
+                                   nsim = nsim,
+                                   coef = coefs,
+                                   constraints = ~ .,
+                                   control = control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                      MCMC.burnin = MCMC.burnin))
+        }
       }, 
       error = function(e) {
         if (grep("elements, while the model requires", as.character(e))) {
           message("Error: The number of ERGM coefficients does not correspond to the number of parameters the simulation function is expecting. This can occur if you employ curved model terms, such as gwesp, gwdegree etc., without explicitly adding ', fixed = TRUE' to the model term, for example '+ gwesp(0.5, fixed = TRUE). The MPLE-based estimation strategy currently does not permit curved terms (i.e., the parameters must be fixed). Please add ', fixed = TRUE' to the respective model term(s) while estimating the model and then use the gof function again. The original error message from the ergm package will follow.")
           stop(e)
+        } else {
+          message("Error: Could not simulate any networks. Original error message follows.")
+          stop(e)
         }
-        stop("Error: Could not simulate any networks. One known reason for this is a namespace conflict with the 'lme4' package. Do not load 'lme4', 'tnam', or 'xergm' while using the 'btergm' package for now. Or remove the 'lme4' package before using 'btergm'. A better fix may be provided at some point.")
       }, 
       finally = {}
     )
@@ -573,6 +597,9 @@ setMethod("gof", signature = className("ergm", "ergm"),
     definition = gof.btergm)
 
 setMethod("gof", signature = className("mtergm", "btergm"), 
+    definition = gof.btergm)
+
+setMethod("gof", signature = className("tbergm", "btergm"), 
     definition = gof.btergm)
 
 

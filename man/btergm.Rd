@@ -1,9 +1,10 @@
 \name{btergm}
 \alias{btergm}
 \alias{mtergm}
+\alias{tbergm}
 \alias{tergm}
-\title{TERGM by bootstrapped pseudolikelihood or MCMC MLE}
-\description{TERGM by bootstrapped pseudolikelihood or MCMC MLE.}
+\title{TERGM by bootstrapped pseudolikelihood, MCMC MLE, or Bayesian estimation}
+\description{TERGM by bootstrapped pseudolikelihood, MCMC MLE, or Bayesian estimation.}
 \usage{
 btergm(formula, R = 500, offset = FALSE, returndata = FALSE, 
     parallel = c("no", "multicore", "snow"), ncpus = 1, 
@@ -12,11 +13,15 @@ btergm(formula, R = 500, offset = FALSE, returndata = FALSE,
 
 mtergm(formula, constraints = ~ ., returndata = FALSE, 
     verbose = TRUE, ...)
+
+tbergm(formula, returndata = FALSE, verbose = TRUE, ...)
 }
 \details{
 The \code{btergm} function computes temporal exponential random graph models (TERGM) by bootstrapped pseudolikelihood, as described in Desmarais and Cranmer (2012).
 
-The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected standard errors) via blockdiagonal matrices and structural zeros. The \code{btergm} function is faster than the \code{mtergm} function.
+The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected standard errors) via blockdiagonal matrices and structural zeros. It acts as a wrapper for the \pkg{ergm} package. The \code{btergm} function is faster than the \code{mtergm} function.
+
+The \code{tbergm} function computes TERGMs by Bayesian estimation via blockdiagonal matrices and structural zeros. It acts as a wrapper for the \pkg{Bergm} package.
 }
 \arguments{
 \item{formula}{ Formula for the TERGM. Model construction works like in the \pkg{ergm} package with the same model terms etc. (for a list of terms, see \code{help("\link[ergm]{ergm-terms}")}). The networks to be modeled on the left-hand side of the equation must be given either as a list of network objects with more recent networks last (i.e., chronological order) or as a list of matrices with more recent matrices at the end. \code{dyadcov} and \code{edgecov} terms accept time-independent covariates (as \code{network} or \code{matrix} objects) or time-varying covariates (as a list of networks or matrices with the same length as the list of networks to be modeled). }
@@ -30,9 +35,13 @@ The \code{mtergm} function computes TERGMs by MCMC MLE (or MPLE with uncorrected
 \item{control.ergm}{ ergm controls for ergmMPLE calls. See \code{\link[ergm]{control.ergm}} for details. }
 \item{usefastglm}{ Controls whether to use the \code{\link[fastglm]{fastglm}} estimation routine from the \pkg{fastglm} package with \code{method = 3}. Defaults to \code{FALSE} (and then uses \code{\link[speedglm:speedglm]{speedglm.wfit}} instead). }
 \item{verbose}{ Print details about data preprocessing and estimation settings. }
-\item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call) or the boot function (in the case of a btergm call). }
+\item{...}{ Further arguments to be handed over to subroutines. For example, one can specify arguments for the ergm function (in the case of an mtergm call), the boot function (in the case of a btergm call), or the bergm function (in the case of a tbergm call). }
 }
 \references{
+Caimo, Alberto and Nial Friel (2012):
+Bergm: Bayesian Exponential Random Graphs in R. \emph{Journal of Statistical
+Software} 61(2): 1-25. \url{http://dx.doi.org/10.18637/jss.v061.i02}.
+
 Cranmer, Skyler J., Tobias Heinrich and Bruce A. Desmarais (2014):
 Reciprocity and the Structural Determinants of the International Sanctions
 Network. \emph{Social Networks} 36(1): 5--22.

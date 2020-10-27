@@ -3,22 +3,27 @@
 \docType{class}
 \alias{btergm-class}
 \alias{mtergm-class}
+\alias{tbergm-class}
 \alias{coef,btergm-method}
 \alias{coef,mtergm-method}
 \alias{confint,btergm-method}
 \alias{nobs,btergm-method}
 \alias{nobs,mtergm-method}
+\alias{nobs,tbergm-method}
 \alias{show,btergm-method}
 \alias{show,mtergm-method}
+\alias{show,tbergm-method}
 \alias{summary,btergm-method}
 \alias{summary,mtergm-method}
+\alias{summary,tbergm-method}
 \alias{timesteps.btergm}
 \alias{timesteps.mtergm}
+\alias{timesteps.tbergm}
 \alias{btergm.se}
 
-\title{Classes \code{"btergm"} and \code{"mtergm"}}
+\title{Classes \code{"btergm"}, \code{"mtergm"}, and \code{"tbergm"}}
 \description{
-\code{btergm} objects result from the estimation of a bootstrapped TERGM via the \code{btergm} function in the \pkg{xergm} package. \code{btergm} objects contain the coefficients, the bootstrapping samples of the coefficients, the number of replications, the number of observations, the number of time steps, the original formula, and the response, effects and weights objects that were fed into the \code{glm} call for estimating the model. \code{mtergm} objects result from MCMC-MLE-based estimation of a TERGM via the \code{mtergm} function. They contain the coefficients, standard errors, and p-values, among other details.
+\code{btergm} objects result from the estimation of a bootstrapped TERGM via the \code{btergm} function in the \pkg{xergm} package. \code{btergm} objects contain the coefficients, the bootstrapping samples of the coefficients, the number of replications, the number of observations, the number of time steps, the original formula, and the response, effects and weights objects that were fed into the \code{glm} call for estimating the model. \code{mtergm} objects result from MCMC-MLE-based estimation of a TERGM via the \code{mtergm} function. They contain the coefficients, standard errors, and p-values, among other details. \code{tbergm} objects result from Bayesian estimation of a TERGM using the \code{tbergm} function. They contain the original \code{bergm} object and some additional information.
 }
 \section{Slots}{
   \describe{
@@ -49,13 +54,19 @@
 
 \S4method{summary}{mtergm}(object, ...)
 
+\S4method{summary}{tbergm}(object, ...)
+
 \S4method{show}{btergm}(object)
 
 \S4method{show}{mtergm}(object)
 
+\S4method{show}{tbergm}(object)
+
 \S4method{nobs}{btergm}(object)
 
 \S4method{nobs}{mtergm}(object)
+
+\S4method{nobs}{tbergm}(object)
 
 \S4method{coef}{btergm}(object, invlogit = FALSE, ...)
 
@@ -69,6 +80,8 @@ btergm.se(object, print = FALSE)
 timesteps.btergm(object)
 
 timesteps.mtergm(object)
+
+timesteps.tbergm(object)
 }
 \details{
 Various generic methods are available for \code{btergm} objects: The \code{coef} and \code{show} methods return the coefficients; the \code{summary} method gives a model summary. The \code{nobs} method returns the number of observations. The {confint} method returns confidence intervals from the bootstrap replications of \code{btergm} objects, and the user can specify the confidence level. The method returns a matrix with three columns: the estimate, the lower bound, and the upper bound of the confidence interval for each model term.
@@ -77,7 +90,7 @@ The \code{btergm.se} function computes standard errors and p values for \code{bt
 
 The \code{timesteps.btergm} function extracts the number of time steps from a \code{btergm} object. The number of time steps is the number of networks being modeled on the left-hand side of the model formula.
 
-Some of these functions or methods are also available for \code{mtergm} objects.
+Some of these functions or methods are also available for \code{mtergm} and \code{tbergm} objects.
 }
 \arguments{
 \item{object}{ A \code{btergm} object. }
@@ -110,6 +123,6 @@ and Bootstrap Confidence Intervals. \emph{Journal of Statistical
 Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
 }
 \seealso{
-\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gofmethods} \link{knecht} \link{getformula} \link{interpret} \link{mtergm}
+\link{btergm-package} \link{btergm} \link{simulate.btergm} \link[btergm]{gofmethods} \link{knecht} \link{getformula} \link{interpret} \link{mtergm} \link{tbergm}
 }
 \keyword{classes}
