@@ -8,7 +8,7 @@ Documentation of the package is available as a JStatSoft article:
 
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2018): Temporal Exponential Random Graph Models with btergm: Estimation and Bootstrap Confidence Intervals. _Journal of Statistical Software_ 83(6): 1-36. http://dx.doi.org/10.18637/jss.v083.i06.
 
-[![Build Status](https://travis-ci.org/leifeld/btergm.svg?branch=master)](https://travis-ci.org/leifeld/btergm)
+[![R-CMD-check](https://github.com/leifeld/btergm/workflows/R-CMD-check/badge.svg)](https://github.com/leifeld/btergm/actions)
 [![cran version](http://www.r-pkg.org/badges/version/btergm)](https://cran.r-project.org/package=btergm)
 [![downloads](http://cranlogs.r-pkg.org/badges/btergm)](http://cranlogs.r-pkg.org/badges/btergm)
 [![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/btergm)](http://cranlogs.r-pkg.org/badges/grand-total/btergm)
