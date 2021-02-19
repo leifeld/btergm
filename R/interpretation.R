@@ -481,36 +481,36 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
     if (length(v2) == 2 && v2[1] == 0 && v2[2] == 1 && rug == FALSE) {
       dta$v2 <- as.factor(dta$v2)
     }
-    gp <- ggplot(data = dta, aes(x = v2, y = delta1)) + 
-      geom_errorbar(data = dta, 
-                    aes(x = v2, ymin = lower, ymax = upper), 
-                    color = color) + 
-      geom_point(data = dta, aes(x = v2, y = delta1)) + 
-      ylab(ylab) + 
-      xlab(xlab)
+    gp <- ggplot2::ggplot(data = dta, ggplot2::aes(x = v2, y = delta1)) + 
+      ggplot2::geom_errorbar(data = dta, 
+                             ggplot2::aes(x = v2, ymin = lower, ymax = upper), 
+                             color = color) + 
+      ggplot2::geom_point(data = dta, ggplot2::aes(x = v2, y = delta1)) + 
+      ggplot2::ylab(ylab) + 
+      ggplot2::xlab(xlab)
   } else {
-    gp <- ggplot(data = dta, aes(x = v2, y = delta1)) + 
-      geom_line(color = color) + 
-      geom_ribbon(aes_string(ymin = "lower", ymax = "upper"), 
+    gp <- ggplot2::ggplot(data = dta, ggplot2::aes(x = v2, y = delta1)) + 
+      ggplot2::geom_line(color = color) + 
+      ggplot2::geom_ribbon(ggplot2::aes_string(ymin = "lower", ymax = "upper"), 
                   alpha = 0.15, 
                   fill = color) + 
-      ylab(ylab) + 
-      xlab(xlab)
+      ggplot2::ylab(ylab) + 
+      ggplot2::xlab(xlab)
   }
   
   # add distribution to the plot
   if (rug == TRUE) {
-    gp <- gp + geom_rug(data = ep[var2], 
-                        aes_string(x = var2), 
-                        inherit.aes = FALSE, 
-                        sides = "b", 
-                        col = color, 
-                        alpha = 0.1)
+    gp <- gp + ggplot2::geom_rug(data = ep[var2], 
+                                 ggplot2::aes_string(x = var2), 
+                                 inherit.aes = FALSE, 
+                                 sides = "b", 
+                                 col = color, 
+                                 alpha = 0.1)
   }
   
   # add horizontal line for 0
   if (zeroline == TRUE) {
-    gp <- gp + geom_hline(yintercept = 0, linetype = "dashed")
+    gp <- gp + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
   }
   
   return(gp)

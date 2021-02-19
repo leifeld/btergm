@@ -766,6 +766,8 @@ rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE,
     rgraph.pr <- unlist(rgraph.pr)
   }
   pred <- prediction(target.pr, target.y)
+  print(unlist(performance(pred, measure = "auc")@y.values))
+  print(unlist(performance(pred, measure = "aucpr")@y.values))
   rocperf <- performance(pred, "tpr", "fpr")  # ROC curve
   prperf <- performance(pred, "ppv", "tpr")  # precision-recall curve
   rg.pred <- prediction(rgraph.pr, target.y)
