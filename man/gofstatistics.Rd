@@ -311,7 +311,7 @@ Receiver-operating characteristics (ROC) and precision-recall curve (PR). Predic
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
+Software} 83(6): 1-36. \doi{10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm-package} \link{gof} \link{gof-methods}

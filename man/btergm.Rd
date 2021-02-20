@@ -40,17 +40,16 @@ The \code{tbergm} function computes TERGMs by Bayesian estimation via blockdiago
 \references{
 Caimo, Alberto and Nial Friel (2012):
 Bergm: Bayesian Exponential Random Graphs in R. \emph{Journal of Statistical
-Software} 61(2): 1-25. \url{http://dx.doi.org/10.18637/jss.v061.i02}.
+Software} 61(2): 1-25. \doi{10.18637/jss.v061.i02}.
 
 Cranmer, Skyler J., Tobias Heinrich and Bruce A. Desmarais (2014):
 Reciprocity and the Structural Determinants of the International Sanctions
 Network. \emph{Social Networks} 36(1): 5--22.
-\url{http://dx.doi.org/10.1016/j.socnet.2013.01.001}.
+\doi{10.1016/j.socnet.2013.01.001}.
 
 Desmarais, Bruce A. and Skyler J. Cranmer (2012):
 Statistical Mechanics of Networks: Estimation and Uncertainty.
-\emph{Physica A} 391: 1865--1876.
-\url{http://dx.doi.org/10.1016/j.physa.2011.10.018}.
+\emph{Physica A} 391: 1865--1876. \doi{10.1016/j.physa.2011.10.018}.
 
 Desmarais, Bruce A. and Skyler J. Cranmer (2010):
 Consistent Confidence Intervals for Maximum Pseudolikelihood Estimators.
@@ -60,7 +59,7 @@ Social Science and the Wisdom of Crowds}.
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
+Software} 83(6): 1-36. \doi{10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm-package} \link{simulate.btergm} \link[btergm]{gofmethods} \link{knecht} \link{btergm-class} \link{checkdegeneracy}

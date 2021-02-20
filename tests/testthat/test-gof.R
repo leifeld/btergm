@@ -36,7 +36,7 @@ test_that("edgeprob works with ergm, btergm, and mtergm object with curved terms
   expect_equivalent(dim(ep), c(900, 10))
   
   skip_on_cran()
-  sink("/dev/null")
+  sink(nullfile())
   fit2 <- mtergm(networks ~ edges + gwidegree(1.2, fixed = FALSE) + edgecov(covariates))
   sink()
   ep2 <- edgeprob(fit2)
@@ -44,7 +44,7 @@ test_that("edgeprob works with ergm, btergm, and mtergm object with curved terms
   expect_equivalent(dim(ep2), c(900, 10))
   
   skip_if_not_installed("ergm", minimum_version = "3.10.4")
-  sink("/dev/null")
+  sink(nullfile())
   require("ergm")
   nw1 <- networks[[1]]
   cov1 <- covariates[[1]]

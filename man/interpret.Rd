@@ -51,17 +51,17 @@ Czarna, Anna Z., Philip Leifeld, Magdalena Smieja, Michael Dufner
 and Peter Salovey (2016): Do Narcissism and Emotional Intelligence 
 Win Us Friends? Modeling Dynamics of Peer Popularity Using 
 Inferential Network Analysis. \emph{Personality and Social 
-Psychology Bulletin} 42(11): 1588--1599.
+Psychology Bulletin} 42(11): 1588--1599. \doi{10.1177/0146167216666265}.
 
 Desmarais, Bruce A. and Skyler J. Cranmer (2012):
 Micro-Level Interpretation of Exponential Random Graph Models with
-Application to Estuary Networks.
-\emph{The Policy Studies Journal} 40(3): 402--434.
+Application to Estuary Networks. \emph{Policy Studies Journal}
+40(3): 402--434. \doi{10.1111/j.1541-0072.2012.00459.x}.
 
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
+Software} 83(6): 1-36. \doi{10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{edgeprob} \link{btergm-package} \link{btergm} \link{timesteps.btergm}

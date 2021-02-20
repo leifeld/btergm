@@ -111,13 +111,12 @@ createGOF(simulations, target, statistics = c(dsp, esp, deg,
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
+Software} 83(6): 1-36. \doi{10.18637/jss.v083.i06}.
 
-Leifeld, Philip and Skyler J. Cranmer (2014): A Theoretical and 
+Leifeld, Philip and Skyler J. Cranmer (2019): A Theoretical and 
 Empirical Comparison of the Temporal Exponential Random Graph 
-Model and the Stochastic Actor-Oriented Model. Paper presented 
-at the 7th Political Networks Conference, McGill University, 
-Montreal, Canada, May 30. \url{https://arxiv.org/abs/1506.06696}.
+Model and the Stochastic Actor-Oriented Model. Network Science
+7(1): 20-51. \doi{10.1017/nws.2018.26}.
 }
 \seealso{
 \link{btergm-package} \link{btergm} \link{simulate.btergm} \link[ergm]{simulate.ergm} \link{gof} \link{gof-statistics} \link{gof-plot}

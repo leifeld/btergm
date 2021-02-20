@@ -23,12 +23,12 @@ The \code{simulate.btergm} function is a wrapper for the \code{"formula"} method
 \references{
 Desmarais, Bruce A. and Skyler J. Cranmer (2012):
  Statistical Mechanics of Networks: Estimation and Uncertainty.
- \emph{Physica A} 391: 1865--1876.
+ \emph{Physica A} 391: 1865--1876. \doi{10.1016/j.physa.2011.10.018}.
 
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): 
 Temporal Exponential Random Graph Models with btergm: Estimation 
 and Bootstrap Confidence Intervals. \emph{Journal of Statistical 
-Software} 83(6): 1-36. \url{http://dx.doi.org/10.18637/jss.v083.i06}.
+Software} 83(6): 1-36. \doi{10.18637/jss.v083.i06}.
 }
 \seealso{
 \link{btergm-package} \link{btergm} \link[btergm]{gofmethods}
