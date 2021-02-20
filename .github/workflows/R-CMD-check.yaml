@@ -38,9 +38,10 @@ jobs:
       - name: Set display
         if: runner.os == 'Linux'
         run: |
-          npm install
           sudo apt-get install xvfb
-          xvfb-run --auto-servernum npm test
+          "export DISPLAY=:99.0"
+          "sh -e /etc/init.d/xvfb start"
+          sleep 3
     
       - uses: r-lib/actions/setup-r@v1
         with:
