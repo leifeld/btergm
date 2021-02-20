@@ -38,10 +38,7 @@ jobs:
       - name: Set display
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get install xvfb
-          "export DISPLAY=:99.0"
-          "sh -e /etc/init.d/xvfb start"
-          sleep 3
+          sudo apt-get install tcl8.6 tcl8.6-dev tk8.6 tk8.6-dev
     
       - uses: r-lib/actions/setup-r@v1
         with:
@@ -71,6 +68,11 @@ jobs:
           do
             eval sudo $cmd
           done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
+
+      - name: Install X11 dependencies on MacOS
+        if: runner.os == 'macOS'
+        run: |
+          brew install xquartz --cask
 
       - name: Install dependencies
         run: |
