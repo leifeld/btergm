@@ -38,7 +38,7 @@ jobs:
       - name: Set display
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get install tcl8.6 tcl8.6-dev tk8.6 tk8.6-dev
+          sudo apt-get install tcl8.6 tcl8.6-dev tk8.6 tk8.6-dev xvfb xauth xfonts-base r-cran-rgl
     
       - uses: r-lib/actions/setup-r@v1
         with:
