@@ -35,11 +35,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run headless test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm test
-
+      - name: Set display
+        if: runner.os == 'Linux'
+        run: npm install
+        run: sudo apt-get install xvfb
+        run: xvfb-run --auto-servernum npm test
+    
       - uses: r-lib/actions/setup-r@v1
         with:
           r-version: ${{ matrix.config.r }}
