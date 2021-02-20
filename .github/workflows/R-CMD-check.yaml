@@ -37,9 +37,10 @@ jobs:
 
       - name: Set display
         if: runner.os == 'Linux'
-        run: npm install
-        run: sudo apt-get install xvfb
-        run: xvfb-run --auto-servernum npm test
+        run: |
+          npm install
+          sudo apt-get install xvfb
+          xvfb-run --auto-servernum npm test
     
       - uses: r-lib/actions/setup-r@v1
         with:
