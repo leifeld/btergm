@@ -63,6 +63,7 @@ model <- ergm(flobusiness ~ edges + esp(1) + edgecov(wealth.icov)
 marginalplot(model, var1 = "edgecov.wealth.icov", 
     var2 = "edgecov.priorates.icov", inter = "edgecov.interac", 
     color = "darkred", rug = TRUE, point = FALSE, xlab = "Priorates", 
-    ylab = "Wealth") + theme_bw() + ggplot2::ggtitle("Interaction effect")
+    ylab = "Wealth") + ggplot2::theme_bw() +
+    ggplot2::ggtitle("Interaction effect")
 }
 }
