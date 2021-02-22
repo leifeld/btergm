@@ -152,7 +152,12 @@ setMethod(f = "summary", signature = "tbergm", definition = function(object,
 #'
 #' @export
 tbergm <- function(formula, returndata = FALSE, verbose = TRUE, ...) {
-
+  
+  if (!requireNamespace("Bergm", quietly = TRUE)) {
+    stop("tbergm requires the 'Bergm' package to be installed.\n",
+         "To do this, enter 'install.packages(\"Bergm\")'.")
+  }
+  
   # call tergmprepare and integrate results as a child environment in the chain
   l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE,
                     verbose = verbose)
@@ -171,11 +176,6 @@ tbergm <- function(formula, returndata = FALSE, verbose = TRUE, ...) {
   if (returndata == TRUE) {
     message("Returning a list with data.")
     return(data)
-  }
-
-  if (!requireNamespace("Bergm", quietly = TRUE)) {
-    stop("tbergm requires the 'Bergm' package to be installed.\n",
-         "To do this, enter 'install.packages(\"Bergm\")'.")
   }
 
   if (verbose == TRUE) {
