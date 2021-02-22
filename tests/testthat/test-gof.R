@@ -21,7 +21,9 @@ for (i in 1:10) {          # create 10 matrices as covariate
 fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, usefastglm = TRUE, verbose = FALSE)
 
 test_that("basic GOF functionality works", {
+  sink(nullfile())
   g <- gof(fit, nsim = 2, MCMC.burnin = 1000, MCMC.interval = 500, verbose = FALSE)
+  sink()
   expect_equal(length(g), 7)
   expect_equal(class(g), "gof")
 })

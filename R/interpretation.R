@@ -1,10 +1,308 @@
+#' Micro-Level Interpretation of (T)ERGMs
+#' 
+#' Micro-level interpretation of (T)ERGMs.
+#' 
+#' The \code{interpret} function facilitates interpretation of ERGMs and TERGMs
+#' at the micro level, as described in Desmarais and Cranmer (2012). There are
+#' methods for \code{ergm} objects, \code{btergm} objects, and \code{mtergm}
+#' objects. The function can be used to interpret these models at the tie or
+#' edge level, dyad level, and block level. For example, what is the probability
+#' that two specific nodes \code{i} (the sender) and \code{j} (the receiver) are
+#' connected given the rest of the network and given the model? Or what is the
+#' probability that any two nodes are tied at \code{t = 2} if they were tied (or
+#' disconnected) at \code{t = 1} (i.e., what is the amount of tie stability)?
+#' These tie- or edge-level questions can be answered if the \code{type = "tie"}
+#' argument is used.
+#' 
+#' Another example: What is the probability that node \code{i} has a tie to node
+#' \code{j} but not vice-versa? Or that \code{i} and \code{j} maintain a
+#' reciprocal tie? Or that they are disconnected? How much more or less likely
+#' are \code{i} and \code{j} reciprocally connected if the \code{mutual} term in
+#' the model is fixed at \code{0} (compared to the model that includes the
+#' estimated parameter for reciprocity)? See example below. These dyad-level
+#' questions can be answered if the \code{type = "dyad"} argument is used.
+#' 
+#' Or what is the probability that a specific node \code{i} is connected to
+#' nodes \code{j1} and \code{j2} but not to \code{j5} and \code{j7}? And how
+#' likely is any node \code{i} to be connected to exactly four \code{j} nodes?
+#' These node-level questions (focusing on the ties of node \code{i} or node
+#' \code{j}) can be answered by using the \code{type = "node"} argument.
+#' 
+#' The typical procedure is to manually enumerate all dyads or
+#' sender-receiver-time combinations with certain properties and repeat the same
+#' thing with some alternative properties for contrasting the two groups. Then
+#' apply the \code{interpret} function to the two groups of dyads and compute a
+#' measure of central tendency (e.g., mean or median) and possibly some
+#' uncertainy measure (i.e., confidence intervals) from the distribution of
+#' dyadic probabilities in each group. For example, if there is a gender
+#' attribute, one can sample male-male or female-female dyads, compute the
+#' distributions of edge probabilities for the two sets of dyads, and create
+#' boxplots or barplots with confidence intervals for the two types of dyads in
+#' order to contrast edge probabilities for male versus female same-sex dyads.
+#' 
+#' See also the \code{\link{edgeprob}} function for automatic computation of all
+#' dyadic edge probabilities.
+#' 
+#' @param object An \code{ergm}, \code{btergm}, or \code{mtergm} object.
+#' @param formula The formula to be used for computing probabilities. By
+#'   default, the formula embedded in the model object is retrieved and used.
+#' @param coefficients The estimates on which probabilities should be based. By
+#'   default, the coefficients from the model object are retrieved and used.
+#'   Custom coefficients can be handed over, for example, in order to compare
+#'   versions of the model where the reciprocity term is fixed at \code{0}
+#'   versus versions of the model where the reciprocity term is left as in the
+#'   empirical result. This is one of the examples described in Desmarais and
+#'   Cranmer (2012).
+#' @param target The response network on which probabilities are based.
+#'   Depending on whether the function is applied to an \code{ergm} or
+#'   \code{btergm}/\code{mtergm} object, this can be either a single network or
+#'   a list of networks. By default, the (list of) network(s) provided as the
+#'   left-hand side of the (T)ERGM formula is used.
+#' @param type If \code{type = "tie"} is used, probabilities at the edge level
+#'   are computed. For example, what is the probability of a specific node
+#'   \code{i} to be connected to a specific node \code{j} given the rest of the
+#'   network and given the model? If \code{type = "dyad"} is used, probabilities
+#'   at the dyad level are computed. For example, what is the probability that
+#'   node \code{i} is connected to node \code{j} but not vice-versa, or what is
+#'   the probability that nodes \code{i} and \code{j} and mutually connected in
+#'   a directed network? If \code{type = "node"} is used, probabilities at the
+#'   node level are computed. For example, what is the probability that node
+#'   \code{i} is connected to a set of three other \code{j} nodes given the rest
+#'   of the network and the model?
+#' @param i A single (sender) node \code{i} or a set of (sender) nodes \code{i}.
+#'   If \code{type = "node"} is used, this can be more than one node and should
+#'   be provided as a vector. The \code{i} argument can be either provided as
+#'   the index of the node in the sociomatrix (e.g., the fourth node would be
+#'   \code{i = 4}) or the row name of the node in the sociomatrix (e.g.,
+#'   \code{i = "Peter"}). If more than one node is provided and
+#'   \code{type = "node"}, there can be only one (receiver) node \code{j}. The
+#'   \code{i} and \code{j} arguments are used to specify for which nodes
+#'   probabilities should be computed. For example, what is the probability that
+#'   \code{i = 4} is connected to \code{j = 7}?
+#' @param j A single (receiver) node \code{j} or a set of (receiver) nodes
+#'   \code{j}. If \code{type = "node"} is used, this can be more than one node
+#'   and should be provided as a vector. The \code{j} argument can be either
+#'   provided as the index of the node in the sociomatrix (e.g., the fourth node
+#'   would be \code{j = 4}) or the column name of the node in the sociomatrix
+#'   (e.g., \code{j = "Mary"}). If more than one node is provided and
+#'   \code{type = "node"}, there can be only one (sender) node \code{i}. The
+#'   \code{i} and \code{j} arguments are used to specify for which nodes
+#'   probabilities should be computed. For example, what is the probability that
+#'   \code{i = 4} is connected to \code{j = 7}?
+#' @param t A vector of (numerical) time steps for which the probabilities
+#'   should be computed. This only applies to \code{btergm} amd \code{mtergm}
+#'   objects because \code{ergm} objects are by definition based on a single
+#'   time step. By default, all available time steps are used. It is, for
+#'   example, possible to compute probabilities only for a single time step by
+#'   specifying, e.g., \code{t = 5} in order to compute probabilities for the
+#'   fifth response network.
+#' @param ... Further arguments to be passed on to subroutines.
+#'
+#' @references
+#' Desmarais, Bruce A. and Skyler J. Cranmer (2012): Micro-Level Interpretation
+#' of Exponential Random Graph Models with Application to Estuary Networks.
+#' \emph{Policy Studies Journal} 40(3): 402--434.
+#' \doi{10.1111/j.1541-0072.2012.00459.x}.
+#' 
+#' Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): Temporal
+#' Exponential Random Graph Models with btergm: Estimation and Bootstrap
+#' Confidence Intervals. \emph{Journal of Statistical Software} 83(6): 1--36.
+#' \doi{10.18637/jss.v083.i06}.
+#'
+#' Czarna, Anna Z., Philip Leifeld, Magdalena Smieja, Michael Dufner and Peter
+#' Salovey (2016): Do Narcissism and Emotional Intelligence Win Us Friends?
+#' Modeling Dynamics of Peer Popularity Using Inferential Network Analysis.
+#' \emph{Personality and Social Psychology Bulletin} 42(11): 1588--1599.
+#' \doi{10.1177/0146167216666265}.
+#' 
+#' @examples
+#' ##### The following example is a TERGM adaptation of the #####
+#' ##### dyad-level example provided in figure 5(c) on page #####
+#' ##### 424 of Desmarais and Cranmer (2012) in the PSJ. At #####
+#' ##### each time step, it compares dyadic probabilities   #####
+#' ##### (no tie, unidirectional tie, and reciprocal tie    #####
+#' ##### probability) between a fitted model and a model    #####
+#' ##### where the reciprocity effect is fixed at 0 based   #####
+#' ##### on 20 randomly selected dyads per time step. The   #####
+#' ##### results are visualized using a grouped bar plot.   #####
+#' 
+#' \dontrun{
+#'   # create toy dataset and fit a model
+#'   networks <- list()
+#'   for (i in 1:3) {           # create 3 random networks with 10 actors
+#'     mat <- matrix(rbinom(100, 1, 0.25), nrow = 10, ncol = 10)
+#'     diag(mat) <- 0           # loops are excluded
+#'     nw <- network(mat)       # create network object
+#'     networks[[i]] <- nw      # add network to the list
+#'   }
+#'   fit <- btergm(networks ~ edges + istar(2) + mutual, R = 200)
+#'   
+#'   # extract coefficients and create null hypothesis vector
+#'   null <- coef(fit)  # estimated coefs
+#'   null[3] <- 0       # set mutual term = 0
+#'   
+#'   # sample 20 dyads per time step and compute probability ratios
+#'   probabilities <- matrix(nrow = 9, ncol = length(networks))
+#'   # nrow = 9 because three probabilities + upper and lower CIs
+#'   colnames(probabilities) <- paste("t =", 1:length(networks))
+#'   for (t in 1:length(networks)) {
+#'     d <- dim(as.matrix(networks[[t]]))  # how many row and column nodes?
+#'     size <- d[1] * d[2]                 # size of the matrix
+#'     nw <- matrix(1:size, nrow = d[1], ncol = d[2])
+#'     nw <- nw[lower.tri(nw)]             # sample only from lower triangle b/c
+#'     samp <- sample(nw, 20)              # dyadic probabilities are symmetric
+#'     prob.est.00 <- numeric(0)
+#'     prob.est.01 <- numeric(0)
+#'     prob.est.11 <- numeric(0)
+#'     prob.null.00 <- numeric(0)
+#'     prob.null.01 <- numeric(0)
+#'     prob.null.11 <- numeric(0)
+#'     for (k in 1:20) {
+#'       i <- arrayInd(samp[k], d)[1, 1]   # recover 'i's and 'j's from sample
+#'       j <- arrayInd(samp[k], d)[1, 2]
+#'       # run interpretation function with estimated coefs and mutual = 0:
+#'       int.est <- interpret(fit, type = "dyad", i = i, j = j, t = t)
+#'       int.null <- interpret(fit, coefficients = null, type = "dyad", 
+#'                             i = i, j = j, t = t)
+#'       prob.est.00 <- c(prob.est.00, int.est[[1]][1, 1])
+#'       prob.est.11 <- c(prob.est.11, int.est[[1]][2, 2])
+#'       mean.est.01 <- (int.est[[1]][1, 2] + int.est[[1]][2, 1]) / 2
+#'       prob.est.01 <- c(prob.est.01, mean.est.01)
+#'       prob.null.00 <- c(prob.null.00, int.null[[1]][1, 1])
+#'       prob.null.11 <- c(prob.null.11, int.null[[1]][2, 2])
+#'       mean.null.01 <- (int.null[[1]][1, 2] + int.null[[1]][2, 1]) / 2
+#'       prob.null.01 <- c(prob.null.01, mean.null.01)
+#'     }
+#'     prob.ratio.00 <- prob.est.00 / prob.null.00  # ratio of est. and null hyp
+#'     prob.ratio.01 <- prob.est.01 / prob.null.01
+#'     prob.ratio.11 <- prob.est.11 / prob.null.11
+#'     probabilities[1, t] <- mean(prob.ratio.00)   # mean estimated 00 tie prob
+#'     probabilities[2, t] <- mean(prob.ratio.01)   # mean estimated 01 tie prob
+#'     probabilities[3, t] <- mean(prob.ratio.11)   # mean estimated 11 tie prob
+#'     ci.00 <- t.test(prob.ratio.00, conf.level = 0.99)$conf.int
+#'     ci.01 <- t.test(prob.ratio.01, conf.level = 0.99)$conf.int
+#'     ci.11 <- t.test(prob.ratio.11, conf.level = 0.99)$conf.int
+#'     probabilities[4, t] <- ci.00[1]              # lower 00 conf. interval
+#'     probabilities[5, t] <- ci.01[1]              # lower 01 conf. interval
+#'     probabilities[6, t] <- ci.11[1]              # lower 11 conf. interval
+#'     probabilities[7, t] <- ci.00[2]              # upper 00 conf. interval
+#'     probabilities[8, t] <- ci.01[2]              # upper 01 conf. interval
+#'     probabilities[9, t] <- ci.11[2]              # upper 11 conf. interval
+#'   }
+#'   
+#'   # create barplots from probability ratios and CIs
+#'   require("gplots")
+#'   bp <- barplot2(probabilities[1:3, ], beside = TRUE, plot.ci = TRUE, 
+#'                  ci.l = probabilities[4:6, ], ci.u = probabilities[7:9, ], 
+#'                  col = c("tan", "tan2", "tan3"), ci.col = "grey40", 
+#'                  xlab = "Dyadic tie values", ylab = "Estimated Prob./Null Prob.")
+#'   mtext(1, at = bp, text = c("(0,0)", "(0,1)", "(1,1)"), line = 0, cex = 0.5)
+#'   
+#'   
+#'   ##### The following examples illustrate the behavior of  #####
+#'   ##### the interpret function with undirected and/or      #####
+#'   ##### bipartite graphs with or without structural zeros. #####
+#'   
+#'   library("statnet")
+#'   library("btergm")
+#'   
+#'   # micro-level interpretation for undirected network with structural zeros
+#'   set.seed(12345)
+#'   mat <- matrix(rbinom(400, 1, 0.1), nrow = 20, ncol = 20)
+#'   mat[1, 5] <- 1
+#'   mat[10, 7] <- 1
+#'   mat[15, 3] <- 1
+#'   mat[18, 4] < 1
+#'   nw <- network(mat, directed = FALSE, bipartite = FALSE)
+#'   cv <- matrix(rnorm(400), nrow = 20, ncol = 20)
+#'   offsetmat <- matrix(rbinom(400, 1, 0.1), nrow = 20, ncol = 20)
+#'   offsetmat[1, 5] <- 1
+#'   offsetmat[10, 7] <- 1
+#'   offsetmat[15, 3] <- 1
+#'   offsetmat[18, 4] < 1
+#'   model <- ergm(nw ~ edges + kstar(2) + edgecov(cv) + offset(edgecov(offsetmat)), 
+#'                 offset.coef = -Inf)
+#'   summary(model)
+#'   
+#'   # tie-level interpretation (note that dyad interpretation would not make any 
+#'   # sense in an undirected network):
+#'   interpret(model, type = "tie", i = 1, j = 2)  # 0.28 (= normal dyad)
+#'   interpret(model, type = "tie", i = 1, j = 5)  # 0.00 (= structural zero)
+#'   
+#'   # node-level interpretation; note the many 0 probabilities due to the 
+#'   # structural zeros; also note the warning message that the probabilities may 
+#'   # be slightly imprecise because -Inf needs to be approximated by some large 
+#'   # negative number (-9e8):
+#'   interpret(model, type = "node", i = 1, j = 3:5)
+#'   
+#'   # repeat the same exercise for a directed network
+#'   nw <- network(mat, directed = TRUE, bipartite = FALSE)
+#'   model <- ergm(nw ~ edges + istar(2) + edgecov(cv) + offset(edgecov(offsetmat)), 
+#'                 offset.coef = -Inf)
+#'   interpret(model, type = "tie", i = 1, j = 2)  # 0.13 (= normal dyad)
+#'   interpret(model, type = "tie", i = 1, j = 5)  # 0.00 (= structural zero)
+#'   interpret(model, type = "dyad", i = 1, j = 2)  # results for normal dyad
+#'   interpret(model, type = "dyad", i = 1, j = 5)  # results for i->j struct. zero
+#'   interpret(model, type = "node", i = 1, j = 3:5)
+#'   
+#'   # micro-level interpretation for bipartite graph with structural zeros
+#'   set.seed(12345)
+#'   mat <- matrix(rbinom(200, 1, 0.1), nrow = 20, ncol = 10)
+#'   mat[1, 5] <- 1
+#'   mat[10, 7] <- 1
+#'   mat[15, 3] <- 1
+#'   mat[18, 4] < 1
+#'   nw <- network(mat, directed = FALSE, bipartite = TRUE)
+#'   cv <- matrix(rnorm(200), nrow = 20, ncol = 10)  # some covariate
+#'   offsetmat <- matrix(rbinom(200, 1, 0.1), nrow = 20, ncol = 10)
+#'   offsetmat[1, 5] <- 1
+#'   offsetmat[10, 7] <- 1
+#'   offsetmat[15, 3] <- 1
+#'   offsetmat[18, 4] < 1
+#'   model <- ergm(nw ~ edges + b1star(2) + edgecov(cv) 
+#'                 + offset(edgecov(offsetmat)), offset.coef = -Inf)
+#'   summary(model)
+#'   
+#'   # tie-level interpretation; note the index for the second mode starts with 21
+#'   interpret(model, type = "tie", i = 1, j = 21)
+#'   
+#'   # dyad-level interpretation does not make sense because network is undirected; 
+#'   # node-level interpretation prints warning due to structural zeros, but 
+#'   # computes the correct probabilities (though slightly imprecise because -Inf 
+#'   # is approximated by some small number:
+#'   interpret(model, type = "node", i = 1, j = 21:25)
+#'   
+#'   # compute all dyadic probabilities
+#'   dyads <- edgeprob(model)
+#'   dyads
+#' }
+#' 
+#' @docType methods
+#' @aliases interpret-methods
+#' @family interpretation
+#' @export
+setGeneric("interpret", function(object, ...) standardGeneric("interpret"),
+           package = "btergm")
 
-# Internal helper function, which does the actual interpretation computations. 
-# Needs a list as provided by tergmprepare, including a list of 
-# networks (l$networks, with possibly just one network in this list) and a 
-# formula (l$form, with temporal indices, as prepared by tergmprepare). Also 
-# need to supply coefficients vector, type string, i, j, and t (where t can be 
-# 1 if there is only one network).
+#' Internal helper function for doing the actual interpretation computations
+#' 
+#' Internal helper function for doing the actual interpretation computations.
+#' 
+#' Takes the output of \code{\link{tergmprepare}} and a few parameters to
+#' produce micro-level interpretation results. This is an internal worker
+#' function. Users should call the high-level functions \code{interpret} and
+#' \code{edgeprob} instead.
+#' 
+#' @param l List of networks, with possibly just one network in this list, and a
+#'   formula (\code{l$form}, with temporal indices, as prepared by
+#'   \code{\link{tergmprepare}}).
+#' @param type Type string. Can be \code{"tie"}, \code{"dyad"}, or
+#'   \code{"node"}.
+#'
+#' @importFrom utils combn
+#' @importFrom network is.network is.directed
+#' 
+#' @noRd
 dointerpret <- function(l, coefficients, type, i, j, t) {
   for (cv in 1:length(l$covnames)) {
     assign(l$covnames[cv], l[[l$covnames[cv]]])
@@ -205,8 +503,7 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
   return(results)
 }
 
-
-# interpretation method for ergm objects
+#' @noRd
 interpret.ergm <- function(object, formula = getformula(object), 
     coefficients = coef(object), target = NULL, type = "tie", i, j) {
   
@@ -237,8 +534,7 @@ interpret.ergm <- function(object, formula = getformula(object),
       t = 1)[[1]]
 }
 
-
-# interpretation method for btergm objects
+#' @noRd
 interpret.btergm <- function(object, formula = getformula(object), 
     coefficients = coef(object), target = NULL, type = "tie", i, j, 
     t = 1:object@time.steps) {
@@ -268,19 +564,50 @@ interpret.btergm <- function(object, formula = getformula(object),
       t = t)
 }
 
-
-# register generic methods with ergm, btergm, and mtergm objects
+#' @describeIn interpret Interpret method for \code{ergm} objects
 setMethod("interpret", signature = className("ergm", "ergm"), 
     definition = interpret.ergm)
 
+#' @describeIn interpret Interpret method for \code{btergm} objects
 setMethod("interpret", signature = className("btergm", "btergm"), 
     definition = interpret.btergm)
 
+#' @describeIn interpret Interpret method for \code{mtergm} objects
 setMethod("interpret", signature = className("mtergm", "btergm"), 
     definition = interpret.btergm)
 
-
-# a function that creates all tie probabilities along with some other variables
+#' Create all predicted tie probabilities using MPLE
+#' 
+#' Create all predicted tie probabilities using MPLE.
+#' 
+#' For a given (T)ERGM, return a data frame with all predicted edge
+#' probabilities along with the design matrix of the MPLE logit model, based
+#' on the estimated coefficients and the design matrix, for all time points,
+#' along with \code{i}, \code{j}, and \code{t} variables indicating where the
+#' respective dyad is located.
+#' 
+#' \code{edgeprob} is a convenience function that creates a data frame with all
+#' dyads in the ERGM or TERGM along with their edge probabilities and their
+#' predictor values (i.e., change statistics). This is useful for creating
+#' marginal effects plots or contrasting multiple groups of dyads. This function
+#' works faster than the \code{\link{interpret}} function.
+#' 
+#' @param verbose Print details?
+#' @inheritParams interpret
+#' 
+#' @return The first variable in the resulting data frame contains the edge
+#' value (i.e., the dependent variable, which is usually binary). The next
+#' variables contain all the predictors from the ERGM or TERGM (i.e., the change
+#' statistics). The next five variables contain the indices of the sender (i),
+#' the receiver (j), the time step (t), the vertex id of i (i.name), and the
+#' vertex id of j (j.name). These five variables serve to identify the dyad. The
+#' last variable contains the computed edge probabilities.
+#' 
+#' @aliases edgeprob
+#' @family interpretation
+#' 
+#' @importFrom network network is.network is.bipartite
+#' @export
 edgeprob <- function (object, verbose = FALSE) {
   if ("ergm" %in% class(object)) {
     tergm <- FALSE
@@ -398,8 +725,79 @@ edgeprob <- function (object, verbose = FALSE) {
   return(dyads)
 }
 
-
-# function for marginal effects plots
+#' Plot marginal effects for two-way interactions in (T)ERGMs
+#' 
+#' Plot marginal effects for two-way interactions in (T)ERGMs.
+#' 
+#' The \code{marginalplot} function creates marginal effects plots for ERGMs
+#' with interaction effects. The user has to supply the \code{ergm} object and
+#' the coefficient names of the first main variable, the second main variable,
+#' and the interaction term as stored in the coefficients vector inside the
+#' \code{ergm} object. It is possible to draw continuous curves or discrete
+#' error bars depending on the nature of the data (using the \code{point}
+#' argument). The distribution of the second (conditioning) variable can be
+#' plotted at the bottom of the viewport using the \code{rug} argument.
+#' 
+#' The resulting marginal effects plot is a \code{ggplot2} plot. This means it
+#' can be extended by plotting additional elements and using themes.
+#' 
+#' @param model An \code{ergm} object as generated by the \pkg{ergm} package.
+#'   Note that marginal effects plots cannot be created for \code{btergm}
+#'   objects because the variance-covariance matrix is not valid. However, it
+#'   should be possible to apply the \code{marginalplot} function to
+#'   MCMC-MLE-estimated TERGMs because the \code{ergm} object is stored in the
+#'   \code{ergm} slot of an \code{mtergm} object. To do this, supply the
+#'   \code{ergm} object instead of the \code{mtergm} object (e.g.,
+#'   \code{marginalplot(mtergmobject@ergm)}).
+#' @param var1 Name of the first main variable. This is the focal variable.
+#' @param var2 Name of the second main variable. This is the conditioning
+#'   variable.
+#' @param inter Name of the interaction effect.
+#' @param ci Significance level.
+#' @param rug Display the distribution of the conditioning variable at the
+#'   bottom of the plot?
+#' @param point Display error bars for the levels of the conditioning variable
+#'   (instead of a continuous curve)?
+#' @param structzeromat An optional matrix object which indicates dyads that
+#'   should be deleted prior to the calculation of the confidence interval for
+#'   the marginal effect curve. This is useful when such a matrix was used to
+#'   indicate structural zeros during estimation. In this event, the dyads
+#'   characterized by structural zeros are not allowed to be tied, therefore
+#'   they should be removed from the set of dyads used for the calculation of
+#'   marginal effects. The matrix should contain ones for structural zeros and
+#'   zeros for entries that should be used.
+#' @param zeroline Draw a horizontal line to indicate zero for the first main
+#' variable?
+#' @param color Color of the curve, confidence interval, and distribution.
+#' @param xlab Axis label for the second (conditioning) variable.
+#' @param ylab Axis label for the first (focal) variable.
+#' 
+#' @examples
+#' \dontrun{
+#' # data preparation
+#' data("florentine")
+#' n <- network.size(flobusiness)
+#' wealth <- get.vertex.attribute(flobusiness, "wealth")
+#' priorates <- get.vertex.attribute(flobusiness, "priorates")
+#' wealth.icov <- matrix(rep(wealth, n), ncol = n, byrow = TRUE)
+#' priorates.icov <- matrix(rep(priorates, n), ncol = n, byrow = TRUE)
+#' interac <- wealth.icov * priorates.icov
+#' 
+#' # estimate model with interaction effect
+#' model <- ergm(flobusiness ~ edges + esp(1) + edgecov(wealth.icov) 
+#'                 + edgecov(priorates.icov) + edgecov(interac))
+#' 
+#' # plot the interaction (note the additional optional ggplot2 elements)
+#' marginalplot(model, var1 = "edgecov.wealth.icov", 
+#'              var2 = "edgecov.priorates.icov", inter = "edgecov.interac", 
+#'              color = "darkred", rug = TRUE, point = FALSE,
+#'              xlab = "Priorates", ylab = "Wealth") +
+#'   ggplot2::theme_bw() +
+#'   ggplot2::ggtitle("Interaction effect")
+#' }
+#' 
+#' @family interpretation
+#' @export
 marginalplot <- function(model, var1, var2, inter, ci = 0.95, 
     rug = FALSE, point = FALSE, structzeromat = NULL, 
     zeroline = TRUE, color = "black", xlab = NULL, ylab = NULL) {

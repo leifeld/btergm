@@ -1,11 +1,140 @@
-# This file contains custom statistics to be used in conjunction with the 
-# gof function. Use these examples to build your own statistics for use with 
-# the gof function. Moreover, some helper functions for the statistics can be 
-# found here, e.g., functions for computing ROC, PR, and AUC measures based 
-# on the ROCR package.
+#' Statistics for goodness-of-fit assessment of network models
+#' 
+#' Statistics for goodness-of-fit assessment of network models.
+#' 
+#' These functions can be plugged into the \code{statistics} argument of the
+#' \code{gof} methods in order to compare observed with simulated networks (see
+#' the \link{gof-methods} help page). There are three types of statistics:
+#' \enumerate{
+#'   \item Univariate statistics, which aggregate a network into a single
+#'     quantity. For example, modularity measures or density. The distribution
+#'     of statistics can be displayed using histograms, density plots, and
+#'     median bars. Univariate statistics take a sparse matrix (\code{mat})
+#'     as an argument and return a single numeric value that summarize a network
+#'     matrix.
+#'   \item Multivariate statistics, which aggregate a network into a vector of
+#'     quantities. For example, the distribution of geodesic distances, edgewise
+#'     shared partners, or indegree. These statistics typically have multiple
+#'     values, e.g., esp(1), esp(2), esp(3) etc. The results can be displayed
+#'     using multiple boxplots for simulated networks and a black curve for the
+#'     observed network(s). Multivariate statistics take a sparse matrix
+#'     (\code{mat}) as an argument and return a vector of numeric values that
+#'     summarize a network matrix.
+#'   \item Tie prediction statistics, which predict dyad states the observed
+#'     network(s) by the dyad states in the simulated networks. For example,
+#'     receiver operating characteristics (ROC) or precision-recall curves (PR)
+#'     of simulated networks based on the model, or ROC or PR predictions of
+#'     community co-membership matrices of the simulated vs. the observed
+#'     network(s). Tie prediction statistics take a list of simulated sparse
+#'     network matrices and another list of observed sparse network matrices
+#'     (possibly containing only a single sparse matrix) as arguments and return
+#'     a \code{rocpr}, \code{roc}, or \code{pr} object (as created by the
+#'     \link{rocpr} function).
+#' }
+#' 
+#' Users can create their own statistics for use with the code{gof} methods. To
+#' do so, one needs to write a function that accepts and returns the respective
+#' objects described in the enumeration above. It is advisable to look at the
+#' definitions of some of the existing functions to add custom functions. It is
+#' also possible to add an attribute called \code{label} to the return object,
+#' which describes what is being returned by the function. This label will be
+#' used as a descriptive label in the plot and for verbose output during
+#' computations. The examples section contains an example of a custom user
+#' statistic. Note that all statistics \emph{must} contain the \code{...}
+#' argument to ensure that custom arguments of other statistics do not cause an
+#' error.
+#' 
+#' To aid the development of custom statistics, the helper function
+#' \code{comemb} is available: it accepts a vector of community memberships and
+#' converts it to a co-membership matrix. This function is also used internally
+#' by statistics like \code{walktrap.roc} and others.
+#' 
+#' @param vec A vector of community memberships in order to create a community
+#'   co-membership matrix.
+#' @param mat A sparse network matrix as created by the \code{Matrix} function
+#'   in the \pkg{Matrix} package.
+#' @param sim A list of simulated networks. Each element in the list should be a
+#'   sparse matrix as created by the \code{\link[Matrix]{Matrix}} function in
+#'   the \pkg{Matrix} package.
+#' @param obs A list of observed (= target) networks. Each element in the list
+#'   should be a sparse matrix as created by the \code{\link[Matrix]{Matrix}}
+#'   function in the \pkg{Matrix} package.
+#' @param roc Compute receiver-operating characteristics (ROC)?
+#' @param pr Compute precision-recall curve (PR)?
+#' @param joint Merge all time steps into a single big prediction task and
+#'   compute predictive fit (instead of computing GOF for all time steps
+#'   separately)?
+#' @param pr.impute In some cases, the first precision value of the
+#'   precision-recall curve is undefined. The \code{pr.impute} argument serves
+#'   to impute this missing value to ensure that the AUC-PR value is not
+#'   severely biased. Possible values are \code{"no"} for no imputation,
+#'   \code{"one"} for using a value of \code{1.0}, \code{"second"} for using the
+#'   next (= adjacent) precision value, \code{"poly1"} for fitting a straight
+#'   line through the remaining curve to predict the first value, \code{"poly2"}
+#'   for fitting a second-order polynomial curve etc. until \code{"poly9"}.
+#'   Warning: this is a pragmatic solution. Please double-check whether the
+#'   imputation makes sense. This can be checked by plotting the resulting
+#'   object and using the \code{pr.poly} argument to plot the predicted curve on
+#'   top of the actual PR curve.
+#' @param ... Additional arguments. This must be present in all auxiliary GOF
+#'   statistics.
+#'
+#' @references
+#' Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2018): Temporal
+#' Exponential Random Graph Models with btergm: Estimation and Bootstrap
+#' Confidence Intervals. \emph{Journal of Statistical Software} 83(6): 1--36.
+#' \doi{10.18637/jss.v083.i06}.
+#' 
+#' @examples
+#' # To see how these statistics are used, look at the examples section of 
+#' # ?"gof-methods". The following example illustrates how custom 
+#' # statistics can be created. Suppose one is interested in the density 
+#' # of a network. Then a univariate statistic can be created as follows.
+#' 
+#' dens <- function(mat, ...) {        # univariate: one argument
+#'   mat <- as.matrix(mat)             # sparse matrix -> normal matrix
+#'   d <- sna::gden(mat)               # compute the actual statistic
+#'   attributes(d)$label <- "Density"  # add a descriptive label
+#'   return(d)                         # return the statistic
+#' }
+#' 
+#' # Note that the '...' argument must be present in all statistics. 
+#' # Now the statistic can be used in the statistics argument of one of 
+#' # the gof methods.
+#' 
+#' # For illustrative purposes, let us consider an existing statistic, the 
+#' # indegree distribution, a multivariate statistic. It also accepts a 
+#' # single argument. Note that the sparse matrix is converted to a 
+#' # normal matrix object when it is used. First, statnet's summary 
+#' # method is used to compute the statistic. Names are attached to the 
+#' # resulting vector for the different indegree values. Then the vector 
+#' # is returned.
+#' 
+#' ideg <- function(mat, ...) {
+#'   d <- summary(mat ~ idegree(0:(nrow(mat) - 1)))
+#'   names(d) <- 0:(length(d) - 1)
+#'   attributes(d)$label <- "Indegree"
+#'   return(d)
+#' }
+#' 
+#' # See the gofstatistics.R file in the package for more complex examples.
+#' 
+#' @name gof-statistics
+#' @aliases gof-statistics gofstatistics
+#' 
+#' @importFrom Matrix Matrix
+#' @import ROCR
+#' @importFrom igraph graph.adjacency spinglass.community fastgreedy.community
+#'   cluster_louvain modularity edge.betweenness.community optimal.community
+#'   walktrap.community
+#' @importFrom sna triad.census gden symmetrize
+#' @importFrom network summary.network
+#' @importFrom ergm ergm.geodistdist
+NULL
 
-
-# GOF function for computing dyad-wise shared partner statistics
+#' @describeIn gof-statistics Multivariate GOF statistic: dyad-wise shared
+#'   partner distribution
+#' @export
 dsp <- function(mat, ...) {
   d <- summary(mat ~ dsp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
@@ -13,7 +142,9 @@ dsp <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing edge-wise shared partner statistics
+#' @describeIn gof-statistics Multivariate GOF statistic: edge-wise shared
+#'   partner distribution
+#' @export
 esp <- function(mat, ...) {
   d <- summary(mat ~ esp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
@@ -21,7 +152,9 @@ esp <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing non-edge-wise shared partner statistics
+#' @describeIn gof-statistics Multivariate GOF statistic: non-edge-wise shared
+#'   partner distribution
+#' @export
 nsp <- function(mat, ...) {
   d <- summary(mat ~ nsp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
@@ -29,7 +162,8 @@ nsp <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: degree distribution
+#' @export
 deg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) 
       - 1)))
@@ -38,7 +172,9 @@ deg <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the degree distribution for the first mode
+#' @describeIn gof-statistics Multivariate GOF statistic: degree distribution
+#'   for the first mode
+#' @export
 b1deg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b1degree(0:nrow(mat)))
@@ -47,7 +183,9 @@ b1deg <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the degree distribution for the second mode
+#' @describeIn gof-statistics Multivariate GOF statistic: degree distribution
+#'   for the second mode
+#' @export
 b2deg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b2degree(0:ncol(mat)))
@@ -56,7 +194,8 @@ b2deg <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: outdegree distribution
+#' @export
 odeg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) 
       - 1)))
@@ -65,7 +204,8 @@ odeg <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: indegree distribution
+#' @export
 ideg <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) 
       - 1)))
@@ -74,7 +214,8 @@ ideg <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the k-star distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: k-star distribution
+#' @export
 kstar <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) 
       - 1)))
@@ -83,7 +224,9 @@ kstar <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the k-star distribution on the first mode
+#' @describeIn gof-statistics Multivariate GOF statistic: k-star distribution
+#'   for the first mode
+#' @export
 b1star <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b1star(0:nrow(mat)))
@@ -92,7 +235,9 @@ b1star <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the k-star distribution on the second mode
+#' @describeIn gof-statistics Multivariate GOF statistic: k-star distribution
+#'   for the second mode
+#' @export
 b2star <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
       b2star(0:nrow(mat)))
@@ -101,7 +246,9 @@ b2star <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the outgoing k-star distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: outgoing k-star
+#'   distribution
+#' @export
 ostar <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) 
       - 1)))
@@ -110,7 +257,9 @@ ostar <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the incoming k-star distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: incoming k-star
+#'   distribution
+#' @export
 istar <- function(mat, ...) {
   d <- summary(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) 
       - 1)))
@@ -119,7 +268,8 @@ istar <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing the degree distribution
+#' @describeIn gof-statistics Multivariate GOF statistic: k-cycle distribution
+#' @export
 kcycle <- function(mat, ...) {
   d <- summary(mat ~ cycle(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
@@ -127,7 +277,9 @@ kcycle <- function(mat, ...) {
   return(d)
 }
 
-# GOF function for computing geodesic distances
+#' @describeIn gof-statistics Multivariate GOF statistic: geodesic distance
+#'   distribution
+#' @export
 geodesic <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   fillup <- function(x, another.length) {  # fill up x if shorter
@@ -142,29 +294,39 @@ geodesic <- function(mat, ...) {
     }
     return(x)
   }
-  g <- fillup(ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), 
+  g <- fillup(ergm::ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), 
       nrow(mat) - 1)
   attributes(g)$label <- "Geodesic distances"
   return(g)
 }
 
-# GOF function for computing triad census statistics in directed graphs
+#' @describeIn gof-statistics Multivariate GOF statistic: triad census in
+#'   directed networks
+#'
+#' @importFrom network network
+#' @export
 triad.directed <- function(mat, ...) {
-  tr <- sna::triad.census(network(as.matrix(mat), directed = TRUE), 
+  tr <- sna::triad.census(network::network(as.matrix(mat), directed = TRUE), 
       mode = "digraph")[1, ]
   attributes(tr)$label <- "Triad census"
   return(tr)
 }
 
-# GOF function for computing triad census statistics in undirected graphs
+#' @describeIn gof-statistics Multivariate GOF statistic: triad census in
+#'   undirected networks
+#'
+#' @importFrom network network
+#' @export
 triad.undirected <- function(mat, ...) {
-  tr <- sna::triad.census(network(as.matrix(mat), directed = FALSE), 
+  tr <- sna::triad.census(network::network(as.matrix(mat), directed = FALSE), 
       mode = "graph")[1, ]
   attributes(tr)$label <- "Triad census"
   return(tr)
 }
 
-# helper function: create community comembership matrix
+#' @describeIn gof-statistics Helper function: create community co-membership
+#'   matrix
+#' @export
 comemb <- function(vec) {
   comemb <- matrix(0, nrow = length(vec), ncol = length(vec))
   for (a in 1:length(vec)) {
@@ -179,10 +341,12 @@ comemb <- function(vec) {
   return(comemb)
 }
 
-# GOF function for computing Walktrap modularity distribution
+#' @describeIn gof-statistics Univariate GOF statistic: Walktrap modularity
+#'   distribution
+#' @export
 walktrap.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
-  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+  if (is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
     m <- "undirected"
@@ -198,7 +362,11 @@ walktrap.modularity <- function(mat, ...) {
   return(mod)
 }
 
-# ROC for Walktrap community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC of Walktrap
+#'   community detection. Receiver-operating characteristics of predicting the
+#'   community structure in the observed network(s) by the community structure
+#'   in the simulated networks, as computed by the Walktrap algorithm.
+#' @export
 walktrap.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -207,7 +375,7 @@ walktrap.roc <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -230,7 +398,11 @@ walktrap.roc <- function(sim, obs, ...) {
   return(object)
 }
 
-# PR for Walktrap community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: PR of Walktrap
+#'   community detection. Precision-recall curve for predicting the community
+#'   structure in the observed network(s) by the community structure in the
+#'   simulated networks, as computed by the Walktrap algorithm.
+#' @export
 walktrap.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -239,7 +411,7 @@ walktrap.pr <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -262,8 +434,9 @@ walktrap.pr <- function(sim, obs, ...) {
   return(object)
 }
 
-
-# GOF function for computing fast and greedy modularity distribution
+#' @describeIn gof-statistics Univariate GOF statistic: fast and greedy
+#'   modularity distribution
+#' @export
 fastgreedy.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
   if (sum(mat) == 0) {
@@ -277,7 +450,12 @@ fastgreedy.modularity <- function(mat, ...) {
   return(mod)
 }
 
-# ROC for fast & greedy community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC of fast and
+#'   greedy community detection. Receiver-operating characteristics of
+#'   predicting the community structure in the observed network(s) by the
+#'   community structure in the simulated networks, as computed by the fast and
+#'   greedy algorithm. Only sensible with undirected networks.
+#' @export
 fastgreedy.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -303,7 +481,12 @@ fastgreedy.roc <- function(sim, obs, ...) {
   return(object)
 }
 
-# PR for fast & greedy community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: PR of fast and
+#'   greedy community detection. Precision-recall curve for predicting the
+#'   community structure in the observed network(s) by the community structure
+#'   in the simulated networks, as computed by the fast and greedy algorithm.
+#'   Only sensible with undirected networks.
+#' @export
 fastgreedy.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -329,9 +512,11 @@ fastgreedy.pr <- function(sim, obs, ...) {
   return(object)
 }
 
-# GOF function for computing Louvain clustering modularity distribution
+#' @describeIn gof-statistics Univariate GOF statistic: Louvain clustering
+#'   modularity distribution
+#' @export
 louvain.modularity <- function(mat, ...) {
-  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+  if (is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
     m <- "undirected"
@@ -348,7 +533,11 @@ louvain.modularity <- function(mat, ...) {
   return(mod)
 }
 
-# ROC for Louvain community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC of Louvain
+#'   community detection. Receiver-operating characteristics of predicting the
+#'   community structure in the observed network(s) by the community structure
+#'   in the simulated networks, as computed by the Louvain algorithm.
+#' @export
 louvain.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -357,7 +546,7 @@ louvain.roc <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -380,7 +569,11 @@ louvain.roc <- function(sim, obs, ...) {
   return(object)
 }
 
-# PR for Louvain community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: PR of Louvain
+#'   community detection. Precision-recall curve for predicting the community
+#'   structure in the observed network(s) by the community structure in the
+#'   simulated networks, as computed by the Louvain algorithm.
+#' @export
 louvain.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -389,7 +582,7 @@ louvain.pr <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -412,10 +605,12 @@ louvain.pr <- function(sim, obs, ...) {
   return(object)
 }
 
-# GOF function for computing maximal modularity distribution
+#' @describeIn gof-statistics Univariate GOF statistic: maximal modularity
+#'   distribution
+#' @export
 maxmod.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
-  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+  if (is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
     m <- "undirected"
@@ -431,7 +626,12 @@ maxmod.modularity <- function(mat, ...) {
   return(mod)
 }
 
-# ROC for maximal modularity community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC of maximal
+#'   modularity community detection. Receiver-operating characteristics of
+#'   predicting the community structure in the observed network(s) by the
+#'   community structure in the simulated networks, as computed by the
+#'   modularity maximization algorithm.
+#' @export
 maxmod.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -440,7 +640,7 @@ maxmod.roc <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -463,7 +663,12 @@ maxmod.roc <- function(sim, obs, ...) {
   return(object)
 }
 
-# PR for maximal modularity community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: PR of maximal
+#'   modularity community detection. Precision-recall curve for predicting the
+#'   community structure in the observed network(s) by the community structure
+#'   in the simulated networks, as computed by the modularity maximization
+#'   algorithm.
+#' @export
 maxmod.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -472,7 +677,7 @@ maxmod.pr <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -495,10 +700,12 @@ maxmod.pr <- function(sim, obs, ...) {
   return(object)
 }
 
-# GOF function for computing edge betweenness modularity distribution
+#' @describeIn gof-statistics Univariate GOF statistic: edge betweenness
+#'   modularity distribution
+#' @export
 edgebetweenness.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
-  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+  if (is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
     m <- "undirected"
@@ -514,7 +721,12 @@ edgebetweenness.modularity <- function(mat, ...) {
   return(mod)
 }
 
-# ROC for edge betweenness community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC of edge
+#'   betweenness community detection. Receiver-operating characteristics of
+#'   predicting the community structure in the observed network(s) by the
+#'   community structure in the simulated networks, as computed by the
+#'   Girvan-Newman edge betweenness community detection method.
+#' @export
 edgebetweenness.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -523,7 +735,7 @@ edgebetweenness.roc <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -546,7 +758,12 @@ edgebetweenness.roc <- function(sim, obs, ...) {
   return(object)
 }
 
-# PR for edge betweenness community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: PR of edge
+#'   betweenness community detection. Precision-recall curve for predicting the
+#'   community structure in the observed network(s) by the community structure
+#'   in the simulated networks, as computed by the Girvan-Newman edge
+#'   betweenness community detection method.
+#' @export
 edgebetweenness.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -555,7 +772,7 @@ edgebetweenness.pr <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -578,10 +795,12 @@ edgebetweenness.pr <- function(sim, obs, ...) {
   return(object)
 }
 
-# GOF function for computing spinglass modularity distribution
+#' @describeIn gof-statistics Univariate GOF statistic: spinglass modularity
+#'   distribution
+#' @export
 spinglass.modularity <- function(mat, ...) {
   mat[is.na(mat)] <- 0
-  if (xergm.common::is.mat.directed(as.matrix(mat))) {
+  if (is.mat.directed(as.matrix(mat))) {
     m <- "directed"
   } else {
     m <- "undirected"
@@ -597,7 +816,11 @@ spinglass.modularity <- function(mat, ...) {
   return(mod)
 }
 
-# ROC for spinglass community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC of spinglass
+#'   community detection. Receiver-operating characteristics of predicting the
+#'   community structure in the observed network(s) by the community structure
+#'   in the simulated networks, as computed by the Spinglass algorithm.
+#' @export
 spinglass.roc <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -606,7 +829,7 @@ spinglass.roc <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -629,7 +852,11 @@ spinglass.roc <- function(sim, obs, ...) {
   return(object)
 }
 
-# PR for spinglass community detection algorithm
+#' @describeIn gof-statistics Tie prediction GOF statistic: PR of spinglass
+#'   community detection. Precision-recall curve for predicting the community
+#'   structure in the observed network(s) by the community structure in the
+#'   simulated networks, as computed by the Spinglass algorithm.
+#' @export
 spinglass.pr <- function(sim, obs, ...) {
   for (i in 1:length(sim)) {
     sim[[i]][is.na(sim[[i]])] <- 0
@@ -638,7 +865,7 @@ spinglass.pr <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- xergm.common::is.mat.directed(as.matrix(x))
+    m <- is.mat.directed(as.matrix(x))
     if (m == TRUE) {
       m <- "directed"
     } else {
@@ -662,7 +889,8 @@ spinglass.pr <- function(sim, obs, ...) {
 }
 
 
-# AUC-PR function -- modified version of: https://github.com/ipa-tys/ROCR/pull/2
+#' AUC-PR function -- modified version of: https://github.com/ipa-tys/ROCR/pull/2
+#' @noRd
 aucpr <- function(pred, precision, recall) {
   falsepos <- pred@fp
   truepos <- pred@tp
@@ -699,12 +927,17 @@ aucpr <- function(pred, precision, recall) {
   return(aucvalues)
 }
 
-# GOF function for ROC curves and PR curves
+#' @describeIn gof-statistics Tie prediction GOF statistic: ROC and PR curves.
+#'   Receiver-operating characteristics (ROC) and precision-recall curve (PR).
+#'   Prediction of the dyad states of the observed network(s) by the dyad states
+#'   of the simulated networks.
+#' @importFrom network network
+#' @export
 rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE, 
     pr.impute = "poly4", ...) {
   
-  directed <- sapply(obs, xergm.common::is.mat.directed)
-  twomode <- !sapply(obs, xergm.common::is.mat.onemode)
+  directed <- sapply(obs, is.mat.directed)
+  twomode <- !sapply(obs, is.mat.onemode)
   
   # create random graphs with corresponding tie probability of each time step
   nsim <- length(sim) / length(obs)
@@ -713,7 +946,7 @@ rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE,
     rn <- nrow(obs[[i]])
     cn <- ncol(obs[[i]])
     n <- rn * cn
-    dens <- sna::gden(network(as.matrix(obs[[i]]), directed = directed[i], 
+    dens <- sna::gden(network::network(as.matrix(obs[[i]]), directed = directed[i], 
         bipartite = twomode[i]))
     rlist <- list()
     for (j in 1:nsim) {
