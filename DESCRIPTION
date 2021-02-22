@@ -22,12 +22,12 @@ Imports:
     ROCR (>= 1.0.7),
     speedglm (>= 0.3.1),
     igraph (>= 0.7.1),
-    RSiena (>= 1.0.12.232),
     statnet.common (>= 4.2.0)
 Suggests: 
     fastglm (>= 0.0.1),
     testthat,
     Bergm (>= 5.0.2),
+    RSiena (>= 1.0.12.232),
     ggplot2 (>= 2.0.0)
 Depends: R (>= 3.5)
 License: GPL (>= 2)

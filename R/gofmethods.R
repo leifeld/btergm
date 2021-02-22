@@ -842,6 +842,11 @@ gof.sienaFit <- function(object,
                          verbose = TRUE,
                          ...) {
   
+  if (!requireNamespace("RSiena", quietly = TRUE)) {
+    stop("gof.sienaFit requires the 'RSiena' package to be installed.\n",
+         "To do this, enter 'install.packages(\"RSiena\")'.")
+  }
+  
   # check correct specification of all data
   if (outofsample == FALSE) {
     if (is.null(varName)) {
@@ -929,9 +934,17 @@ gof.sienaFit <- function(object,
     numtheta.new <- length(sienaEffects$initialValue[sienaEffects$include])
     sienaEffects$initialValue[sienaEffects$include][2:numtheta.new] <- coefs
     sim_model <- RSiena::sienaAlgorithmCreate(projname = "sim_model", 
-                                              cond = FALSE, useStdInits = FALSE, nsub = 0 , n3 = nsim, simOnly = TRUE)
-    sim_ans <- siena07(sim_model, data = sienaData, effects = sienaEffects, 
-                       batch = TRUE, silent = TRUE, returnDeps = TRUE)
+                                              cond = FALSE,
+                                              useStdInits = FALSE,
+                                              nsub = 0,
+                                              n3 = nsim,
+                                              simOnly = TRUE)
+    sim_ans <- RSiena::siena07(sim_model,
+                               data = sienaData,
+                               effects = sienaEffects,
+                               batch = TRUE,
+                               silent = TRUE,
+                               returnDeps = TRUE)
     object <- sim_ans  # replace object by new simulations
     if (is.null(groupName)) {
       groupName <- names(sim_ans$f)[1]
@@ -942,13 +955,11 @@ gof.sienaFit <- function(object,
   }
   
   # save the target object in a list and remove/handle structural zeros
-  #dv <- eval(parse(text = varName))
   target <- list()
   for (i in base) {
     if (outofsample == TRUE) {
       dv.temp <- sienaData$depvars[[varName]][, , i + 1]
     } else {
-      #dv.temp <- dv[, , i + 1]
       dv.temp <- object$f[[groupName]]$depvars[[varName]][, , i + 1]
     }
     rownames(dv.temp) <- 1:nrow(dv.temp)
@@ -969,7 +980,7 @@ gof.sienaFit <- function(object,
                                           varName = mydvname)
       rownames(s) <- 1:nrow(s)
       colnames(s) <- 1:ncol(s)
-      l[[count]] <- Matrix(adjust(as.matrix(s), target[[count]]))
+      l[[count]] <- Matrix::Matrix(adjust(as.matrix(s), target[[count]]))
     }
     return(l)
   }
@@ -984,29 +995,44 @@ gof.sienaFit <- function(object,
   }
   if (parallel[1] == "snow") {
     if (is.null(cl)) {
-      cl <- makeCluster(ncpus)
+      cl <- parallel::makeCluster(ncpus)
     }
     if (verbose == TRUE) {
       message(paste("Using snow parallelization with", ncpus, "cores."))
     }
-    clusterEvalQ(cl, library("Matrix"))
-    sim <- parLapply(cl, 1:length(object$sims), simSiena, 
-                     myobject = object, mybase = base, mygroup = groupName, 
-                     mydvname = varName, target = target)
+    parallel::clusterEvalQ(cl, library("Matrix"))
+    sim <- parallel::parLapply(cl,
+                               1:length(object$sims),
+                               simSiena, 
+                               myobject = object,
+                               mybase = base,
+                               mygroup = groupName,
+                               mydvname = varName,
+                               target = target)
   } else if (parallel[1] == "multicore") {
     if (verbose == TRUE) {
       message(paste("Using multicore parallelization with", ncpus, "cores."))
     }
-    sim <- mclapply(1:length(object$sims), simSiena, myobject = object, 
-                    mybase = base, mygroup = groupName, mydvname = varName, 
-                    target = target, mc.cores = ncpus)
+    sim <- parallel::mclapply(1:length(object$sims),
+                              simSiena,
+                              myobject = object, 
+                              mybase = base,
+                              mygroup = groupName,
+                              mydvname = varName, 
+                              target = target,
+                              mc.cores = ncpus)
   } else {
     if (verbose == TRUE) {
       message(paste0("Parallelization is switched off. Extracting ", 
                      "simulations sequentially."))
     }
-    sim <- lapply(1:length(object$sims), simSiena, myobject = object, 
-                  mybase = base, mygroup = groupName, mydvname = varName, target = target)
+    sim <- lapply(1:length(object$sims),
+                  simSiena,
+                  myobject = object, 
+                  mybase = base,
+                  mygroup = groupName,
+                  mydvname = varName,
+                  target = target)
   }
   
   # unpack nested lists of simulations
@@ -1021,14 +1047,18 @@ gof.sienaFit <- function(object,
   rm(sim)
   
   # apply auxiliary functions and return list of comparisons
-  goflist <- createGOF(simulations = simulations, target = target, 
-                       statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
-                       verbose = verbose, ... = ...)
+  goflist <- createGOF(simulations = simulations,
+                       target = target, 
+                       statistics = statistics,
+                       parallel = parallel,
+                       ncpus = ncpus,
+                       cl = cl, 
+                       verbose = verbose,
+                       ... = ...)
   return(goflist)
 }
 
 #' @rdname gof
-#' @importFrom RSiena siena07
 #' @importFrom parallel makeCluster clusterEvalQ parLapply mclapply
 #' @export
 setMethod("gof", signature = className("sienaFit", "RSiena"), 

@@ -192,9 +192,9 @@ timesteps.mtergm <- function(object) {
 #' @export
 setMethod(f = "summary", signature = "mtergm", definition = function(object, 
     ...) {
-    message(paste(rep("=", 26), collapse=""))
+    message(paste(rep("=", 26), collapse = ""))
     message("Summary of model fit")
-    message(paste(rep("=", 26), collapse=""))
+    message(paste(rep("=", 26), collapse = ""))
     message(paste("\nFormula:  ", gsub("\\s+", " ", 
         paste(deparse(object@formula), collapse = "")), "\n"))
     message(paste("Time steps:", object@time.steps, "\n"))
