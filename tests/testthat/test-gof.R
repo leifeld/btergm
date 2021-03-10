@@ -30,7 +30,9 @@ test_that("basic GOF functionality works", {
   png(path)
   plot(g)
   dev.off()
-  expect_equal(round(file.size(path) / 10000), 5)
+  fs <- file.size(path)
+  fs <- fs < 100000 && fs > 1000
+  expect_true(fs, 5)
 })
 
 test_that("edgeprob works with ergm, btergm, and mtergm object with curved terms", {
