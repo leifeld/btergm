@@ -30,7 +30,7 @@ checkdegeneracy(object, ...)
   ...
 )
 
-plot.degeneracy(
+\method{plot}{degeneracy}(
   x,
   center = TRUE,
   t = 1:length(x$sim),

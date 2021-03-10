@@ -139,15 +139,15 @@
 #' 
 #' @docType methods
 #' @name gof-plot
-#' @aliases gofplot plotgof plot-gof plot.gof plot print.gof print.univariate
-#'   print.boxplot print.roc print.pr print.rocpr print,gof-method
-#'   print,univariate-method print,boxplot-method print,roc-method
-#'   print,pr-method print,rocpr-method plot.gof plot.univariate plot.boxplot
-#'   plot.roc plot.pr plot.rocpr plot,gof-method plot,univariate-method
-#'   plot,boxplot-method plot,roc-method plot,pr-method plot,rocpr-method
+#' @aliases gofplot plotgof plot-gof print,gof-method print,univariate-method
+#'   print,boxplot-method print,roc-method print,pr-method print,rocpr-method
+#'   plot,gof-method plot,univariate-method plot,boxplot-method plot,roc-method
+#'   plot,pr-method plot,rocpr-method plot,gof-method
+#' @importFrom graphics plot
 NULL
 
 #' @rdname gof-plot
+#' @export
 print.boxplot <- function(x, ...) {
   message(x$label, "\n")
   printCoefmat(x$stats, has.Pvalue = TRUE, cs.ind=numeric(0), 
@@ -157,6 +157,7 @@ print.boxplot <- function(x, ...) {
 }
 
 #' @rdname gof-plot
+#' @export
 print.roc <- function(x, ...) {
   message(x$label, "\n")
   auc <- cbind(x$auc.roc, x$auc.roc.rgraph)
@@ -166,6 +167,7 @@ print.roc <- function(x, ...) {
 }
 
 #' @rdname gof-plot
+#' @export
 print.pr <- function(x, ...) {
   message(x$label, "\n")
   auc <- cbind(x$auc.pr, x$auc.pr.rgraph)
@@ -175,6 +177,7 @@ print.pr <- function(x, ...) {
 }
 
 #' @rdname gof-plot
+#' @export
 print.rocpr <- function(x, ...) {
   message(x$label, "\n")
   auc <- cbind(x$auc.roc, x$auc.roc.rgraph, x$auc.pr, x$auc.pr.rgraph)
@@ -184,6 +187,7 @@ print.rocpr <- function(x, ...) {
 }
 
 #' @rdname gof-plot
+#' @export
 print.univariate <- function(x, ...) {
   message(x$label, "\n")
   message("Observed:")
@@ -193,6 +197,7 @@ print.univariate <- function(x, ...) {
 }
 
 #' @rdname gof-plot
+#' @export
 print.gof <- function(x, ...) {
   for (i in 1:length(x)) {
     cat("\n")
@@ -201,6 +206,8 @@ print.gof <- function(x, ...) {
 }
 
 #' @rdname gof-plot
+#' @importFrom graphics plot
+#' @export
 plot.gof <- function(x, mfrow = TRUE, ...) {
   if (mfrow == TRUE) {
     l <- length(x)
@@ -237,6 +244,8 @@ plot.gof <- function(x, mfrow = TRUE, ...) {
 
 #' @rdname gof-plot
 #' @importFrom graphics abline boxplot hist lines par points
+#' @importFrom Matrix t
+#' @export
 plot.boxplot <- function(x, relative = TRUE, transform = function(x) x, 
     xlim = NULL, main = x$label, xlab = x$label, ylab = "Frequency", 
     border = "darkgray", boxplot.lwd = 0.8, outline = FALSE, median = TRUE, 
@@ -325,6 +334,7 @@ plot.boxplot <- function(x, relative = TRUE, transform = function(x) x,
 }
 
 #' @rdname gof-plot
+#' @export
 plot.roc <- function(x, add = FALSE, main = x$label, avg = c("none", 
     "horizontal", "vertical", "threshold"), spread.estimate = c("boxplot", 
     "stderror", "stddev"), lwd = 3, rgraph = FALSE, col = "#bd0017", 
@@ -340,6 +350,7 @@ plot.roc <- function(x, add = FALSE, main = x$label, avg = c("none",
 }
 
 #' @rdname gof-plot
+#' @export
 plot.pr <- function(x, add = FALSE, main = x$label, avg = c("none", 
     "horizontal", "vertical", "threshold"), spread.estimate = c("boxplot", 
     "stderror", "stddev"), lwd = 3, rgraph = FALSE, col = "#5886be", 
@@ -380,6 +391,7 @@ plot.pr <- function(x, add = FALSE, main = x$label, avg = c("none",
 }
 
 #' @rdname gof-plot
+#' @export
 plot.rocpr <- function(x, main = x$label, roc.avg = c("none", "horizontal", 
     "vertical", "threshold"), roc.spread.estimate = c("boxplot", "stderror", 
     "stddev"), roc.lwd = 3, roc.rgraph = FALSE, roc.col = "#bd0017", 
@@ -431,6 +443,7 @@ plot.rocpr <- function(x, main = x$label, roc.avg = c("none", "horizontal",
 }
 
 #' @rdname gof-plot
+#' @export
 plot.univariate <- function(x, main = x$label, sim.hist = TRUE, sim.bar = TRUE, 
     sim.density = TRUE, obs.hist = FALSE, obs.bar = TRUE, obs.density = TRUE, 
     sim.adjust = 1, obs.adjust = 1, sim.lwd = 2, obs.lwd = 2, 

@@ -6,31 +6,30 @@
 \alias{gofplot}
 \alias{plotgof}
 \alias{plot-gof}
-\alias{plot.gof}
-\alias{plot}
-\alias{print.gof}
-\alias{print.univariate}
-\alias{print.boxplot}
-\alias{print.roc}
-\alias{print.pr}
-\alias{print.rocpr}
 \alias{print,gof-method}
 \alias{print,univariate-method}
 \alias{print,boxplot-method}
 \alias{print,roc-method}
 \alias{print,pr-method}
 \alias{print,rocpr-method}
-\alias{plot.univariate}
-\alias{plot.boxplot}
-\alias{plot.roc}
-\alias{plot.pr}
-\alias{plot.rocpr}
 \alias{plot,gof-method}
 \alias{plot,univariate-method}
 \alias{plot,boxplot-method}
 \alias{plot,roc-method}
 \alias{plot,pr-method}
 \alias{plot,rocpr-method}
+\alias{print.boxplot}
+\alias{print.roc}
+\alias{print.pr}
+\alias{print.rocpr}
+\alias{print.univariate}
+\alias{print.gof}
+\alias{plot.gof}
+\alias{plot.boxplot}
+\alias{plot.roc}
+\alias{plot.pr}
+\alias{plot.rocpr}
+\alias{plot.univariate}
 \title{Plot and print methods for GOF output}
 \usage{
 \method{print}{boxplot}(x, ...)
@@ -45,9 +44,9 @@
 
 \method{print}{gof}(x, ...)
 
-plot.gof(x, mfrow = TRUE, ...)
+\method{plot}{gof}(x, mfrow = TRUE, ...)
 
-plot.boxplot(
+\method{plot}{boxplot}(
   x,
   relative = TRUE,
   transform = function(x) x,
@@ -69,7 +68,7 @@ plot.boxplot(
   ...
 )
 
-plot.roc(
+\method{plot}{roc}(
   x,
   add = FALSE,
   main = x$label,
@@ -82,7 +81,7 @@ plot.roc(
   ...
 )
 
-plot.pr(
+\method{plot}{pr}(
   x,
   add = FALSE,
   main = x$label,
@@ -96,7 +95,7 @@ plot.pr(
   ...
 )
 
-plot.rocpr(
+\method{plot}{rocpr}(
   x,
   main = x$label,
   roc.avg = c("none", "horizontal", "vertical", "threshold"),
@@ -115,7 +114,7 @@ plot.rocpr(
   ...
 )
 
-plot.univariate(
+\method{plot}{univariate}(
   x,
   main = x$label,
   sim.hist = TRUE,

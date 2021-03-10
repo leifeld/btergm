@@ -123,7 +123,7 @@
 #' @aliases gof-statistics gofstatistics
 #' 
 #' @importFrom Matrix Matrix
-#' @import ROCR
+#' @importFrom ROCR performance prediction
 #' @importFrom igraph graph.adjacency spinglass.community fastgreedy.community
 #'   cluster_louvain modularity edge.betweenness.community optimal.community
 #'   walktrap.community
