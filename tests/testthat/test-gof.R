@@ -26,6 +26,11 @@ test_that("basic GOF functionality works", {
   sink()
   expect_equal(length(g), 7)
   expect_equal(class(g), "gof")
+  path <- tempfile(fileext = ".png")
+  png(path)
+  plot(g)
+  dev.off()
+  expect_match(tools::md5sum(path), "10a914528968306baa8b4c09585d2794")
 })
 
 test_that("edgeprob works with ergm, btergm, and mtergm object with curved terms", {
