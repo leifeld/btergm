@@ -30,7 +30,7 @@ test_that("basic GOF functionality works", {
   png(path)
   plot(g)
   dev.off()
-  expect_match(tools::md5sum(path), "10a914528968306baa8b4c09585d2794")
+  expect_equal(file.size(path), 46287)
 })
 
 test_that("edgeprob works with ergm, btergm, and mtergm object with curved terms", {
