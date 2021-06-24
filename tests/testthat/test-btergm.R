@@ -1,21 +1,18 @@
 context("test btergm estimation")
 
-library("btergm")
-library("network")
-
 set.seed(12345)
 networks <- list()
-for(i in 1:10) {           # create 10 random networks with 10 actors
+for(i in 1:10) {               # create 10 random networks with 10 actors
   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
-  diag(mat) <- 0           # loops are excluded
-  nw <- network(mat)       # create network object
-  networks[[i]] <- nw      # add network to the list
+  diag(mat) <- 0               # loops are excluded
+  nw <- network::network(mat)  # create network object
+  networks[[i]] <- nw          # add network to the list
 }
 
 covariates <- list()
-for (i in 1:10) {          # create 10 matrices as covariate
+for (i in 1:10) {              # create 10 matrices as covariate
   mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
-  covariates[[i]] <- mat   # add matrix to the list
+  covariates[[i]] <- mat       # add matrix to the list
 }
 
 test_that("btergm estimation works", {
@@ -54,6 +51,8 @@ test_that("btergm estimation works", {
 })
 
 test_that("fastglm works like speedglm", {
+  skip_if_not_installed("fastglm", minimum_version = "0.0.1")
+  
   set.seed(12345)
   fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
   set.seed(12345)
@@ -79,6 +78,7 @@ test_that("offset argument in btergm works without composition change", {
 
 test_that("offset argument in btergm works with composition change", {
   skip_on_cran()
+  
   # example taken from 2018 JSS article
   require("sna")
   data("knecht")
@@ -140,18 +140,22 @@ test_that("offset argument in btergm works with composition change", {
 })
 
 test_that("mtergm estimation works", {
+  skip_if_not_installed("fastglm", minimum_version = "0.0.1")
+  
   set.seed(12345)
   fit1 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), usefastglm = TRUE, verbose = FALSE)
   set.seed(12345)
   fit2 <- mtergm(networks ~ edges + istar(2) + edgecov(covariates), verbose = FALSE)
-  expect_equal(round(unname(coef(fit1)), 1), round(unname(coef(fit2)), 1))
-  expect_equal(round(unname(coef(fit2)), 2), c(-1.18, 0.06, 0.00))
-  expect_equal(unname(round(fit2@se, 2)), c(0.19, 0.08, 0.07)) # standard errors
+  expect_equivalent(coef(fit1) - coef(fit2), rep(0, 3), tolerance = 0.05)
+  expect_equivalent(coef(fit2), c(-1.17, 0.06, 0.00), tolerance = 0.05)
+  expect_equivalent(fit2@se, c(0.193, 0.079, 0.074), tolerance = 0.05)
   expect_equal(class(fit2)[1], "mtergm")
   expect_equal(class(fit2@ergm), "ergm")
 })
 
 test_that("simulation of new networks works", {
+  skip_if_not_installed("fastglm", minimum_version = "0.0.1")
+  
   # for btergm
   fit1 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), usefastglm = TRUE, verbose = FALSE)
   sim1 <- simulate(fit1, 5, verbose = FALSE)
@@ -167,4 +171,19 @@ test_that("simulation of new networks works", {
   sim2 <- simulate(fit2, 5, verbose = FALSE)
   expect_equal(length(sim2), 5)
   expect_equal(class(sim2[[1]]), "network")
+})
+
+test_that("tbergm estimation works", {
+  skip_on_cran()
+  skip_if_not_installed("Bergm", minimum_version = "5.0.2")
+  set.seed(12345)
+  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  suppressMessages(suppressWarnings(fit_b <- tbergm(networks ~ edges + istar(2) + edgecov(covariates), verbose = FALSE)))
+  expect_s3_class(fit_b@bergm, "bergm")
+  expect_length(fit_b@bergm$ess, 4)
+  expect_length(fit_b@data, 3)
+  expect_equal(dim(as.matrix(fit_b@bergm$Theta)), c(8000, 4))
+  expect_error(gof(fit_b), "implemented only")
+  expect_equivalent(nobs(fit_b), c(10, 900))
+  expect_equivalent(coef(fit) - apply(fit_b@bergm$Theta, 2, mean)[-4], rep(0, 3), tolerance = 0.2)
 })

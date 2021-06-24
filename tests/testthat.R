@@ -1,4 +1,3 @@
-library(testthat)
-library(btergm)
+library("testthat")
 
 test_check("btergm")

@@ -551,22 +551,7 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     parallel <- "no"
     warning("'parallel' argument not recognized. Using 'no' instead.")
   }
-  #statnet.stop.parallel <- FALSE
-  #if (parallel[1] == "no") {
-  #  statnet.parallel.type <- NULL
-  #  statnet.parallel <- 0
-  #} else if (parallel[1] == "multicore") {
-  #  statnet.parallel.type <- "PSOCK"
-  #  statnet.parallel <- makeForkCluster(nnodes = ncpus)
-  #  statnet.stop.parallel <- TRUE
-  #} else if (parallel[1] == "snow") {
-  #  statnet.parallel.type <- "PSOCK"
-  #  if (!is.null(cl)) {
-  #    statnet.parallel <- cl
-  #  } else {
-  #    statnet.parallel <- ncpus
-  #  }
-  #}
+  
   if (verbose == TRUE) {
     if (parallel[1] == "no") {
       parallel.msg <- "on a single computing core."
@@ -594,13 +579,6 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
     assign(l$covnames[i], l[[l$covnames[i]]])
   }
   assign("offsmat", l$offsmat)
-  
-  # retrieve objects and integrate in local environment
-  #for (i in 1:length(object@data)) {
-  #  assign(names(object@data)[i], object@data[[i]])
-  #}
-  #form <- as.formula(object@formula2, env = environment())
-  #offset <- object@offset
   
   # check and rearrange target network(s)
   if (is.null(target)) {
@@ -700,16 +678,16 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
                                    nsim = 1,
                                    coef = x,
                                    constraints = ~ .,
-                                   control = control.simulate.formula(MCMC.interval = MCMC.interval,
-                                                                      MCMC.burnin = MCMC.burnin))
+                                   control = ergm::control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                            MCMC.burnin = MCMC.burnin))
           })
         } else {
           sim[[index]] <- ergm::simulate_formula(form,
                                                  nsim = nsim,
                                                  coef = coefs,
                                                  constraints = ~ .,
-                                                 control = control.simulate.formula(MCMC.interval = MCMC.interval,
-                                                                                    MCMC.burnin = MCMC.burnin))
+                                                 control = ergm::control.simulate.formula(MCMC.interval = MCMC.interval,
+                                                                                          MCMC.burnin = MCMC.burnin))
         }
       }, 
       error = function(e) {
@@ -793,9 +771,6 @@ gof.btergm <- function(object, target = NULL, formula = getformula(object),
   goflist <- createGOF(simulations = simulations, target = target, 
                        statistics = statistics, parallel = parallel, ncpus = ncpus, cl = cl, 
                        verbose = verbose, ... = ...)
-  #if (statnet.stop.parallel == TRUE) {
-  #  stopCluster(statnet.parallel)
-  #}
   return(goflist)
 }
 

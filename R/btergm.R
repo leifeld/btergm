@@ -538,25 +538,24 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #'   83(6): 1-36. \doi{10.18637/jss.v083.i06}.
 #'
 #' @examples
-#' library("network")
 #' set.seed(5)
 #' 
 #' networks <- list()
-#' for (i in 1:10) {          # create 10 random networks with 10 actors
+#' for (i in 1:10) {              # create 10 random networks with 10 actors
 #'   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
-#'   diag(mat) <- 0           # loops are excluded
-#'   nw <- network(mat)       # create network object
-#'   networks[[i]] <- nw      # add network to the list
+#'   diag(mat) <- 0               # loops are excluded
+#'   nw <- network::network(mat)  # create network object
+#'   networks[[i]] <- nw          # add network to the list
 #' }
 #' 
 #' covariates <- list()
-#' for (i in 1:10) {          # create 10 matrices as covariate
+#' for (i in 1:10) {              # create 10 matrices as covariate
 #'   mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
-#'   covariates[[i]] <- mat   # add matrix to the list
+#'   covariates[[i]] <- mat       # add matrix to the list
 #' }
 #' 
 #' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100)
-#' summary(fit)               # show estimation results
+#' summary(fit)                   # show estimation results
 #'
 #' # For examples with real data, see help("knecht") or help("alliances").
 #' 
@@ -726,7 +725,6 @@ btergm <- function(formula,
     for (i in 1:length(l$networks)) {
       nw <- ergm::ergm.getnetwork(form)
       model <- ergm::ergm_model(form, nw, initialfit = TRUE)
-      #Clist <- ergm::ergm.Cprepare(nw, model)
       Clist.miss <- ergm::ergm.design(nw, verbose = FALSE)
       control.ergm$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
       pl <- ergm::ergm.pl(nw,

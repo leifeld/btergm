@@ -617,6 +617,9 @@ edgeprob <- function (object, verbose = FALSE) {
     stop(paste("The edgeprob function is only applicable to ergm, btergm, and",
                "mtergm objects."))
   }
+  if (any(grepl("^gw.+#\\d{1,}$", names(coef(object))))) {
+    stop("MPLE-based (T)ERGMs with variable GW* decay are currently not supported.")
+  }
   l <- tergmprepare(formula = getformula(object), offset = FALSE,
                     blockdiag = FALSE, verbose = FALSE)
   for (cv in 1:length(l$covnames)) {
@@ -647,6 +650,9 @@ edgeprob <- function (object, verbose = FALSE) {
     f <- stats::as.formula(paste(l$form, " + edgecov(imat) + edgecov(jmat)"))
     mpli <- ergm::ergmMPLE(f)
     Y <- c(Y, mpli$response)
+    if (any(grepl("^gw.+#\\d{1,}$", colnames(mpli$predictor)))) {
+      stop("MPLE-based (T)ERGMs with variable GW* decay are currently not supported.")
+    }
     mpli$predictor <- cbind(mpli$predictor, i)
     # TODO: the previous line might say something like: "Note: Term nodeofactor("edu") skipped because it contributes no statistics." when a covariate is full of zeros.
     if (is.null(dyads)) {

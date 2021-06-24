@@ -303,7 +303,7 @@ mtergm <- function(formula, constraints = ~ ., returndata = FALSE,
   rdf <- dyads - length(cf)
   asyse <- vcov(e, sources = "all")
   se <- sqrt(diag(asyse))
-  tval <- e$coef / se
+  tval <- coef(e) / se
   pval <- 2 * pt(q = abs(tval), df = rdf, lower.tail = FALSE)
   
   # create mtergm object

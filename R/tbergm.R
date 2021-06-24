@@ -82,15 +82,13 @@ createTbergm <- function(time.steps, formula, formula2, auto.adjust, offset,
       nvertices = nvertices, data = data)
 }
 
-
-
 #' @describeIn tbergm-class Show the coefficients of a \code{tbergm} object.
 #' 
 #' @param object A \code{tbergm} object.
 #' 
 #' @export
 setMethod(f = "show", signature = "tbergm", definition = function(object) {
-  summary(object)
+  summary(object@bergm)
 }
 )
 
@@ -101,7 +99,11 @@ setMethod(f = "show", signature = "tbergm", definition = function(object) {
 #' 
 #' @export
 setMethod(f = "nobs", signature = "tbergm", definition = function(object) {
-  n <- object@nobs
+  if (object@bipartite == TRUE) {
+    n <- sum(1 - object@data$offsmat)
+  } else {
+    n <- sum(1 - object@data$offsmat) - nrow(object@data$offsmat)
+  }
   t <- object@time.steps
   return(c("Number of time steps" = t, "Number of observations" = n))
 }
@@ -126,7 +128,7 @@ timesteps.tbergm <- function(object) {
 #' @export
 setMethod(f = "summary", signature = "tbergm", definition = function(object,
                                                                      ...) {
-  summary(object, ...)
+  summary(object@bergm, ...)
 }
 )
 
@@ -168,14 +170,14 @@ tbergm <- function(formula, returndata = FALSE, verbose = TRUE, ...) {
   form <- as.formula(l$form, env = environment())
 
   # compile data for creating a tbergm object later; return if necessary
-  data <- list()
+  dta <- list()
   for (i in 1:length(l$covnames)) {
-    data[[l$covnames[i]]] <- l[[l$covnames[i]]]
+    dta[[l$covnames[i]]] <- l[[l$covnames[i]]]
   }
-  data$offsmat <- l$offsmat
+  dta$offsmat <- l$offsmat
   if (returndata == TRUE) {
     message("Returning a list with data.")
-    return(data)
+    return(dta)
   }
 
   if (verbose == TRUE) {
@@ -190,7 +192,7 @@ tbergm <- function(formula, returndata = FALSE, verbose = TRUE, ...) {
   } else {
     dyads <- sum(1 - l$offsmat) - nrow(mat)
   }
-
+  
   # create tbergm object
   object <- createTbergm(
     time.steps = l$time.steps,
@@ -203,11 +205,11 @@ tbergm <- function(formula, returndata = FALSE, verbose = TRUE, ...) {
     estimate = "bergm",
     bergm = b,
     nvertices = l$nvertices,
-    data = data
+    data = dta
   )
 
   if (verbose == TRUE) {
-    message("Done.")
+    message("Done. The Bergm object is stored in the @bergm slot of the fitted object. The data are in @data.")
   }
 
   return(object)
