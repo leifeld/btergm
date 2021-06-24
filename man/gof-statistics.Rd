@@ -114,7 +114,7 @@ spinglass.roc(sim, obs, ...)
 
 spinglass.pr(sim, obs, ...)
 
-rocpr(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE, pr.impute = "poly4", ...)
+rocpr(sim, obs, roc = TRUE, pr = TRUE, joint = TRUE, pr.impute = "poly4", ...)
 }
 \arguments{
 \item{mat}{A sparse network matrix as created by the \code{Matrix} function

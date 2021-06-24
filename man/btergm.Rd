@@ -107,25 +107,24 @@ the longer the time series of networks because it uses temporal bootstrapping
 to correct the standard errors.
 }
 \examples{
-library("network")
 set.seed(5)
 
 networks <- list()
-for (i in 1:10) {          # create 10 random networks with 10 actors
+for (i in 1:10) {              # create 10 random networks with 10 actors
   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
-  diag(mat) <- 0           # loops are excluded
-  nw <- network(mat)       # create network object
-  networks[[i]] <- nw      # add network to the list
+  diag(mat) <- 0               # loops are excluded
+  nw <- network::network(mat)  # create network object
+  networks[[i]] <- nw          # add network to the list
 }
 
 covariates <- list()
-for (i in 1:10) {          # create 10 matrices as covariate
+for (i in 1:10) {              # create 10 matrices as covariate
   mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
-  covariates[[i]] <- mat   # add matrix to the list
+  covariates[[i]] <- mat       # add matrix to the list
 }
 
 fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100)
-summary(fit)               # show estimation results
+summary(fit)                   # show estimation results
 
 # For examples with real data, see help("knecht") or help("alliances").
 
