@@ -933,7 +933,7 @@ aucpr <- function(pred, precision, recall) {
 #'   of the simulated networks.
 #' @importFrom network network
 #' @export
-rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = FALSE, 
+rocpr <- function(sim, obs, roc = TRUE, pr = TRUE, joint = TRUE, 
     pr.impute = "poly4", ...) {
   
   directed <- sapply(obs, is.mat.directed)
