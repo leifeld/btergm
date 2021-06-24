@@ -46,14 +46,14 @@ test_that("edgeprob works with ergm, btergm, and mtergm objects, with and withou
   for (t in 1:T) {
     changing <- matrix(rnorm(nnodes^2), nrow = nnodes, ncol = nnodes)
     changing_covariate[[t]] <- changing
-    sim[[t]] <- ergm::simulate_formula(network::network(nnodes) ~ edges + edgecov(fixed_covariate) + edgecov(changing) + gwidegree(0.3, fixed = TRUE),
+    sim[[t]] <- ergm::simulate_formula(network::network(nnodes) ~ edges + edgecov(fixed_covariate) + edgecov(changing) + gwidegree(0.5, fixed = TRUE),
                                        nsim = 1,
-                                       coef = c(-3, 0.3, 0.6, 0.8))
+                                       coef = c(-2, 0.3, 0.6, 1.4))
   }
   
   # btergm with fixed GW decay
   expect_silent({
-    fit1 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(0.3, fixed = TRUE),
+    fit1 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(1.0, fixed = TRUE),
                    R = 100, verbose = FALSE)
   })
   expect_length(coef(fit1), 4)
@@ -62,16 +62,12 @@ test_that("edgeprob works with ergm, btergm, and mtergm objects, with and withou
   expect_equivalent(dim(ep1), c(13050, 11))
   
   # btergm with variable GW decay: currently unsupported in edgeprob
-  expect_silent({
-    fit2 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(fixed = FALSE),
-                   R = 100, verbose = FALSE)
-  })
-  expect_length(coef(fit2), 32)
-  expect_error(ep2 <- edgeprob(fit2), "MPLE-based \\(T\\)ERGMs with variable GW\\* decay are currently not supported")
+  expect_error(fit2 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(fixed = FALSE),
+                   R = 20, verbose = FALSE), "NAs generated during bootstrap")
   
   # mtergm with fixed GW decay
   expect_silent({
-    fit3 <- mtergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(0.3, fixed = TRUE),
+    fit3 <- mtergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(1.0, fixed = TRUE),
                    verbose = FALSE)
   })
   expect_length(coef(fit3), 4)
