@@ -912,7 +912,9 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
 
       # adjust nodal attributes for two-mode networks
       if ("network" %in% sources.types[[i]] && sources.onemode[[i]] == FALSE) {
-        add.col.indices <- sapply(add.col.indices, function(x) x + nr)
+        if (length(add.col.indices) > 0) {
+          add.col.indices <- sapply(add.col.indices, function(x) x + nr)
+        }
         combined.indices <- c(add.row.indices, add.col.indices)
         for (j in 1:length(sources.attributes[[i]])) {
           if (length(combined.indices) > 0) {
@@ -1059,11 +1061,21 @@ adjust <- function(source, target, remove = TRUE, add = TRUE, value = NA,
 
     # convert back into network
     if ("network" %in% sources.types[[i]]) {
+      temp.rownames <- rownames(sources[[i]])
+      temp.colnames <- colnames(sources[[i]])
       sources[[i]] <- network(sources[[i]], directed = sources.directed[[i]],
           bipartite = !sources.onemode[[i]])
       for (j in 1:length(sources.attribnames[[i]])) {
-        sources[[i]] <- set.vertex.attribute(sources[[i]],
-            sources.attribnames[[i]][j], sources.attributes[[i]][[j]])
+        if (sources.attribnames[[i]][j] == "vertex.names") {
+          if (sources.onemode[[i]]) {
+            set.vertex.attribute(sources[[i]], "vertex.names", temp.rownames)
+          } else {
+            set.vertex.attribute(sources[[i]], "vertex.names", c(temp.rownames, temp.colnames))
+          }
+        } else {
+          sources[[i]] <- set.vertex.attribute(sources[[i]],
+              sources.attribnames[[i]][j], sources.attributes[[i]][[j]])
+        }
       }
     }
 

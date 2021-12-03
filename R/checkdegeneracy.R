@@ -116,6 +116,7 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
       message(paste("Simulating", nsim,
           "networks from the following formula:\n", f.i, "\n"))
     }
+    print("hello")
     target.stats[[index]] <- summary(statnet.common::filter_rhs.formula(form),
         response = NULL)
     degen[[index]] <- ergm::simulate_formula(form,

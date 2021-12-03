@@ -741,8 +741,13 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   } else {
     # delete nodes with structural zeros
     if (l$auto.adjust == TRUE) {
-      l$offsmat <- suppressMessages(handleMissings(l$offsmat, na = 1, 
-          method = "remove"))
+      if (l$bipartite) {
+        l$offsmat <- lapply(l$offsmat, function(x) {
+          x[-which(apply(x, 1, function(y) all(y == 1))), -which(apply(x, 2, function(y) all(y == 1)))]
+        })
+      } else {
+        l$offsmat <- suppressMessages(handleMissings(l$offsmat, na = 1, method = "remove"))
+      }
       for (j in 1:length(l$covnames)) {
         l[[l$covnames[j]]] <- adjust(l[[l$covnames[j]]], l$offsmat)
       }
