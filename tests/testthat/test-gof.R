@@ -102,3 +102,31 @@ test_that("edgeprob works with ergm, btergm, and mtergm objects, with and withou
   # test validity of coefficients
   expect_equivalent(coef(fit1) - coef(fit3), rep(0, 4), tolerance = 0.1)
 })
+
+test_that("checkdegeneracy works with btergm and mtergm", {
+  set.seed(12345)
+  networks <- list()
+  for(i in 1:10) {                # create 10 random networks with 10 actors
+    mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
+    diag(mat) <- 0               # loops are excluded
+    nw <- network::network(mat)  # create network object
+    networks[[i]] <- nw          # add network to the list
+  }
+
+  covariates <- list()
+  for (i in 1:10) {              # create 10 matrices as covariate
+    mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
+    covariates[[i]] <- mat       # add matrix to the list
+  }
+
+  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  d <- checkdegeneracy(fit)
+  expect_equal(class(d), "degeneracy")
+  expect_length(d$target.stats, 10)
+  expect_length(d$sim, 10)
+  expect_length(d$target.stats[[1]], 3)
+  expect_equal(dim(d$sim[[1]]), c(1000, 3))
+
+  fit2 <- mtergm(networks ~ edges + istar(2) + edgecov(covariates), verbose = FALSE)
+  expect_output(checkdegeneracy(fit2), "Sample statistics summary")
+})

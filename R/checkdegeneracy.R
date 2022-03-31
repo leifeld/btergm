@@ -1,7 +1,7 @@
 #' Check for degeneracy in fitted TERGMs
 #'
 #' Check for degeneracy in fitted TERGMs.
-#' 
+#'
 #' The methods for the generic \code{degeneracy} function implement a degeneracy
 #' check for \code{btergm} and \code{mtergm} objects. For \code{btergm}, this
 #' works by comparing the global statistics of simulated networks to those of
@@ -9,7 +9,7 @@
 #' differ significantly, this is indicated by small p-values. If there are many
 #' significant results, this indicates degeneracy. For \code{mtergm}, the
 #' \code{mcmc.diagnostics} function from the \pkg{ergm} package is used.
-#' 
+#'
 #' @param object A \code{btergm} or \code{mtergm} object, as estimated using the
 #'   \code{btergm} or \code{mtergm} function.
 #' @param nsim The number of networks to be simulated at each time step. This
@@ -50,12 +50,12 @@
 #' @param ... Arbitrary further arguments for subroutines.
 #'
 #' @return A list with target statistics and simulations.
-#' 
+#'
 #' @references
 #' Hanneke, Steve, Wenjie Fu and Eric P. Xing (2010): Discrete Temporal Models
 #' of Social Networks. \emph{Electronic Journal of Statistics} 4: 585--605.
 #' \doi{10.1214/09-EJS548}.
-#' 
+#'
 #' Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2018): Temporal
 #' Exponential Random Graph Models with btergm: Estimation and Bootstrap
 #' Confidence Intervals. \emph{Journal of Statistical Software} 83(6): 1-36.
@@ -116,13 +116,11 @@ checkdegeneracy.btergm <- function(object, nsim = 1000, MCMC.interval = 1000,
       message(paste("Simulating", nsim,
           "networks from the following formula:\n", f.i, "\n"))
     }
-    print("hello")
-    target.stats[[index]] <- summary(statnet.common::filter_rhs.formula(form),
-        response = NULL)
+    target.stats[[index]] <- summary(form)
     degen[[index]] <- ergm::simulate_formula(form,
                                              nsim = nsim,
                                              coef = coefs,
-                                             statsonly = TRUE,
+                                             output = "stats",
                                              control = control.simulate.formula(MCMC.interval = MCMC.interval,
                                                                                 MCMC.burnin = MCMC.burnin))
     if (offset == TRUE || "mtergm" %in% class(object)) {

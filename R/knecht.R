@@ -86,7 +86,7 @@
 #' Knecht, Andrea (2008): \emph{Friendship Selection and Friends' Influence.
 #' Dynamics of Networks and Actor Attributes in Early Adolescence}. PhD
 #' Dissertation, University of Utrecht. \url{
-#' http://dspace.library.uu.nl/bitstream/handle/1874/25950/full.pdf}.
+#' https://dspace.library.uu.nl/handle/1874/25950}.
 #'
 #' Knecht, Andrea, Tom A. B. Snijders, Chris Baerveldt, Christian E.  G.
 #' Steglich, and Werner Raub (2010): Friendship and Delinquency: Selection and
