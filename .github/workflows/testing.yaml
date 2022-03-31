@@ -1,0 +1,49 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+name: testing
+
+jobs:
+  testing:
+    runs-on: macOS-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@master
+        with:
+          r-version: 'release'
+
+      - uses: r-lib/actions/setup-pandoc@master
+
+      - name: Query dependencies
+        run: |
+          install.packages(c("devtools", "covr"))
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+        shell: Rscript {0}
+
+      - name: Cache R packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: macOS-r-4.0-2-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: macOS-r-4.0-2-
+
+      - name: Install dependencies
+        run: |
+          devtools::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
+      - name: Unit testing
+        run: withr::with_envvar(c("NOT_CRAN" = "true"), devtools::test())
+        shell: Rscript {0}
+
+      - name: Test coverage
+        run: withr::with_envvar(c("NOT_CRAN" = "true"), covr::codecov(quiet = FALSE))
+        shell: Rscript {0}
