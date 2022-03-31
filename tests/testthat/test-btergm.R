@@ -42,17 +42,18 @@ test_that("btergm estimation works", {
   expect_equal(fit@directed, TRUE)
   expect_equal(fit@bipartite, FALSE)
   expect_equal(unname(rowSums(fit@nvertices)), c(100, 100))
-  expect_equal(round(confint(fit)[1, 2], 1), -1.4)
-  expect_equal(round(confint(fit)[1, 3], 1), -0.8)
-  expect_equal(round(confint(fit)[2, 2], 0), 0)
-  expect_equal(round(confint(fit)[2, 3], 1), 0.1)
-  expect_equal(round(confint(fit)[3, 2], 1), -0.1)
-  expect_equal(round(confint(fit)[3, 3], 1), 0.1)
+  expect_equal(round(confint(fit)[1, 3], 1), -1.4)
+  expect_equal(round(confint(fit)[1, 4], 1), -0.8)
+  expect_equal(round(confint(fit)[2, 3], 0), 0)
+  expect_equal(round(confint(fit)[2, 4], 1), 0.1)
+  expect_equal(round(confint(fit)[3, 3], 1), -0.1)
+  expect_equal(round(confint(fit)[3, 4], 1), 0.1)
+  expect_true(all(round(confint(fit)[, 1] - confint(fit)[, 2], 1) == 0))
 })
 
 test_that("fastglm works like speedglm", {
   skip_if_not_installed("fastglm", minimum_version = "0.0.1")
-  
+
   set.seed(12345)
   fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
   set.seed(12345)
@@ -78,7 +79,7 @@ test_that("offset argument in btergm works without composition change", {
 
 test_that("offset argument in btergm works with composition change", {
   skip_on_cran()
-  
+
   # example taken from 2018 JSS article
   require("sna")
   data("knecht")
@@ -127,10 +128,10 @@ test_that("offset argument in btergm works with composition change", {
                R = 100, usefastglm = TRUE, offset = FALSE, verbose = FALSE)
 
   # test results
-  expect_equal(dim(confint(m1)), c(14, 3))
-  expect_equal(dim(confint(m2)), c(14, 3))
-  expect_equal(all(confint(m1)[, 3] - confint(m1)[, 2] > 0), TRUE)
-  expect_equal(all(confint(m2)[, 3] - confint(m2)[, 2] > 0), TRUE)
+  expect_equal(dim(confint(m1)), c(14, 4))
+  expect_equal(dim(confint(m2)), c(14, 4))
+  expect_equal(all(confint(m1)[, 4] - confint(m1)[, 3] > 0), TRUE)
+  expect_equal(all(confint(m2)[, 4] - confint(m2)[, 3] > 0), TRUE)
   expect_equal(m1@offset, TRUE)
   expect_equal(m2@offset, FALSE)
   expect_equal(sapply(m1@data$offsmat, sum), c(0, 51, 51))
@@ -141,7 +142,7 @@ test_that("offset argument in btergm works with composition change", {
 
 test_that("mtergm estimation works", {
   skip_if_not_installed("fastglm", minimum_version = "0.0.1")
-  
+
   set.seed(12345)
   fit1 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), usefastglm = TRUE, verbose = FALSE)
   set.seed(12345)
@@ -155,7 +156,7 @@ test_that("mtergm estimation works", {
 
 test_that("simulation of new networks works", {
   skip_if_not_installed("fastglm", minimum_version = "0.0.1")
-  
+
   # for btergm
   fit1 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), usefastglm = TRUE, verbose = FALSE)
   sim1 <- simulate(fit1, 5, verbose = FALSE)
@@ -188,4 +189,30 @@ test_that("tbergm estimation works", {
   expect_length(g, 7)
   expect_equivalent(nobs(fit_b), c(10, 900))
   expect_equivalent(coef(fit) - apply(fit_b@bergm$Theta, 2, mean)[-4], rep(0, 3), tolerance = 0.2)
+})
+
+test_that("bipartite network objects work, including composition change, with and without offset", {
+  skip_on_cran()
+  set.seed(12345)
+  nw_matrix <- lapply(1:20, function(x) {
+    mat <- matrix(rbinom(200, 1, 0.2), nrow = 20)
+    rownames(mat) <- letters[1:20]
+    colnames(mat) <- letters[1:10]
+    mat <- mat[sample(1:20, 18), sample(1:10, 9)]
+  })
+  nw_network <- lapply(nw_matrix, function(x) {
+    network::network(x, bipartite = TRUE, directed = FALSE)
+  })
+  expect_warning(model1 <- btergm(nw_matrix ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = FALSE, verbose = FALSE), regexp = NA)
+  expect_warning(model2 <- btergm(nw_network ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = FALSE, verbose = FALSE), regexp = NA)
+  expect_warning(model3 <- btergm(nw_matrix ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = TRUE, verbose = FALSE), regexp = NA)
+  expect_warning(model4 <- btergm(nw_network ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = TRUE, verbose = FALSE), regexp = NA)
+  expect_length(model1@coef, 4)
+  expect_length(model2@coef, 4)
+  expect_length(model3@coef, 4)
+  expect_length(model4@coef, 4)
+  expect_equal(dim(confint(model1)), c(4, 4))
+  expect_equal(dim(confint(model2)), c(4, 4))
+  expect_equal(dim(confint(model3)), c(4, 4))
+  expect_equal(dim(confint(model4)), c(4, 4))
 })

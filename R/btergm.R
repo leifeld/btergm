@@ -1,12 +1,12 @@
 #' Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood
-#' 
+#'
 #' Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood.
 #'
 #' Temporal Exponential Random Graph Models (TERGM) estimated by maximum
 #' pseudolikelihood with bootstrapped confidence intervals, Markov Chain Monte
 #' Carlo maximum likelihood, or Bayesian estimation. Goodness of fit assessment
 #' for ERGMs, TERGMs, and SAOMs. Micro-level interpretation of ERGMs and TERGMs.
-#' 
+#'
 #' The \pkg{btergm} package implements TERGMs with MPLE and bootstrapped
 #' confidence intervals (\code{\link{btergm}} function), MCMC MLE
 #' (\code{\link{mtergm}} function), or Bayesian estimation (\code{\link{tbergm}}
@@ -46,9 +46,9 @@
 NULL
 
 #' Display version number and date when the package is loaded
-#' 
+#'
 #' Display version number and date when the package is loaded.
-#' 
+#'
 #' @importFrom utils packageDescription
 #' @noRd
 .onAttach <- function(libname, pkgname) {
@@ -65,21 +65,21 @@ NULL
 
 #' Redefine S3 as S4 class for proper handling as part of the \code{btergm}
 #' class.
-#' 
+#'
 #' @noRd
 setOldClass(c("boot", "boot"))
 
 #' An S4 class to represent a fitted TERGM by bootstrapped MPLE
-#' 
+#'
 #' An S4 class to represent a fitted TERGM by bootstrapped MPLE.
-#' 
+#'
 #' \code{btergm} objects result from the estimation of a bootstrapped TERGM via
 #' the \code{\link{btergm}} function. \code{btergm} objects contain the
 #' coefficients, the bootstrapping samples of the coefficients, the number of
 #' replications, the number of observations, the number of time steps, the
 #' original formula, and the response, effects and weights objects that were fed
 #' into the \code{glm} call for estimating the model.
-#' 
+#'
 #' @slot coef Object of class \code{"numeric"}. The coefficients.
 #' @slot boot Object of class \code{"matrix"}. The bootstrapping sample.
 #' @slot R Object of class \code{"numeric"}. Number of replications.
@@ -107,7 +107,7 @@ setOldClass(c("boot", "boot"))
 #'   function.
 #'
 #' @family tergm-classes
-#' 
+#'
 #' @export
 setClass(Class = "btergm",
     representation = representation(
@@ -202,9 +202,9 @@ setClass(Class = "btergm",
 #'   function.
 #'
 #' @author Philip Leifeld
-#' 
+#'
 #' @family tergm-classes
-#' 
+#'
 #' @importFrom methods new
 createBtergm <- function(coef, boot, R, nobs, time.steps, formula,
     formula2, response, effects, weights, auto.adjust, offset,
@@ -217,13 +217,13 @@ createBtergm <- function(coef, boot, R, nobs, time.steps, formula,
 }
 
 #' Show the coefficients of a \code{btergm} object
-#' 
+#'
 #' Show the coefficients of a \code{btergm} object.
-#' 
+#'
 #' @param object A \code{btergm} object.
-#' 
+#'
 #' @rdname btergm-class
-#' 
+#'
 #' @importFrom methods show
 #' @export
 setMethod(f = "show", signature = "btergm", definition = function(object) {
@@ -233,12 +233,12 @@ setMethod(f = "show", signature = "btergm", definition = function(object) {
 )
 
 #' @describeIn btergm-class Return the coefficients of a \code{btergm} object.
-#' 
+#'
 #' @param object A \code{btergm} object.
 #' @param invlogit Apply inverse logit transformation to the estimates and/or
 #'   confidence intervals? That is, \eqn{\frac{1}{1 + \exp(-x)}}, where \eqn{x}
 #'   is the respective value.
-#' 
+#'
 #' @export
 setMethod(f = "coef", signature = "btergm", definition = function(object,
       invlogit = FALSE, ...) {
@@ -252,9 +252,9 @@ setMethod(f = "coef", signature = "btergm", definition = function(object,
 
 #' @describeIn btergm-class Return the number of observations saved in a
 #'   \code{btergm} object.
-#' 
+#'
 #' @param object A \code{btergm} object.
-#' 
+#'
 #' @export
 setMethod(f = "nobs", signature = "btergm", definition = function(object) {
     n <- object@nobs
@@ -270,7 +270,7 @@ setMethod(f = "nobs", signature = "btergm", definition = function(object) {
 #'   object
 #'
 #' Create a coefficient matrix with standard errors and p-values.
-#' 
+#'
 #' This function can create a coefficient matrix with coefficients, standard
 #' errors, z-scores, and p-values, based on a fitted \code{btergm} object.
 #' If the argument \code{print = TRUE} is used, the matrix is printed to the R
@@ -281,12 +281,12 @@ setMethod(f = "nobs", signature = "btergm", definition = function(object) {
 #' for checking for normality for each model term are available, for example
 #' quantile-quantile plots (e.g., \code{qqnorm(x@boot$t[, 1])} for the first
 #' model term in the \code{btergm} object called \code{x}).
-#' 
+#'
 #' @param object A \code{btergm} object.
 #' @param print Should the formatted coefficient table be printed to the R
 #'   console along with significance stars (\code{print = TRUE}), or should the
 #'   plain coefficient matrix be returned (\code{print = FALSE})?
-#' 
+#'
 #' @export
 btergm.se <- function(object, print = FALSE) {
   co <- object@coef
@@ -315,7 +315,7 @@ btergm.se <- function(object, print = FALSE) {
 
 #' @describeIn btergm-class Return the confidence intervals for estimates in a
 #'   \code{btergm} object.
-#' 
+#'
 #' @param object A \code{btergm} object.
 #' @param parm Parameters (specified by integer position or character string).
 #' @param level The significance level for computation of the confidence
@@ -331,7 +331,7 @@ btergm.se <- function(object, print = FALSE) {
 #'   confidence intervals? That is, \eqn{\frac{1}{1 + \exp(-x)}}, where \eqn{x}
 #'   is the respective value.
 #' @param ... Further arguments for subroutines (not currently in use here).
-#' 
+#'
 #' @export
 setMethod(f = "confint", signature = "btergm", definition = function(object,
     parm, level = 0.95, type = "perc", invlogit = FALSE, ...) {
@@ -372,7 +372,7 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
         b <- boot::boot.ci(object@boot, conf = level, type = type, index = x)
         b[[type2]][4:5]
     })
-    ci <- cbind(cf, t(ci))
+    ci <- cbind(cf, colMeans(object@boot$t), t(ci))
     if ("numeric" %in% class(ci)) {
       ci.nam <- names(ci)
       ci <- matrix(ci, nrow = 1)
@@ -386,23 +386,23 @@ setMethod(f = "confint", signature = "btergm", definition = function(object,
     }
     label1 <- paste0(100 * (1 - level) / 2, "%")
     label2 <- paste0(100 * (1 - (1 - level) / 2), "%")
-    colnames(ci) <- c("Estimate", label1, label2)
+    colnames(ci) <- c("Estimate", "Boot mean", label1, label2)
     return(ci)
   }
 )
 
 #' @describeIn btergm-class Return the number of time steps saved in a
 #'   \code{btergm} object.
-#' 
+#'
 #' @param object A \code{btergm} object.
-#' 
+#'
 #' @export
 timesteps.btergm <- function(object) {
   return(object@time.steps)
 }
 
 #' @describeIn btergm-class Summary of a fitted \code{btergm} object.
-#' 
+#'
 #' @param object A \code{btergm} object.
 #' @param level The significance level for computation of the confidence
 #'   intervals. The default is \code{0.95} (that is, an alpha value of 0.05).
@@ -418,7 +418,7 @@ timesteps.btergm <- function(object) {
 #'   is the respective value.
 #' @param ... Further arguments to be passed through to the \code{confint}
 #'   function.
-#' 
+#'
 #' @export
 setMethod(f = "summary", signature = "btergm", definition = function(object,
     level = 0.95, type = "perc", invlogit = FALSE, ...) {
@@ -433,7 +433,7 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
     message(paste0("Estimates and ", 100 * level, "% confidence intervals:"))
     cmat <- confint(object, level = level, type = type, invlogit = invlogit,
         ...)
-    printCoefmat(cmat, cs.ind = 1, tst.ind = 2:3)
+    printCoefmat(cmat, cs.ind = 1, tst.ind = 3:4)
   }
 )
 
@@ -539,7 +539,7 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #'
 #' @examples
 #' set.seed(5)
-#' 
+#'
 #' networks <- list()
 #' for (i in 1:10) {              # create 10 random networks with 10 actors
 #'   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
@@ -547,101 +547,101 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #'   nw <- network::network(mat)  # create network object
 #'   networks[[i]] <- nw          # add network to the list
 #' }
-#' 
+#'
 #' covariates <- list()
 #' for (i in 1:10) {              # create 10 matrices as covariate
 #'   mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
 #'   covariates[[i]] <- mat       # add matrix to the list
 #' }
-#' 
+#'
 #' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100)
 #' summary(fit)                   # show estimation results
 #'
 #' # For examples with real data, see help("knecht") or help("alliances").
-#' 
-#' 
+#'
+#'
 #' # Examples for parallel processing:
-#' 
-#' # Some preliminaries: 
-#' # - "Forking" means running the code on multiple cores in the same 
-#' #   computer. It's fast but consumes a lot of memory because all 
-#' #   objects are copied for each node. It's also restricted to 
-#' #   cores within a physical computer, i.e. no distribution over a 
+#'
+#' # Some preliminaries:
+#' # - "Forking" means running the code on multiple cores in the same
+#' #   computer. It's fast but consumes a lot of memory because all
+#' #   objects are copied for each node. It's also restricted to
+#' #   cores within a physical computer, i.e. no distribution over a
 #' #   network or cluster. Forking does not work on Windows systems.
-#' # - "MPI" is a protocol for distributing computations over many 
-#' #   cores, often across multiple physical computers/nodes. MPI 
-#' #   is fast and can distribute the work across hundreds of nodes 
-#' #   (but remember that R can handle a maximum of 128 connections, 
-#' #   which includes file access and parallel connections). However, 
-#' #   it requires that the Rmpi package is installed and that an MPI 
+#' # - "MPI" is a protocol for distributing computations over many
+#' #   cores, often across multiple physical computers/nodes. MPI
+#' #   is fast and can distribute the work across hundreds of nodes
+#' #   (but remember that R can handle a maximum of 128 connections,
+#' #   which includes file access and parallel connections). However,
+#' #   it requires that the Rmpi package is installed and that an MPI
 #' #   server is running (e.g., OpenMPI).
-#' # - "PSOCK" is a TCP-based protocol. It can also distribute the 
-#' #   work to many cores across nodes (like MPI). The advantage of 
-#' #   PSOCK is that it can as well make use of multiple nodes within 
-#' #   the same node or desktop computer (as with forking) but without 
-#' #   consuming too much additional memory. However, the drawback is 
+#' # - "PSOCK" is a TCP-based protocol. It can also distribute the
+#' #   work to many cores across nodes (like MPI). The advantage of
+#' #   PSOCK is that it can as well make use of multiple nodes within
+#' #   the same node or desktop computer (as with forking) but without
+#' #   consuming too much additional memory. However, the drawback is
 #' #   that it is not as fast as MPI or forking.
 #' # The following code provides examples for these three scenarios.
-#' 
-#' # btergm works with clusters via the parallel package. That is, the 
-#' # user can create a cluster object (of type "PSOCK", "MPI", or 
-#' # "FORK") and supply it to the 'cl' argument of the 'btergm' 
-#' # function. If no cluster object is provided, btergm will try to 
-#' # create a temporary PSOCK cluster (if parallel = "snow") or it 
+#'
+#' # btergm works with clusters via the parallel package. That is, the
+#' # user can create a cluster object (of type "PSOCK", "MPI", or
+#' # "FORK") and supply it to the 'cl' argument of the 'btergm'
+#' # function. If no cluster object is provided, btergm will try to
+#' # create a temporary PSOCK cluster (if parallel = "snow") or it
 #' # will use forking (if parallel = "multicore").
-#' 
+#'
 #' \dontrun{
-#' # To use a PSOCK cluster without providing an explicit cluster 
+#' # To use a PSOCK cluster without providing an explicit cluster
 #' # object:
 #' require("parallel")
-#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
+#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
 #'               R = 100, parallel = "snow", ncpus = 25)
-#' 
+#'
 #' # Equivalently, a PSOCK cluster can be provided as follows:
 #' require("parallel")
 #' cores <- 25
 #' cl <- makeCluster(cores, type = "PSOCK")
-#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
+#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
 #'               R = 100, parallel = "snow", ncpus = cores, cl = cl)
 #' stopCluster(cl)
-#' 
-#' # Forking (without supplying a cluster object) can be used as 
+#'
+#' # Forking (without supplying a cluster object) can be used as
 #' # follows.
 #' require("parallel")
 #' cores <- 25
-#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
+#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
 #'               R = 100, parallel = "multicore", ncpus = cores)
 #' stopCluster(cl)
-#' 
+#'
 #' # Forking (by providing a cluster object) works as follows:
 #' require("parallel")
 #' cores <- 25
 #' cl <- makeCluster(cores, type = "FORK")
-#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
+#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
 #'               R = 100, parallel = "snow", ncpus = cores, cl = cl)
 #' stopCluster(cl)
-#' 
-#' # To use MPI, a cluster object MUST be created beforehand. In 
-#' # this example, a MOAB HPC server is used. It stores the number of 
+#'
+#' # To use MPI, a cluster object MUST be created beforehand. In
+#' # this example, a MOAB HPC server is used. It stores the number of
 #' # available cores as a system option:
 #' require("parallel")
 #' cores <- as.numeric(Sys.getenv("MOAB_PROCCOUNT"))
 #' cl <- makeCluster(cores, type = "MPI")
-#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
+#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
 #'               R = 100, parallel = "snow", ncpus = cores, cl = cl)
 #' stopCluster(cl)
-#' 
-#' # In the following example, the Rmpi package is used to create a 
-#' # cluster. This may not work on all systems; consult your local 
-#' # support staff or the help files on your HPC server to find out how 
+#'
+#' # In the following example, the Rmpi package is used to create a
+#' # cluster. This may not work on all systems; consult your local
+#' # support staff or the help files on your HPC server to find out how
 #' # to create a cluster object on your system.
-#' 
+#'
 #' # snow/Rmpi start-up
 #' if (!is.loaded("mpi_initialize")) {
 #'   library("Rmpi")
 #' }
 #' library(snow);
-#' 
+#'
 #' mpirank <- mpi.comm.rank (0)
 #' if (mpirank == 0) {
 #'   invisible(makeMPIcluster())
@@ -652,10 +652,10 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #'   q()
 #' }
 #' # End snow/Rmpi start-up
-#' 
+#'
 #' cl <- getMPIcluster()
-#' 
-#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), 
+#'
+#' fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
 #'               R = 100, parallel = "snow", ncpus = 25, cl = cl)
 #' }
 #'
@@ -808,6 +808,13 @@ btergm <- function(formula,
 
       startval <- est$coefficients
 
+      # report NAs as warnings
+      if (isTRUE(verbose) && any(is.na(startval))) {
+        warning("The following coefficients yielded NA estimates: ",
+                paste(names(startval)[which(is.na(startval))], collapse = ", "),
+                ". Bootstrapping may not work with NA coefficients.")
+      }
+
       estimate <- function(unique.time.steps,
                            bsi,
                            Yi = Y,
@@ -833,6 +840,14 @@ btergm <- function(formula,
                          family = binomial(link = logit), sparse = TRUE)
 
     startval <- coef(est)
+
+    # report NAs as warnings
+    if (isTRUE(verbose) && any(is.na(startval))) {
+      warning("The following coefficients yielded NA estimates: ",
+              paste(names(startval)[which(is.na(startval))], collapse = ", "),
+              ". Bootstrapping may not work with NA coefficients.")
+    }
+
     # define function for bootstrapping and estimation
     estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse,
                          Wi = W, Oi = O, timei = time, startvali = startval) {
@@ -863,12 +878,12 @@ btergm <- function(formula,
                 parallel = parallel, ncpus = ncpus, cl = cl, ...)
 
   if (coefs$t[1, 1] == "glm.fit: algorithm did not converge") {
-    stop(paste("Algorithm did not converge. There might be a collinearity ",
+    warning(paste("Algorithm did not converge. There might be a collinearity ",
         "between predictors and/or dependent networks at one or more time",
         "steps."))
   }
   if (sum(is.na(coefs$t)) > 0) {
-    stop("NAs generated during bootstrap. This may be an indication of collinearity between predictors and/or dependent networks at one or more time steps.")
+    warning("NAs generated during bootstrap. This may be an indication of collinearity between predictors and/or dependent networks at one or more time steps.")
   }
 
   # create and return btergm object
@@ -901,9 +916,9 @@ btergm <- function(formula,
 }
 
 #' Simulate Networks from a \code{btergm} Object
-#' 
+#'
 #' Simulate networks from a \code{btergm} object using MCMC sampler.
-#' 
+#'
 #' The \code{simulate.btergm} function is a wrapper for the
 #' \code{\link[ergm]{simulate_formula}} function in the \pkg{ergm} package (see
 #' \code{help("simulate.ergm")}). It can be used to simulate new networks from a
@@ -918,7 +933,7 @@ btergm <- function(formula,
 #' for the 107th Congress). Note that all relevant objects (the networks and the
 #' covariates) must be present in the workspace (as was the case during the
 #' estimation of the model).
-#' 
+#'
 #' @param object A \code{btergm} or \code{mtergm} object, resulting from a call
 #'   of the \code{\link{btergm}} or \code{\link{mtergm}} function.
 #' @param nsim The number of networks to be simulated. Note that for values
@@ -968,19 +983,19 @@ btergm <- function(formula,
 #' }
 #' fit <- btergm(networks ~ edges + istar(2) +
 #'                 edgecov(covariates), R = 100)
-#' 
+#'
 #' # simulate 12 new networks from the last (= 10th) time step
 #' sim1 <- simulate(fit, nsim = 12)
-#' 
+#'
 #' # simulate 1 network from the first time step
 #' sim2 <- simulate(fit, index = 1)
-#' 
+#'
 #' # simulate network from t = 5 with larger covariate coefficient
 #' coefs <- coef(fit)
 #' coefs["edgecov.covariates[[i]]"] <- 0.5
 #' sim3 <- simulate(fit, index = 5, coef = coefs)
 #' }
-#' 
+#'
 #' @importFrom ergm simulate_formula
 #' @importFrom network is.network
 #' @importFrom stats simulate
@@ -1052,9 +1067,9 @@ simulate.btergm <- function(object, nsim = 1, seed = NULL, index = NULL,
 }
 
 #' Simulate Networks from an \code{mtergm} Object
-#' 
+#'
 #' Simulate networks from an \code{mtergm} object using MCMC sampler.
-#' 
+#'
 #' @rdname simulate.btergm
 #' @export
 simulate.mtergm <- simulate.btergm  # create a copy for mtergm objects

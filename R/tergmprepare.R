@@ -1,7 +1,7 @@
 #' Prepare data structure for TERGM estimation, including composition change
-#' 
+#'
 #' Prepare data structure for TERGM estimation, including composition change.
-#' 
+#'
 #' This is a helper function that adjusts the dimensions of networks or
 #' covariates within a given time step to each other by removing nodes that are
 #' not present across all objects within a time step or by adding nodes where
@@ -19,7 +19,7 @@
 #' internally by the estimation functions to make the dimensions of all objects
 #' conformable to each other for estimation. Use this function only for
 #' diagnostic purposes!
-#' 
+#'
 #' @param formula The original formula provided by the user, given the data
 #'   structures in the workspace.
 #' @param offset Indicates whether absent nodes should be added where they are
@@ -30,7 +30,7 @@
 #'   should they be kept as items in a list for use with \code{\link{btergm}}
 #'   (\code{blockdiag = FALSE})?
 #' @param verbose Report details about dimension adjustment?
-#' 
+#'
 #' @return A list with the following slots:
 #' \describe{
 #'   \item{lhs.original}{A character object containing the original name of the
@@ -71,40 +71,40 @@
 #'     zeros. If \code{offset = TRUE}, they will contain ones where nodes were
 #'     absent in the original data.}
 #' }
-#' 
+#'
 #' @author Philip Leifeld
-#' 
+#'
 #' @importFrom network is.network
 #' @export
-tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE, 
+tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     verbose = TRUE) {
   # extract response networks and make sure they are saved in a list
   l <- list()
   l$lhs.original <- deparse(formula[[2]])  # for reporting purposes later on
-  l$networks <- eval(parse(text = deparse(formula[[2]])), 
+  l$networks <- eval(parse(text = deparse(formula[[2]])),
       envir = environment(formula))
   if ("list" %in% class(l$networks) || "network.list" %in% class(l$networks)) {
     # do nothing
   } else {
     l$networks <- list(l$networks)
   }
-  
+
   # convert list elements to matrices if unknown data type
   for (i in 1:length(l$networks)) {
     if (!is.network(l$networks[[i]]) && !is.matrix(l$networks[[i]]) && !"list" %in% class(l$networks[[i]])) {
       tryCatch(
         {
           l$networks[[i]] <- as.matrix(l$networks[[i]])
-        }, 
+        },
         error = function(cond) {
           stop(paste("Object", i, "could not be converted to a matrix."))
         }
       )
     }
   }
-  
+
   # extract additional information
-  l$num.vertices <- max(sapply(l$networks, function(x) 
+  l$num.vertices <- max(sapply(l$networks, function(x)
       network::get.network.attribute(network::network(x), "n")))  # number nodes
   if (is.network(l$networks[[1]])) {
     l$directed <- network::is.directed(l$networks[[1]])  # directed?
@@ -121,7 +121,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       l$bipartite <- TRUE
     }
   }
-  
+
   # adjust and disassemble formula
   l$form <- update.formula(formula, networks[[i]] ~ .)
   l$time.steps <- length(l$networks)
@@ -129,7 +129,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   lhs <- deparse(l$form[[2]])
   rhs <- paste(deparse(l$form[[3]]), collapse = "")  # for long formulae
   rhs <- gsub("\\s+", " ", rhs)
-  
+
   # parse rhs of formula and add indices to edgecov and dyadcov terms
   rhsterms <- strsplit(rhs, "\\s*\\+\\s*")[[1]]
   if (length(rhsterms) > 1) {  # 'transform' in 'timecov' may contain '+'
@@ -148,12 +148,12 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   }
   l$rhs.terms <- rhsterms
   rhs.operators <- rep("+", length(l$rhs.terms) - 1)
-  
+
   # preprocess dyadcov and edgecov terms, memory terms, and timecov terms
   covnames <- character()
   for (k in 1:length(l$rhs.terms)) {
     if (grepl("((edge)|(dyad))cov", l$rhs.terms[k])) {  # edgecov or dyadcov
-      
+
       # split up into components
       if (grepl(",\\s*?((attr)|\\\")", l$rhs.terms[k])) { # with attrib arg.
         s <- "((?:offset\\()?((edge)|(dyad))cov\\()([^\\)]+)((,\\s*a*.*?)\\)(?:\\))?)"
@@ -163,7 +163,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       x1 <- sub(s, "\\1", l$rhs.terms[k], perl = TRUE)  # before the covariate
       x2 <- sub(s, "\\5", l$rhs.terms[k], perl = TRUE)  # name of the cov.
       if (grepl("\\[.*\\]", x2)) {
-       stop(paste0("Covariate names are not allowed to have indices: ", x2, 
+       stop(paste0("Covariate names are not allowed to have indices: ", x2,
            ". Please prepare a list object before estimation."))
       }
       if (grepl("^\"", x2)) next  # ignore built-in matrices b/c conformable
@@ -173,22 +173,22 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       l$covnames <- c(l$covnames, x2)
       l[[x2]] <- x.current
       if (grepl("\\[i\\]+$", x2)) {
-        stop(paste0("Error in the following model term: ", l$rhs.terms[k], 
-            ". The index 'i' is used internally by btergm. Please use a ", 
+        stop(paste0("Error in the following model term: ", l$rhs.terms[k],
+            ". The index 'i' is used internally by btergm. Please use a ",
             "different index, for example 'j'."))
       }
-      
+
       # add brackets if necessary, convert to list, and reassemble rhs term
       if (grepl("[^\\]]\\]$", x2)) {
         # time-varying covariate with given indices (e.g., formula[1:5])
         l$rhs.terms[k] <- paste0(x1, x2, x3)
-        if (type %in% c("matrix", "network", "dgCMatrix", "dgTMatrix", 
+        if (type %in% c("matrix", "network", "dgCMatrix", "dgTMatrix",
             "dsCMatrix", "dsTMatrix", "dgeMatrix")) {
           x.current <-list(x.current)
           l[[x2]] <- x.current
         }
         if (length(x.current) != l$time.steps) {
-          stop(paste(x2, "has", length(x.current), "elements, but there are", 
+          stop(paste(x2, "has", length(x.current), "elements, but there are",
               l$time.steps, "networks to be modeled."))
         }
         if (blockdiag == TRUE) {
@@ -196,7 +196,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         } else {
           x2 <- paste0(x2, "[[i]]")
         }
-      } else if (type %in% c("matrix", "network", "dgCMatrix", "dgTMatrix", 
+      } else if (type %in% c("matrix", "network", "dgCMatrix", "dgTMatrix",
           "dsCMatrix", "dsTMatrix", "dgeMatrix")) {
         # time-independent covariate
         if (!type %in% c("matrix", "network")) {
@@ -215,7 +215,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else if (type == "list" || type == "network.list") {
         # time-varying covariate
         if (length(x.current) != l$time.steps) {
-          stop(paste(x2, "has", length(get(x2)), "elements, but there are", 
+          stop(paste(x2, "has", length(get(x2)), "elements, but there are",
               l$time.steps, "networks to be modeled."))
         }
         if (blockdiag == TRUE) {
@@ -228,15 +228,15 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         tryCatch(
           {
             l[[x2]] <- list(rep(as.matrix(x.current)), l$time.steps)
-          }, 
+          },
           error = function(cond) {
-            stop(paste0("Object '", x2, 
+            stop(paste0("Object '", x2,
                 "' could not be converted to a matrix."))
           }
         )
       }
     } else if (grepl("memory", l$rhs.terms[k])) {  # memory terms
-      
+
       # extract type argument
       s <- "(?:memory\\((?:.*type\\s*=\\s*)?(?:\"|'))(\\w+)(?:(\"|').*\\))"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
@@ -244,7 +244,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         type <- sub(s, "\\1", l$rhs.terms[k], perl = TRUE)
       }
-      
+
       # extract lag argument
       s <- "(?:memory\\(.*lag\\s*=\\s*)(\\d+)(?:.*\\))"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
@@ -255,7 +255,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       if (lag > length(l$networks) - 1) {
         stop("The 'lag' argument in the 'memory' term is too large.")
       }
-      
+
       # process dependent list of networks
       mem <- l$networks[-(length(l$networks):(length(l$networks) - lag + 1))]
       mem <- lapply(mem, as.matrix)
@@ -279,7 +279,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         }
       }
       rm(mem)
-      
+
       # re-introduce as edgecov and name of model term including brackets
       l[["memory"]] <- memory
       if (blockdiag == TRUE) {
@@ -289,7 +289,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
       l$covnames <- c(l$covnames, "memory")
     } else if (grepl("delrecip", l$rhs.terms[k])) {  # delayed reciprocity
-      
+
       # extract mutuality argument
       s <- "(?:delrecip\\((?:.*mutuality\\s*=\\s*)?)((TRUE)|(FALSE)|T|F)(?:.*\\))"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
@@ -297,7 +297,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         mutuality <- as.logical(sub(s, "\\1", l$rhs.terms[k], perl = TRUE))
       }
-      
+
       # extract lag argument
       s <- "(?:delrecip\\(.*lag\\s*=\\s*)(\\d+)(?:.*\\))"  # get lag
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
@@ -308,7 +308,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       if (lag > length(l$networks) - 1) {
         stop("The 'lag' argument in the 'delrecip' term is too large.")
       }
-      
+
       # process dependent list of networks
       dlr <- l$networks[-(length(l$networks):(length(l$networks) - lag + 1))]
       dlr <- lapply(dlr, function(x) t(as.matrix(x)))
@@ -320,7 +320,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         }
       }
       rm(dlr)
-      
+
       # re-introduce as edgecov and name of model term including brackets
       l[["delrecip"]] <- delrecip
       if (blockdiag == TRUE) {
@@ -330,14 +330,14 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
       l$covnames <- c(l$covnames, "delrecip")
     } else if (grepl("timecov", l$rhs.terms[k])) {  # time covariate
-      
+
       # extract x argument
       s <- "(?:timecov\\((?:.*x\\s*=\\s*)?)(\\w+)(?:.*\\))"
-      if (sub(s, "\\1", l$rhs.terms[k], perl = TRUE) %in% c("minimum", 
+      if (sub(s, "\\1", l$rhs.terms[k], perl = TRUE) %in% c("minimum",
           "maximum", "transform", "min", "max", "trans")) {
         s <- "(?:timecov\\(?:.*x\\s*=\\s*)(\\w+)(?:.*\\))"
       }
-      
+
       # ensure there are no duplicate model term names
       countprevtc <- 1
       if (k > 1) {
@@ -359,7 +359,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         x <- sub(s, "\\1", l$rhs.terms[k], perl = TRUE)
         label <- paste0("timecov", countprevtc, ".", x)
       }
-      
+
       # extract minimum argument
       s <- "(?:timecov\\(.*minimum\\s*=\\s*)(\\d+)(?:.*\\))"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
@@ -367,7 +367,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         minimum <- as.integer(sub(s, "\\1", l$rhs.terms[k], perl = TRUE))
       }
-      
+
       # extract maximum argument
       s <- "(?:timecov\\(.*maximum\\s*=\\s*)(\\d+)(?:.*\\))"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
@@ -375,16 +375,16 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         maximum <- as.integer(sub(s, "\\1", l$rhs.terms[k], perl = TRUE))
       }
-      
+
       # extract transform argument
       s <- "(?:timecov\\(.*transform\\s*=\\s*)(.+?)(?:(?:,|\\)$)]*.*)"
       if (grepl(s, l$rhs.terms[k]) == FALSE) {
         transform <- function(t) t
       } else {
-        transform <- eval(parse(text = sub(s, "\\1", l$rhs.terms[k], 
+        transform <- eval(parse(text = sub(s, "\\1", l$rhs.terms[k],
             perl = TRUE)))
       }
-      
+
       # process dependent list of networks
       if (is.null(x)) {
         covariate <- l[["networks"]]
@@ -393,23 +393,23 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         onlytime <- FALSE
         covariate <- get(x)
       }
-      tc <- timecov(covariate = covariate, minimum = minimum, 
+      tc <- timecov(covariate = covariate, minimum = minimum,
         maximum = maximum, transform = transform, onlytime = onlytime)
-      
+
       # re-introduce as edgecov and name of model term including brackets
       l[[label]] <- tc
       labelsuffix <- sub(s, "\\1", l$rhs.terms[k], perl = TRUE)
-      labelsuffix <- 
+      labelsuffix <-
       if (blockdiag == TRUE) {
         l$rhs.terms[k] <- paste0("edgecov(", label, ")")
       } else {
         l$rhs.terms[k] <- paste0("edgecov(", label, "[[i]])")
       }
       l$covnames <- c(l$covnames, label)
-      
+
       # reporting
       if (verbose == TRUE) {
-        timecovreporting <- matrix(sapply(tc, function(x) mean(x[1, 2])), 
+        timecovreporting <- matrix(sapply(tc, function(x) mean(x[1, 2])),
             nrow = 1)
         colnames(timecovreporting) <- paste0("t=", 1:length(l$networks))
         rownames(timecovreporting) <- ""
@@ -419,7 +419,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     }
   }
   l$covnames <- c("networks", l$covnames)
-  
+
   # fix different lengths of DV/covariate lists due to temporal dependencies
   lengths <- sapply(l$covnames, function(cn) length(l[[cn]]))
   mn <- max(lengths)
@@ -437,15 +437,15 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   }
   t.end <- max(lengths)
   t.start <- t.end - mn + 1
-  
+
   # determine and report initial dimensions of networks and covariates
   if (verbose == TRUE) {
     if (length(l$covnames) > 1) {
-      dimensions <- lapply(lapply(l$covnames, function(x) l[[x]]), 
+      dimensions <- lapply(lapply(l$covnames, function(x) l[[x]]),
           function(y) sapply(y, function(z) dim(as.matrix(z))))
       rownames(dimensions[[1]]) <- paste(l$lhs.original, c("(row)", "(col)"))
       for (i in 2:length(dimensions)) {
-        rownames(dimensions[[i]]) <- c(paste(l$covnames[i], "(row)"), 
+        rownames(dimensions[[i]]) <- c(paste(l$covnames[i], "(row)"),
             paste(l$covnames[i], "(col)"))
       }
       dimensions <- do.call(rbind, dimensions)
@@ -456,15 +456,15 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       message("\nNo covariates provided.")
     }
   }
-  
+
   # determine whether covariate dimensions need to be automatically adjusted
   l$auto.adjust <- FALSE
   if (length(l$covnames) > 1) {
     # check number of rows and columns
-    nr <- lapply(lapply(l$covnames, function(x) l[[x]]), 
+    nr <- lapply(lapply(l$covnames, function(x) l[[x]]),
         function(y) sapply(y, function(z) nrow(as.matrix(z))))
     nr <- do.call(rbind, nr)
-    nc <- lapply(lapply(l$covnames, function(x) l[[x]]), 
+    nc <- lapply(lapply(l$covnames, function(x) l[[x]]),
         function(y) sapply(y, function(z) ncol(as.matrix(z))))
     nc <- do.call(rbind, nc)
     for (i in 1:ncol(nr)) {
@@ -484,12 +484,12 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     if (l$auto.adjust == TRUE) {
       for (i in 1:length(l$covnames)) {
         for (t in 1:l$time.steps) {
-          if (is.null(rownames(as.matrix(l[[l$covnames[i]]][[t]]))) || 
+          if (is.null(rownames(as.matrix(l[[l$covnames[i]]][[t]]))) ||
               is.null(colnames(as.matrix(l[[l$covnames[i]]][[t]])))) {
-            stop(paste0("The dimensions of the covariates differ, but ", 
-                "covariate '", l$covnames[i], 
-                " does not have node labels at t = ", t, 
-                ". Automatic adjustment of dimensions is therefore not ", 
+            stop(paste0("The dimensions of the covariates differ, but ",
+                "covariate '", l$covnames[i],
+                " does not have node labels at t = ", t,
+                ". Automatic adjustment of dimensions is therefore not ",
                 "possible."))
           }
         }
@@ -527,20 +527,20 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
         }
       }
       if (verbose == TRUE && flag == TRUE) {
-        message(paste("\nSame dimensions but different labels across", 
+        message(paste("\nSame dimensions but different labels across",
             "networks within time steps."))
       }
     }
   }
   if (verbose == TRUE && l$auto.adjust == TRUE) {
-    message("Trying to auto-adjust the dimensions of the networks. ", 
+    message("Trying to auto-adjust the dimensions of the networks. ",
         "If this fails, provide conformable matrices or network objects.")
   } else if (verbose == TRUE) {
     message("\nAll networks are conformable.")
   }
-  
+
   # do mutual adjustment of networks and covariates at each time step
-  structzero.df <- data.frame(label = character(), time = integer(), 
+  structzero.df <- data.frame(label = character(), time = integer(),
       object = character(), where = character())
   if (length(l$covnames) > 0 && l$auto.adjust == TRUE) {
     for (i in 1:l$time.steps) {
@@ -558,12 +558,12 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
             nr.k <- nrow(as.matrix(nw.k))
             nc.k <- ncol(as.matrix(nw.k))
             if (is.null(rn.j) || is.null(cn.j)) {
-              stop(paste0("Missing row or column labels in object '", 
-                  l$covnames[j], "'. Provide row and column ", 
+              stop(paste0("Missing row or column labels in object '",
+                  l$covnames[j], "'. Provide row and column ",
                   "labels for all networks and covariates."))
             } else if (is.null(rn.k) || is.null(cn.k)) {
-              stop(paste0("Missing row or column labels in object '", 
-                  l$covnames[k], "'. Provide row and column ", 
+              stop(paste0("Missing row or column labels in object '",
+                  l$covnames[k], "'. Provide row and column ",
                   "labels for all networks and covariates."))
             } else {
               if (is.null(rn.j) && !is.null(rn.k) && nr.j == nr.k) {
@@ -579,45 +579,45 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
                   rownames(nw.k) <- rn.j
                 }
               } else if ((is.null(rn.k) || is.null(rn.j)) && nr.j != nr.k) {
-                stop(paste0("Object '", l$covnames[j], 
-                    "' is incompatible with object '", l$covnames[k], 
+                stop(paste0("Object '", l$covnames[j],
+                    "' is incompatible with object '", l$covnames[k],
                     "' at t = ", i, "."))
               }
               # adjust j to k
-              nw.j.labels <- adjust(nw.j, nw.k, remove = FALSE, 
+              nw.j.labels <- adjust(nw.j, nw.k, remove = FALSE,
                   value = 1, returnlabels = TRUE)
               nw.j <- adjust(nw.j, nw.k, remove = FALSE, value = 1)
               l[[l$covnames[j]]][[i]] <- nw.j
               ro <- nw.j.labels$added.row
               co <- nw.j.labels$added.col
               if (length(ro) > 0) {
-                ro <- data.frame(label = ro, time = rep(i, length(ro)), 
-                    object = rep(l$covnames[j], length(ro)), 
+                ro <- data.frame(label = ro, time = rep(i, length(ro)),
+                    object = rep(l$covnames[j], length(ro)),
                     where = rep("row", length(ro)))
                 structzero.df <- rbind(structzero.df, ro)
               }
               if (length(co) > 0) {
-                co <- data.frame(label = co, time = rep(i, length(co)), 
-                    object = rep(l$covnames[j], length(co)), 
+                co <- data.frame(label = co, time = rep(i, length(co)),
+                    object = rep(l$covnames[j], length(co)),
                     where = rep("col", length(co)))
                 structzero.df <- rbind(structzero.df, co)
               }
               # adjust k back to j
-              nw.k.labels <- adjust(nw.k, nw.j, remove = FALSE, 
+              nw.k.labels <- adjust(nw.k, nw.j, remove = FALSE,
                   value = 1, returnlabels = TRUE)
               nw.k <- adjust(nw.k, nw.j, remove = FALSE, value = 1)
               l[[l$covnames[k]]][[i]] <- nw.k
               ro <- nw.k.labels$added.row
               co <- nw.k.labels$added.col
               if (length(ro) > 0) {
-                ro <- data.frame(label = ro, time = rep(i, length(ro)), 
-                    object = rep(l$covnames[j], length(ro)), 
+                ro <- data.frame(label = ro, time = rep(i, length(ro)),
+                    object = rep(l$covnames[j], length(ro)),
                     where = rep("row", length(ro)))
                 structzero.df <- rbind(structzero.df, ro)
               }
               if (length(co) > 0) {
-                co <- data.frame(label = co, time = rep(i, length(co)), 
-                    object = rep(l$covnames[j], length(co)), 
+                co <- data.frame(label = co, time = rep(i, length(co)),
+                    object = rep(l$covnames[j], length(co)),
                     where = rep("col", length(co)))
                 structzero.df <- rbind(structzero.df, co)
               }
@@ -627,7 +627,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
     }
   }
-  
+
   # check whether all dimensions are cross-sectionally conformable now
   nr.net <- sapply(l$networks, function(x) nrow(as.matrix(x)))
   for (i in 1:length(l$covnames)) {
@@ -636,8 +636,8 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     })
     for (j in 1:l$time.steps) {
       if (nr[j] != nr.net[j]) {
-        stop(paste0("Covariate object '", l$covnames[i], 
-            "' does not have the same number of rows as the dependent ", 
+        stop(paste0("Covariate object '", l$covnames[i],
+            "' does not have the same number of rows as the dependent ",
             "network at time step ", j, "."))
       }
     }
@@ -649,13 +649,13 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     })
     for (j in 1:l$time.steps) {
       if (nc[j] != nc.net[j]) {
-        stop(paste0("Covariate object '", l$covnames[i], 
-            "' does not have the same number of columns as the dependent ", 
+        stop(paste0("Covariate object '", l$covnames[i],
+            "' does not have the same number of columns as the dependent ",
             "network at time step ", j, "."))
       }
     }
   }
-  
+
   # reporting
   if (verbose == TRUE) {
     if (l$auto.adjust == TRUE) {
@@ -672,17 +672,17 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       totrow <- sapply(l$networks, function(x) nrow(as.matrix(x)))
       totcol <- sapply(l$networks, function(x) ncol(as.matrix(x)))
       if (offset == TRUE) {
-        dimensions <- rbind(totrow, totcol, szrownum, szcolnum, 
+        dimensions <- rbind(totrow, totcol, szrownum, szcolnum,
             totrow - szrownum, totcol - szcolnum)
-        rownames(dimensions) <- c("total number of rows", 
-            "total number of columns", "row-wise structural zeros", 
-            "column-wise structural zeros", "remaining rows", 
+        rownames(dimensions) <- c("total number of rows",
+            "total number of columns", "row-wise structural zeros",
+            "column-wise structural zeros", "remaining rows",
             "remaining columns")
       } else {
-        dimensions <- rbind(szrownum, szcolnum, totrow - szrownum, 
+        dimensions <- rbind(szrownum, szcolnum, totrow - szrownum,
             totcol - szcolnum)
-        rownames(dimensions) <- c("maximum deleted nodes (row)", 
-            "maximum deleted nodes (col)", "remaining rows", 
+        rownames(dimensions) <- c("maximum deleted nodes (row)",
+            "maximum deleted nodes (col)", "remaining rows",
             "remaining columns")
       }
       colnames(dimensions) <- paste0("t=", t.start:t.end)
@@ -698,22 +698,21 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       } else {
         message("\nAll nodes are retained.")
       }
-      
+
       message("\nNumber of nodes per time step after adjustment:")
       print(dimensions)
-      
     }
   }
-  
-  l$nvertices <- sapply(l$networks, function(x) c(nrow(as.matrix(x)), 
+
+  l$nvertices <- sapply(l$networks, function(x) c(nrow(as.matrix(x)),
       ncol(as.matrix(x))))
   rownames(l$nvertices) <- c("row", "col")
   colnames(l$nvertices) <- paste0("t=", t.start:t.end)
-  
+
   # create list of offset matrices (required both for offset and node removal)
   l$offsmat <- list()
   for (i in 1:l$time.steps) {
-    mat <- matrix(0, nrow = nrow(as.matrix(l$networks[[i]])), 
+    mat <- matrix(0, nrow = nrow(as.matrix(l$networks[[i]])),
         ncol = ncol(as.matrix(l$networks[[i]])))
     rownames(mat) <- rownames(as.matrix(l$networks[[i]]))
     colnames(mat) <- colnames(as.matrix(l$networks[[i]]))
@@ -722,17 +721,17 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   if (nrow(structzero.df) > 0) {
     for (i in 1:nrow(structzero.df)) {
       if (structzero.df$where[i] == "row") {
-        index <- which(rownames(l$offsmat[[structzero.df$time[i]]]) == 
+        index <- which(rownames(l$offsmat[[structzero.df$time[i]]]) ==
             structzero.df$label[i])
         l$offsmat[[structzero.df$time[i]]][index, ] <- 1
       } else {
-        index <- which(colnames(l$offsmat[[structzero.df$time[i]]]) == 
+        index <- which(colnames(l$offsmat[[structzero.df$time[i]]]) ==
             structzero.df$label[i])
         l$offsmat[[structzero.df$time[i]]][, index] <- 1
       }
     }
   }
-  
+
   # offset preparation or node removal for MPLE
   if (offset == TRUE) {
     # add offset to formula and reassemble formula
@@ -743,7 +742,17 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     if (l$auto.adjust == TRUE) {
       if (l$bipartite) {
         l$offsmat <- lapply(l$offsmat, function(x) {
-          x[-which(apply(x, 1, function(y) all(y == 1))), -which(apply(x, 2, function(y) all(y == 1)))]
+          x_ind <- which(apply(x, 1, function(y) all(y == 1)))
+          y_ind <- which(apply(x, 2, function(y) all(y == 1)))
+          if (length(x_ind) > 0 && length(y_ind) > 0) {
+            x[-x_ind, -y_ind]
+          } else if (length(x_ind) > 0) {
+            x[-x_ind, ]
+          } else if (length(y_ind) > 0) {
+            x[, -y_ind]
+          } else {
+            x
+          }
         })
       } else {
         l$offsmat <- suppressMessages(handleMissings(l$offsmat, na = 1, method = "remove"))
@@ -753,14 +762,14 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       }
     }
   }
-  
+
   # determine and report initial dimensions of networks and covariates
   if (verbose == TRUE && length(l$covnames) > 1) {
-    dimensions <- lapply(lapply(l$covnames, function(x) l[[x]]), 
+    dimensions <- lapply(lapply(l$covnames, function(x) l[[x]]),
         function(y) sapply(y, function(z) dim(as.matrix(z))))
     rownames(dimensions[[1]]) <- paste(l$lhs.original, c("(row)", "(col)"))
     for (i in 2:length(dimensions)) {
-      rownames(dimensions[[i]]) <- c(paste(l$covnames[i], "(row)"), 
+      rownames(dimensions[[i]]) <- c(paste(l$covnames[i], "(row)"),
           paste(l$covnames[i], "(col)"))
     }
     dimensions <- do.call(rbind, dimensions)
@@ -768,7 +777,7 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
     message("\nDimensions of the network and covariates after adjustment:")
     print(dimensions)
   }
-  
+
   # assemble formula
   rhs <- l$rhs.terms[1]
   if (length(rhs.operators) > 0) {
@@ -778,11 +787,11 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
   }
   f <- paste(lhs, tilde, rhs)
   l$form <- as.formula(f, env = environment())  # l$form <- as.formula(f)
-  
+
   # for mtergm estimation using MCMC: create block-diagonal matrices
   if (blockdiag == TRUE) {
     if (l$bipartite == TRUE) {
-      stop(paste("MCMC estimation is currently only supported for one-mode", 
+      stop(paste("MCMC estimation is currently only supported for one-mode",
           "networks. Use the btergm function instead."))
     }
     # also save formula without time indices for ergm estimation
@@ -814,20 +823,20 @@ tergmprepare <- function(formula, offset = TRUE, blockdiag = FALSE,
       for (i in 1:length(l$networks)) {
         attrib <- list()
         for (j in 1:length(attrnames)) {
-          attrib[[j]] <- network::get.vertex.attribute(l$networks[[i]], 
+          attrib[[j]] <- network::get.vertex.attribute(l$networks[[i]],
               attrnames[j])
         }
         attributes[[i]] <- attrib
         l$networks[[i]] <- as.matrix(l$networks[[i]])
       }
-      l$networks <- network::network(as.matrix(Matrix::bdiag(l$networks)), 
+      l$networks <- network::network(as.matrix(Matrix::bdiag(l$networks)),
           directed = l$directed, bipartite = l$bipartite)
       for (i in 1:length(attrnames)) {  # collate attributes and merge back in
         attrib <- unlist(lapply(attributes, function(x) x[[i]]))
         network::set.vertex.attribute(l$networks, attrnames[i], attrib)
       }
     } else {  # matrix
-      l$networks <- network::network(as.matrix(Matrix::bdiag(l$networks)), 
+      l$networks <- network::network(as.matrix(Matrix::bdiag(l$networks)),
           directed = l$directed, bipartite = l$bipartite)
     }
     if (verbose == TRUE) {
