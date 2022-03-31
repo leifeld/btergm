@@ -113,12 +113,14 @@ political process that was leading to a new chemicals law at the time being.
 \examples{
 \dontrun{
 # Replication code for Leifeld and Schneider (2012), AJPS.
-# Note that the estimates can only be reproduced approximately 
+# Note that the estimates can only be reproduced approximately
 # due to internal changes in the statnet package.
 
 # preparatory steps
-library("statnet")
-library("xergm")
+library("network")
+library("sna")
+library("ergm")
+library("btergm")
 library("texreg")
 seed <- 12345
 set.seed(seed)
@@ -136,54 +138,54 @@ types <- types[, 1]  # convert to vector
 # create network objects and store attributes
 nw.pol <- network(pol) # political/stratgic information exchange
 set.vertex.attribute(nw.pol, "orgtype", types)
-set.vertex.attribute(nw.pol, "betweenness", 
+set.vertex.attribute(nw.pol, "betweenness",
     betweenness(nw.pol)) # centrality
 
 nw.sci <- network(sci) # technical/scientific information exchange
 set.vertex.attribute(nw.sci, "orgtype", types)
-set.vertex.attribute(nw.sci, "betweenness", 
+set.vertex.attribute(nw.sci, "betweenness",
     betweenness(nw.sci)) # centrality
 
 # ERGM: model 1 in the AJPS paper; only preference similarity
-model1 <- ergm(nw.pol ~ edges + edgecov(prefsim), 
+model1 <- ergm(nw.pol ~ edges + edgecov(prefsim),
     control = control.ergm(seed = seed))
 summary(model1)
 
 # ERGM: model 2 in the AJPS paper; complete model
-model2 <- ergm(nw.pol ~ 
-    edges + 
-    edgecov(prefsim) + 
-    mutual + 
-    nodemix("orgtype", base = -7) + 
-    nodeifactor("orgtype", base = -1) + 
-    nodeofactor("orgtype", base = -5) + 
-    edgecov(committee) + 
-    edgecov(nw.sci) + 
-    edgecov(infrep) + 
-    gwesp(0.1, fixed = TRUE) + 
-    gwdsp(0.1, fixed = TRUE), 
+model2 <- ergm(nw.pol ~
+    edges +
+    edgecov(prefsim) +
+    mutual +
+    nodemix("orgtype", base = -7) +
+    nodeifactor("orgtype", base = -1) +
+    nodeofactor("orgtype", base = -5) +
+    edgecov(committee) +
+    edgecov(nw.sci) +
+    edgecov(infrep) +
+    gwesp(0.1, fixed = TRUE) +
+    gwdsp(0.1, fixed = TRUE),
     control = control.ergm(seed = seed)
 )
 summary(model2)
 
 # ERGM: model 3 in the AJPS paper; only preference similarity
-model3 <- ergm(nw.sci ~ edges + edgecov(prefsim), 
+model3 <- ergm(nw.sci ~ edges + edgecov(prefsim),
     control = control.ergm(seed = seed))
 summary(model3)
 
 # ERGM: model 4 in the AJPS paper; complete model
-model4 <- ergm(nw.sci ~ 
-    edges + 
-    edgecov(prefsim) + 
-    mutual + 
-    nodemix("orgtype", base = -7) + 
-    nodeifactor("orgtype", base = -1) + 
-    nodeofactor("orgtype", base = -5) + 
-    edgecov(committee) + 
-    edgecov(nw.pol) + 
-    edgecov(infrep) + 
-    gwesp(0.1, fixed = TRUE) + 
-    gwdsp(0.1, fixed = TRUE), 
+model4 <- ergm(nw.sci ~
+    edges +
+    edgecov(prefsim) +
+    mutual +
+    nodemix("orgtype", base = -7) +
+    nodeifactor("orgtype", base = -1) +
+    nodeofactor("orgtype", base = -5) +
+    edgecov(committee) +
+    edgecov(nw.pol) +
+    edgecov(infrep) +
+    gwesp(0.1, fixed = TRUE) +
+    gwdsp(0.1, fixed = TRUE),
     control = control.ergm(seed = seed)
 )
 summary(model4)

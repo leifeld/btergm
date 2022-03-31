@@ -1,17 +1,17 @@
 #' Redefine S3 as S4 class for proper handling as part of the \code{mtergm}
 #' class.
-#' 
+#'
 #' @noRd
 setOldClass(c("ergm", "ergm"))
 
 #' An S4 Class to represent a fitted TERGM by MCMC-MLE
-#' 
+#'
 #' An S4 class to represent a fitted TERGM by MCMC-MLE.
-#' 
+#'
 #' \code{mtergm} objects result from MCMC-MLE-based estimation of a TERGM via
 #' the \code{\link{mtergm}} function. They contain the coefficients, standard
 #' errors, and p-values, among other details.
-#' 
+#'
 #' @slot coef Object of class \code{"numeric"}. The coefficients.
 #' @slot se Object of class \code{"numeric"}. The standard errors.
 #' @slot pval Object of class \code{"numeric"}. The p-values.
@@ -40,31 +40,31 @@ setOldClass(c("ergm", "ergm"))
 #'   function.
 #'
 #' @author Philip Leifeld
-#' 
+#'
 #' @family tergm-classes
-#' 
+#'
 #' @export
-setClass(Class = "mtergm", 
+setClass(Class = "mtergm",
     slots = c(
-        coef = "numeric", 
-        se = "numeric", 
-        pval = "numeric", 
-        nobs = "numeric", 
+        coef = "numeric",
+        se = "numeric",
+        pval = "numeric",
+        nobs = "numeric",
         time.steps = "numeric",
         formula = "formula",
-        formula2 = "character", 
-        auto.adjust = "logical", 
-        offset = "logical", 
-        directed = "logical", 
-        bipartite = "logical", 
-        estimate = "character", 
-        loglik = "numeric", 
-        aic = "numeric", 
-        bic = "numeric", 
-        ergm = "ergm", 
-        nvertices = "matrix", 
+        formula2 = "character",
+        auto.adjust = "logical",
+        offset = "logical",
+        directed = "logical",
+        bipartite = "logical",
+        estimate = "character",
+        loglik = "numeric",
+        aic = "numeric",
+        bic = "numeric",
+        ergm = "ergm",
+        nvertices = "matrix",
         data = "list"
-    ), 
+    ),
     validity = function(object) {
         if (!"numeric" %in% class(object@coef)) {
           stop("'coef' must be a 'numeric' vector.")
@@ -121,22 +121,22 @@ setClass(Class = "mtergm",
 #' @inheritParams createBtergm
 #'
 #' @author Philip Leifeld
-#' 
+#'
 #' @family tergm-classes
-createMtergm <- function(coef, se, pval, nobs, time.steps, formula, formula2, 
-    auto.adjust, offset, directed, bipartite, estimate, loglik, aic, bic, 
+createMtergm <- function(coef, se, pval, nobs, time.steps, formula, formula2,
+    auto.adjust, offset, directed, bipartite, estimate, loglik, aic, bic,
     ergm, nvertices, data) {
-  new("mtergm", coef = coef, se = se, pval = pval, nobs = nobs, 
-      time.steps = time.steps, formula = formula, formula2 = formula2, 
-      auto.adjust = auto.adjust, offset = offset, directed = directed, 
-      bipartite = bipartite, estimate = estimate, loglik = loglik, aic = aic, 
+  new("mtergm", coef = coef, se = se, pval = pval, nobs = nobs,
+      time.steps = time.steps, formula = formula, formula2 = formula2,
+      auto.adjust = auto.adjust, offset = offset, directed = directed,
+      bipartite = bipartite, estimate = estimate, loglik = loglik, aic = aic,
       bic = bic, ergm = ergm, nvertices = nvertices, data = data)
 }
 
 #' @describeIn mtergm-class Show the coefficients of an \code{mtergm} object.
-#' 
+#'
 #' @param object An \code{mtergm} object.
-#' 
+#'
 #' @export
 setMethod(f = "show", signature = "mtergm", definition = function(object) {
     message("MLE Coefficients:")
@@ -145,14 +145,14 @@ setMethod(f = "show", signature = "mtergm", definition = function(object) {
 )
 
 #' @describeIn mtergm-class Return the coefficients of an \code{mtergm} object.
-#' 
+#'
 #' @param object An \code{mtergm} object.
 #' @param invlogit Apply inverse logit transformation to the estimates and/or
 #'   confidence intervals? That is, \eqn{\frac{1}{1 + \exp(-x)}}, where \eqn{x}
 #'   is the respective value.
-#' 
+#'
 #' @export
-setMethod(f = "coef", signature = "mtergm", definition = function(object, 
+setMethod(f = "coef", signature = "mtergm", definition = function(object,
       invlogit = FALSE, ...) {
     if (invlogit == FALSE) {
       return(object@coef)
@@ -163,9 +163,9 @@ setMethod(f = "coef", signature = "mtergm", definition = function(object,
 )
 
 #' @describeIn mtergm-class Return the coefficients of an \code{mtergm} object.
-#' 
+#'
 #' @param object An \code{mtergm} object.
-#' 
+#'
 #' @export
 setMethod(f = "nobs", signature = "mtergm", definition = function(object) {
     n <- object@nobs
@@ -176,29 +176,29 @@ setMethod(f = "nobs", signature = "mtergm", definition = function(object) {
 
 #' @describeIn mtergm-class Return the number of time steps saved in an
 #'   \code{mtergm} object.
-#' 
+#'
 #' @param object An \code{mtergm} object.
-#' 
+#'
 #' @export
 timesteps.mtergm <- function(object) {
   return(object@time.steps)
 }
 
 #' @describeIn mtergm-class Return the coefficients of an \code{mtergm} object.
-#' 
+#'
 #' @param object An \code{mtergm} object.
 #' @param ... Currently not in use.
-#' 
+#'
 #' @export
-setMethod(f = "summary", signature = "mtergm", definition = function(object, 
+setMethod(f = "summary", signature = "mtergm", definition = function(object,
     ...) {
     message(paste(rep("=", 26), collapse = ""))
     message("Summary of model fit")
     message(paste(rep("=", 26), collapse = ""))
-    message(paste("\nFormula:  ", gsub("\\s+", " ", 
+    message(paste("\nFormula:  ", gsub("\\s+", " ",
         paste(deparse(object@formula), collapse = "")), "\n"))
     message(paste("Time steps:", object@time.steps, "\n"))
-    
+
     message("Monte Carlo MLE Results:")
     cmat <- cbind(object@coef, object@se, object@coef / object@se, object@pval)
     colnames(cmat) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
@@ -236,42 +236,42 @@ setMethod(f = "summary", signature = "mtergm", definition = function(object,
 #' @examples
 #' library("network")
 #' set.seed(5)
-#' 
+#'
 #' networks <- list()
-#' for (i in 1:10) {          # create 10 random networks with 10 actors
+#' for (i in 1:10) {              # create 10 random networks with 10 actors
 #'   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
-#'   diag(mat) <- 0           # loops are excluded
-#'   nw <- network(mat)       # create network object
-#'   networks[[i]] <- nw      # add network to the list
+#'   diag(mat) <- 0               # loops are excluded
+#'   nw <- network::network(mat)  # create network object
+#'   networks[[i]] <- nw          # add network to the list
 #' }
-#' 
+#'
 #' covariates <- list()
-#' for (i in 1:10) {          # create 10 matrices as covariate
+#' for (i in 1:10) {              # create 10 matrices as covariate
 #'   mat <- matrix(rnorm(100), nrow = 10, ncol = 10)
-#'   covariates[[i]] <- mat   # add matrix to the list
+#'   covariates[[i]] <- mat       # add matrix to the list
 #' }
-#' 
+#'
 #' \dontrun{
 #' fit2 <- mtergm(networks ~ edges + istar(2) + edgecov(covariates))
 #' summary(fit2)
 #' }
-#' 
+#'
 #' # For examples with real data, see help("knecht") or help("alliances").
-#' 
+#'
 #' @importFrom ergm ergm
 #' @export
-mtergm <- function(formula, constraints = ~ ., returndata = FALSE, 
+mtergm <- function(formula, constraints = ~ ., returndata = FALSE,
     verbose = TRUE, ...) {
-  
+
   # call tergmprepare and integrate results as a child environment in the chain
-  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE, 
+  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = TRUE,
       verbose = verbose)
   for (i in 1:length(l$covnames)) {
     assign(l$covnames[i], l[[l$covnames[i]]])
   }
   assign("offsmat", l$offsmat)
   form <- as.formula(l$form, env = environment())
-  
+
   # compile data for creating an mtergm object later; return if necessary
   data <- list()
   for (i in 1:length(l$covnames)) {
@@ -282,16 +282,16 @@ mtergm <- function(formula, constraints = ~ ., returndata = FALSE,
     message("Returning a list with data.")
     return(data)
   }
-  
+
   if (verbose == TRUE) {
     message("Estimating...")
-    e <- ergm(form, offset.coef = -Inf, constraints = constraints, 
+    e <- ergm(form, offset.coef = -Inf, constraints = constraints,
         eval.loglik = TRUE, ...)
   } else {
-    e <- suppressMessages(ergm(form, offset.coef = -Inf, 
+    e <- suppressMessages(ergm(form, offset.coef = -Inf,
         constraints = constraints, eval.loglik = TRUE, ...))
   }
-  
+
   # get coefficients and other details
   cf <- coef(e)
   mat <- as.matrix(l$networks)
@@ -305,32 +305,32 @@ mtergm <- function(formula, constraints = ~ ., returndata = FALSE,
   se <- sqrt(diag(asyse))
   tval <- coef(e) / se
   pval <- 2 * pt(q = abs(tval), df = rdf, lower.tail = FALSE)
-  
+
   # create mtergm object
   object <- createMtergm(
       coef = cf[-length(cf)],  # do not include NA value for offset matrix
-      se = se[-length(se)], 
-      pval = pval[-length(pval)], 
-      nobs = dyads, 
+      se = se[-length(se)],
+      pval = pval[-length(pval)],
+      nobs = dyads,
       time.steps = l$time.steps,
-      formula = formula, 
-      formula2 = l$form, 
-      auto.adjust = l$auto.adjust, 
-      offset = TRUE, 
-      directed = l$directed, 
-      bipartite = l$bipartite, 
+      formula = formula,
+      formula2 = l$form,
+      auto.adjust = l$auto.adjust,
+      offset = TRUE,
+      directed = l$directed,
+      bipartite = l$bipartite,
       estimate = e$estimate,  # MLE or MPLE
-      loglik = e$mle.lik[1], 
-      aic = AIC(e), 
-      bic = BIC(e), 
-      ergm = e, 
-      nvertices = l$nvertices, 
+      loglik = e$mle.lik[1],
+      aic = AIC(e),
+      bic = BIC(e),
+      ergm = e,
+      nvertices = l$nvertices,
       data = data
   )
-  
+
   if (verbose == TRUE) {
     message("Done.")
   }
-  
+
   return(object)
 }
