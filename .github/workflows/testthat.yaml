@@ -6,10 +6,10 @@ on:
     branches:
       - master
 
-name: testing
+name: testthat
 
 jobs:
-  testing:
+  testthat:
     runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -24,7 +24,7 @@ jobs:
 
       - name: Query dependencies
         run: |
-          install.packages(c("devtools", "covr"))
+          install.packages(c("devtools", "covr", "remotes", "withr", "testthat"))
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
         shell: Rscript {0}
 
@@ -37,7 +37,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          devtools::install_deps(dependencies = TRUE)
+          remotes::install_deps(dependencies = TRUE)
+          install.packages(c("Bergm", "RSiena", "fastglm", "ggplot2"))
         shell: Rscript {0}
 
       - name: Unit testing

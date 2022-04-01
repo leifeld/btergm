@@ -1,5 +1,3 @@
-# For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
-# https://community.rstudio.com/new-topic?category=Package%20development&tags=github-actions
 on:
   push:
     branches:
@@ -10,7 +8,7 @@ on:
       - main
       - master
 
-name: R-CMD-check
+name: CRAN check
 
 jobs:
   R-CMD-check:
@@ -66,6 +64,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          install.packages(c("Bergm", "RSiena", "fastglm", "ggplot2"))
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
