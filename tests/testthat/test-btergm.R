@@ -184,7 +184,7 @@ test_that("tbergm estimation works", {
   expect_length(fit_b@bergm$ess, 4)
   expect_length(fit_b@data, 3)
   expect_equal(dim(as.matrix(fit_b@bergm$Theta)), c(8000, 4))
-  expect_silent(g <- gof(fit_b, verbose = FALSE))
+  expect_silent(g <- btergm::gof(fit_b, verbose = FALSE))
   expect_s3_class(g, "gof")
   expect_length(g, 7)
   expect_equivalent(nobs(fit_b), c(10, 900))

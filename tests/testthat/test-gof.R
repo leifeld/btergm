@@ -61,7 +61,7 @@ test_that("edgeprob works with ergm, btergm, and mtergm objects, with and withou
   expect_equivalent(dim(ep1), c(13050, 11))
 
   # btergm with variable GW decay: currently unsupported in edgeprob
-  expect_error(fit2 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(fixed = FALSE),
+  expect_warning(fit2 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(fixed = FALSE),
                    R = 20, verbose = FALSE), "NAs generated during bootstrap")
 
   # mtergm with fixed GW decay
