@@ -677,7 +677,7 @@ edgeprob <- function (object, verbose = FALSE) {
           colnames(dyads)[newColumns[j]] <- names(newColumns)[j]
         }
       }
-      notPresentAnymore <- which(sapply(colnames(dyads), function(x) x %in% colnames(mpli$predictor)) == FALSE)
+      notPresentAnymore <- which(sapply(colnames(dyads)[1:(ncol(dyads) - 2)], function(x) x %in% colnames(mpli$predictor)) == FALSE)
       if (length(notPresentAnymore) > 0) {
         for (j in 1:length(notPresentAnymore)) {
           mpli$predictor <- cbind(mpli$predictor[, 1:(notPresentAnymore[j] - 1)], 0, mpli$predictor[, notPresentAnymore[j]:ncol(mpli$predictor)])
