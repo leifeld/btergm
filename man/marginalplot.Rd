@@ -90,12 +90,12 @@ priorates.icov <- matrix(rep(priorates, n), ncol = n, byrow = TRUE)
 interac <- wealth.icov * priorates.icov
 
 # estimate model with interaction effect
-model <- ergm(flobusiness ~ edges + esp(1) + edgecov(wealth.icov) 
+model <- ergm(flobusiness ~ edges + esp(1) + edgecov(wealth.icov)
                 + edgecov(priorates.icov) + edgecov(interac))
 
 # plot the interaction (note the additional optional ggplot2 elements)
-marginalplot(model, var1 = "edgecov.wealth.icov", 
-             var2 = "edgecov.priorates.icov", inter = "edgecov.interac", 
+marginalplot(model, var1 = "edgecov.wealth.icov",
+             var2 = "edgecov.priorates.icov", inter = "edgecov.interac",
              color = "darkred", rug = TRUE, point = FALSE,
              xlab = "Priorates", ylab = "Wealth") +
   ggplot2::theme_bw() +

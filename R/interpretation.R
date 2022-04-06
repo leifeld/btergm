@@ -1,7 +1,7 @@
 #' Micro-Level Interpretation of (T)ERGMs
-#' 
+#'
 #' Micro-level interpretation of (T)ERGMs.
-#' 
+#'
 #' The \code{interpret} function facilitates interpretation of ERGMs and TERGMs
 #' at the micro level, as described in Desmarais and Cranmer (2012). There are
 #' methods for \code{ergm} objects, \code{btergm} objects, and \code{mtergm}
@@ -13,7 +13,7 @@
 #' disconnected) at \code{t = 1} (i.e., what is the amount of tie stability)?
 #' These tie- or edge-level questions can be answered if the \code{type = "tie"}
 #' argument is used.
-#' 
+#'
 #' Another example: What is the probability that node \code{i} has a tie to node
 #' \code{j} but not vice-versa? Or that \code{i} and \code{j} maintain a
 #' reciprocal tie? Or that they are disconnected? How much more or less likely
@@ -21,13 +21,13 @@
 #' the model is fixed at \code{0} (compared to the model that includes the
 #' estimated parameter for reciprocity)? See example below. These dyad-level
 #' questions can be answered if the \code{type = "dyad"} argument is used.
-#' 
+#'
 #' Or what is the probability that a specific node \code{i} is connected to
 #' nodes \code{j1} and \code{j2} but not to \code{j5} and \code{j7}? And how
 #' likely is any node \code{i} to be connected to exactly four \code{j} nodes?
 #' These node-level questions (focusing on the ties of node \code{i} or node
 #' \code{j}) can be answered by using the \code{type = "node"} argument.
-#' 
+#'
 #' The typical procedure is to manually enumerate all dyads or
 #' sender-receiver-time combinations with certain properties and repeat the same
 #' thing with some alternative properties for contrasting the two groups. Then
@@ -39,10 +39,10 @@
 #' distributions of edge probabilities for the two sets of dyads, and create
 #' boxplots or barplots with confidence intervals for the two types of dyads in
 #' order to contrast edge probabilities for male versus female same-sex dyads.
-#' 
+#'
 #' See also the \code{\link{edgeprob}} function for automatic computation of all
 #' dyadic edge probabilities.
-#' 
+#'
 #' @param object An \code{ergm}, \code{btergm}, or \code{mtergm} object.
 #' @param formula The formula to be used for computing probabilities. By
 #'   default, the formula embedded in the model object is retrieved and used.
@@ -103,7 +103,7 @@
 #' of Exponential Random Graph Models with Application to Estuary Networks.
 #' \emph{Policy Studies Journal} 40(3): 402--434.
 #' \doi{10.1111/j.1541-0072.2012.00459.x}.
-#' 
+#'
 #' Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017): Temporal
 #' Exponential Random Graph Models with btergm: Estimation and Bootstrap
 #' Confidence Intervals. \emph{Journal of Statistical Software} 83(6): 1--36.
@@ -114,7 +114,7 @@
 #' Modeling Dynamics of Peer Popularity Using Inferential Network Analysis.
 #' \emph{Personality and Social Psychology Bulletin} 42(11): 1588--1599.
 #' \doi{10.1177/0146167216666265}.
-#' 
+#'
 #' @examples
 #' ##### The following example is a TERGM adaptation of the #####
 #' ##### dyad-level example provided in figure 5(c) on page #####
@@ -125,7 +125,7 @@
 #' ##### where the reciprocity effect is fixed at 0 based   #####
 #' ##### on 20 randomly selected dyads per time step. The   #####
 #' ##### results are visualized using a grouped bar plot.   #####
-#' 
+#'
 #' \dontrun{
 #'   # create toy dataset and fit a model
 #'   networks <- list()
@@ -136,11 +136,11 @@
 #'     networks[[i]] <- nw      # add network to the list
 #'   }
 #'   fit <- btergm(networks ~ edges + istar(2) + mutual, R = 200)
-#'   
+#'
 #'   # extract coefficients and create null hypothesis vector
 #'   null <- coef(fit)  # estimated coefs
 #'   null[3] <- 0       # set mutual term = 0
-#'   
+#'
 #'   # sample 20 dyads per time step and compute probability ratios
 #'   probabilities <- matrix(nrow = 9, ncol = length(networks))
 #'   # nrow = 9 because three probabilities + upper and lower CIs
@@ -162,7 +162,7 @@
 #'       j <- arrayInd(samp[k], d)[1, 2]
 #'       # run interpretation function with estimated coefs and mutual = 0:
 #'       int.est <- interpret(fit, type = "dyad", i = i, j = j, t = t)
-#'       int.null <- interpret(fit, coefficients = null, type = "dyad", 
+#'       int.null <- interpret(fit, coefficients = null, type = "dyad",
 #'                             i = i, j = j, t = t)
 #'       prob.est.00 <- c(prob.est.00, int.est[[1]][1, 1])
 #'       prob.est.11 <- c(prob.est.11, int.est[[1]][2, 2])
@@ -189,23 +189,23 @@
 #'     probabilities[8, t] <- ci.01[2]              # upper 01 conf. interval
 #'     probabilities[9, t] <- ci.11[2]              # upper 11 conf. interval
 #'   }
-#'   
+#'
 #'   # create barplots from probability ratios and CIs
 #'   require("gplots")
-#'   bp <- barplot2(probabilities[1:3, ], beside = TRUE, plot.ci = TRUE, 
-#'                  ci.l = probabilities[4:6, ], ci.u = probabilities[7:9, ], 
-#'                  col = c("tan", "tan2", "tan3"), ci.col = "grey40", 
+#'   bp <- barplot2(probabilities[1:3, ], beside = TRUE, plot.ci = TRUE,
+#'                  ci.l = probabilities[4:6, ], ci.u = probabilities[7:9, ],
+#'                  col = c("tan", "tan2", "tan3"), ci.col = "grey40",
 #'                  xlab = "Dyadic tie values", ylab = "Estimated Prob./Null Prob.")
 #'   mtext(1, at = bp, text = c("(0,0)", "(0,1)", "(1,1)"), line = 0, cex = 0.5)
-#'   
-#'   
+#'
+#'
 #'   ##### The following examples illustrate the behavior of  #####
 #'   ##### the interpret function with undirected and/or      #####
 #'   ##### bipartite graphs with or without structural zeros. #####
-#'   
+#'
 #'   library("statnet")
 #'   library("btergm")
-#'   
+#'
 #'   # micro-level interpretation for undirected network with structural zeros
 #'   set.seed(12345)
 #'   mat <- matrix(rbinom(400, 1, 0.1), nrow = 20, ncol = 20)
@@ -220,31 +220,31 @@
 #'   offsetmat[10, 7] <- 1
 #'   offsetmat[15, 3] <- 1
 #'   offsetmat[18, 4] < 1
-#'   model <- ergm(nw ~ edges + kstar(2) + edgecov(cv) + offset(edgecov(offsetmat)), 
+#'   model <- ergm(nw ~ edges + kstar(2) + edgecov(cv) + offset(edgecov(offsetmat)),
 #'                 offset.coef = -Inf)
 #'   summary(model)
-#'   
-#'   # tie-level interpretation (note that dyad interpretation would not make any 
+#'
+#'   # tie-level interpretation (note that dyad interpretation would not make any
 #'   # sense in an undirected network):
 #'   interpret(model, type = "tie", i = 1, j = 2)  # 0.28 (= normal dyad)
 #'   interpret(model, type = "tie", i = 1, j = 5)  # 0.00 (= structural zero)
-#'   
-#'   # node-level interpretation; note the many 0 probabilities due to the 
-#'   # structural zeros; also note the warning message that the probabilities may 
-#'   # be slightly imprecise because -Inf needs to be approximated by some large 
+#'
+#'   # node-level interpretation; note the many 0 probabilities due to the
+#'   # structural zeros; also note the warning message that the probabilities may
+#'   # be slightly imprecise because -Inf needs to be approximated by some large
 #'   # negative number (-9e8):
 #'   interpret(model, type = "node", i = 1, j = 3:5)
-#'   
+#'
 #'   # repeat the same exercise for a directed network
 #'   nw <- network(mat, directed = TRUE, bipartite = FALSE)
-#'   model <- ergm(nw ~ edges + istar(2) + edgecov(cv) + offset(edgecov(offsetmat)), 
+#'   model <- ergm(nw ~ edges + istar(2) + edgecov(cv) + offset(edgecov(offsetmat)),
 #'                 offset.coef = -Inf)
 #'   interpret(model, type = "tie", i = 1, j = 2)  # 0.13 (= normal dyad)
 #'   interpret(model, type = "tie", i = 1, j = 5)  # 0.00 (= structural zero)
 #'   interpret(model, type = "dyad", i = 1, j = 2)  # results for normal dyad
 #'   interpret(model, type = "dyad", i = 1, j = 5)  # results for i->j struct. zero
 #'   interpret(model, type = "node", i = 1, j = 3:5)
-#'   
+#'
 #'   # micro-level interpretation for bipartite graph with structural zeros
 #'   set.seed(12345)
 #'   mat <- matrix(rbinom(200, 1, 0.1), nrow = 20, ncol = 10)
@@ -259,24 +259,24 @@
 #'   offsetmat[10, 7] <- 1
 #'   offsetmat[15, 3] <- 1
 #'   offsetmat[18, 4] < 1
-#'   model <- ergm(nw ~ edges + b1star(2) + edgecov(cv) 
+#'   model <- ergm(nw ~ edges + b1star(2) + edgecov(cv)
 #'                 + offset(edgecov(offsetmat)), offset.coef = -Inf)
 #'   summary(model)
-#'   
+#'
 #'   # tie-level interpretation; note the index for the second mode starts with 21
 #'   interpret(model, type = "tie", i = 1, j = 21)
-#'   
-#'   # dyad-level interpretation does not make sense because network is undirected; 
-#'   # node-level interpretation prints warning due to structural zeros, but 
-#'   # computes the correct probabilities (though slightly imprecise because -Inf 
+#'
+#'   # dyad-level interpretation does not make sense because network is undirected;
+#'   # node-level interpretation prints warning due to structural zeros, but
+#'   # computes the correct probabilities (though slightly imprecise because -Inf
 #'   # is approximated by some small number:
 #'   interpret(model, type = "node", i = 1, j = 21:25)
-#'   
+#'
 #'   # compute all dyadic probabilities
 #'   dyads <- edgeprob(model)
 #'   dyads
 #' }
-#' 
+#'
 #' @docType methods
 #' @aliases interpret-methods
 #' @family interpretation
@@ -285,14 +285,14 @@ setGeneric("interpret", function(object, ...) standardGeneric("interpret"),
            package = "btergm")
 
 #' Internal helper function for doing the actual interpretation computations
-#' 
+#'
 #' Internal helper function for doing the actual interpretation computations.
-#' 
+#'
 #' Takes the output of \code{\link{tergmprepare}} and a few parameters to
 #' produce micro-level interpretation results. This is an internal worker
 #' function. Users should call the high-level functions \code{interpret} and
 #' \code{edgeprob} instead.
-#' 
+#'
 #' @param l List of networks, with possibly just one network in this list, and a
 #'   formula (\code{l$form}, with temporal indices, as prepared by
 #'   \code{\link{tergmprepare}}).
@@ -301,7 +301,7 @@ setGeneric("interpret", function(object, ...) standardGeneric("interpret"),
 #'
 #' @importFrom utils combn
 #' @importFrom network is.network is.directed
-#' 
+#'
 #' @noRd
 dointerpret <- function(l, coefficients, type, i, j, t) {
   for (cv in 1:length(l$covnames)) {
@@ -309,7 +309,7 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
   }
   assign("offsmat", l$offsmat)
   form <- as.formula(l$form)
-  
+
   # prepare i and j
   if (!is.list(i)) {
     i <- rep(list(i), length(l$networks))
@@ -341,7 +341,7 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
   }
   node_i <- i
   node_j <- j
-  
+
   if (type == "tie") {
     results <- numeric()
     for (i in t) {
@@ -382,25 +382,25 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
   } else if (type == "dyad") {
     if (-Inf %in% coefficients) {
       coefficients[coefficients == -Inf] <- -9e8
-      warning(paste("There are -Inf coefficients (possibly due to", 
-          "offset terms). To yield interpretable results, -Inf is", 
-          "approximated by a large negative number (-9e8). Note that", 
+      warning(paste("There are -Inf coefficients (possibly due to",
+          "offset terms). To yield interpretable results, -Inf is",
+          "approximated by a large negative number (-9e8). Note that",
           "this may be imprecise."))
     }
     if (Inf %in% coefficients) {
       coefficients[coefficients == Inf] <- 9e8
-      warning(paste("There are +Inf coefficients (possibly due to", 
-          "offset terms). To yield interpretable results, +Inf is", 
-          "approximated by a large positive number (9e8). Note that", 
+      warning(paste("There are +Inf coefficients (possibly due to",
+          "offset terms). To yield interpretable results, +Inf is",
+          "approximated by a large positive number (9e8). Note that",
           "this may be imprecise."))
     }
     results <- list()
     for (i in t) {
       # print error if undirected
-      if ((is.network(l$networks[[i]]) && !is.directed(l$networks[[i]])) || 
+      if ((is.network(l$networks[[i]]) && !is.directed(l$networks[[i]])) ||
           (is.matrix(l$networks[[i]]) && is.mat.directed(l$networks[[i]]) == FALSE)) {
-        stop(paste0("Network at t=", i, " is undirected. Dyadic ", 
-            "probabilities do not make sense in undirected networks. Try ", 
+        stop(paste0("Network at t=", i, " is undirected. Dyadic ",
+            "probabilities do not make sense in undirected networks. Try ",
             "type = \"tie\" instead!"))
       }
       eta_mat <- matrix(NA, 2, 2)
@@ -433,16 +433,16 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
   } else if (type == "node") {
     if (-Inf %in% coefficients) {
       coefficients[coefficients == -Inf] <- -9e8
-      warning(paste("There are -Inf coefficients (possibly due to", 
-          "offset terms). To yield interpretable results, -Inf is", 
-          "approximated by a large negative number (-9e8). Note that", 
+      warning(paste("There are -Inf coefficients (possibly due to",
+          "offset terms). To yield interpretable results, -Inf is",
+          "approximated by a large negative number (-9e8). Note that",
           "this may be imprecise."))
     }
     if (Inf %in% coefficients) {
       coefficients[coefficients == Inf] <- 9e8
-      warning(paste("There are +Inf coefficients (possibly due to", 
-          "offset terms). To yield interpretable results, +Inf is", 
-          "approximated by a large positive number (9e8). Note that", 
+      warning(paste("There are +Inf coefficients (possibly due to",
+          "offset terms). To yield interpretable results, +Inf is",
+          "approximated by a large positive number (9e8). Note that",
           "this may be imprecise."))
     }
     results <- list()
@@ -504,97 +504,97 @@ dointerpret <- function(l, coefficients, type, i, j, t) {
 }
 
 #' @noRd
-interpret.ergm <- function(object, formula = getformula(object), 
+interpret.ergm <- function(object, formula = getformula(object),
     coefficients = coef(object), target = NULL, type = "tie", i, j) {
-  
+
   if (!is.null(target) && is.numeric(target)) {
     stop(paste("'target' argument (short: 't') cannot be numeric."))
   }
-  
-  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE, 
+
+  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE,
       verbose = FALSE)
-  
+
   # extract response network and adjust formula
   if (!is.null(target)) {
     l$networks <- list(target)
   }
-  
+
   # warn about indices with bipartite networks
-  if (is.network(l$networks[[1]]) && is.bipartite(l$networks[[1]]) || 
+  if (is.network(l$networks[[1]]) && is.bipartite(l$networks[[1]]) ||
       is.matrix(l$networks[[1]]) && !is.mat.onemode(l$networks[[1]])) {
     if (is.numeric(j) && j < nrow(as.matrix(l$networks[[1]])) + 1) {
-      stop(paste0("In this bipartite network, the indices of the 'j' ", 
-          "index start with ", nrow(as.matrix(l$networks[[1]])) + 1, 
-          ". Smaller indices denote within-block entries and do not make ", 
+      stop(paste0("In this bipartite network, the indices of the 'j' ",
+          "index start with ", nrow(as.matrix(l$networks[[1]])) + 1,
+          ". Smaller indices denote within-block entries and do not make ",
           "any sense."))
     }
   }
-  
-  dointerpret(l, coefficients = coefficients, type = type, i = i, j = j, 
+
+  dointerpret(l, coefficients = coefficients, type = type, i = i, j = j,
       t = 1)[[1]]
 }
 
 #' @noRd
-interpret.btergm <- function(object, formula = getformula(object), 
-    coefficients = coef(object), target = NULL, type = "tie", i, j, 
+interpret.btergm <- function(object, formula = getformula(object),
+    coefficients = coef(object), target = NULL, type = "tie", i, j,
     t = 1:object@time.steps) {
-  
-  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE, 
+
+  l <- tergmprepare(formula = formula, offset = FALSE, blockdiag = FALSE,
       verbose = FALSE)
-  
+
   # extract response networks and adjust formula
   if (!is.null(target)) {
     l$networks <- target
   }
-  
+
   # warn about indices with bipartite networks
   for (h in t) {
-    if (is.network(l$networks[[h]]) && is.bipartite(l$networks[[h]]) || 
+    if (is.network(l$networks[[h]]) && is.bipartite(l$networks[[h]]) ||
         is.matrix(l$networks[[h]]) && !is.mat.onemode(l$networks[[h]])) {
       if (is.numeric(j) && j < nrow(as.matrix(l$networks[[h]])) + 1) {
-        stop(paste0("In this bipartite network, the indices of the 'j' ", 
-            "index start with ", nrow(as.matrix(l$networks[[h]])) + 1, 
-            " at t=", h, ". Smaller indices denote within-block entries and ", 
+        stop(paste0("In this bipartite network, the indices of the 'j' ",
+            "index start with ", nrow(as.matrix(l$networks[[h]])) + 1,
+            " at t=", h, ". Smaller indices denote within-block entries and ",
             "do not make any sense."))
       }
     }
   }
-  
-  dointerpret(l, coefficients = coefficients, type = type, i = i, j = j, 
+
+  dointerpret(l, coefficients = coefficients, type = type, i = i, j = j,
       t = t)
 }
 
 #' @describeIn interpret Interpret method for \code{ergm} objects
-setMethod("interpret", signature = className("ergm", "ergm"), 
+setMethod("interpret", signature = className("ergm", "ergm"),
     definition = interpret.ergm)
 
 #' @describeIn interpret Interpret method for \code{btergm} objects
-setMethod("interpret", signature = className("btergm", "btergm"), 
+setMethod("interpret", signature = className("btergm", "btergm"),
     definition = interpret.btergm)
 
 #' @describeIn interpret Interpret method for \code{mtergm} objects
-setMethod("interpret", signature = className("mtergm", "btergm"), 
+setMethod("interpret", signature = className("mtergm", "btergm"),
     definition = interpret.btergm)
 
 #' Create all predicted tie probabilities using MPLE
-#' 
+#'
 #' Create all predicted tie probabilities using MPLE.
-#' 
+#'
 #' For a given (T)ERGM, return a data frame with all predicted edge
 #' probabilities along with the design matrix of the MPLE logit model, based
 #' on the estimated coefficients and the design matrix, for all time points,
 #' along with \code{i}, \code{j}, and \code{t} variables indicating where the
 #' respective dyad is located.
-#' 
+#'
 #' \code{edgeprob} is a convenience function that creates a data frame with all
 #' dyads in the ERGM or TERGM along with their edge probabilities and their
 #' predictor values (i.e., change statistics). This is useful for creating
 #' marginal effects plots or contrasting multiple groups of dyads. This function
 #' works faster than the \code{\link{interpret}} function.
-#' 
+#'
 #' @param verbose Print details?
 #' @inheritParams interpret
-#' 
+#'
 #' @return The first variable in the resulting data frame contains the edge
 #' value (i.e., the dependent variable, which is usually binary). The next
 #' variables contain all the predictors from the ERGM or TERGM (i.e., the change
@@ -602,10 +602,10 @@ setMethod("interpret", signature = className("mtergm", "btergm"),
 #' the receiver (j), the time step (t), the vertex id of i (i.name), and the
 #' vertex id of j (j.name). These five variables serve to identify the dyad. The
 #' last variable contains the computed edge probabilities.
-#' 
+#'
 #' @aliases edgeprob
 #' @family interpretation
-#' 
+#'
 #' @importFrom network network is.network is.bipartite
 #' @export
 edgeprob <- function (object, verbose = FALSE) {
@@ -655,8 +655,20 @@ edgeprob <- function (object, verbose = FALSE) {
     }
     mpli$predictor <- cbind(mpli$predictor, i)
     # TODO: the previous line might say something like: "Note: Term nodeofactor("edu") skipped because it contributes no statistics." when a covariate is full of zeros.
+
+    # retrieve row and column names
+    mat.i <- as.matrix(l$networks[[i]])
+    i_ind <- mpli$predictor[, which(colnames(mpli$predictor) == "edgecov.imat")]
+    j_ind <- mpli$predictor[, which(colnames(mpli$predictor) == "edgecov.jmat")]
+    i.names <- rownames(mat.i)[i_ind]
+    if (isTRUE(l$bipartite)) {
+      j.names <- colnames(mat.i)[j_ind - nrow(mat.i)]
+    } else {
+      j.names <- colnames(mat.i)[j_ind]
+    }
+
     if (is.null(dyads)) {
-      dyads <- mpli$predictor
+      dyads <- cbind(as.data.frame(mpli$predictor), i.names, j.names)
     } else { # before rbind can be use, we need to check if some covariate levels were absent either before or now
       newColumns <- which(sapply(colnames(mpli$predictor), function(x) x %in% colnames(dyads)) == FALSE)
       if (length(newColumns) > 0) {
@@ -672,18 +684,17 @@ edgeprob <- function (object, verbose = FALSE) {
           colnames(mpli$predictor)[notPresentAnymore[j]] <- names(notPresentAnymore)[j]
         }
       }
-      dyads <- rbind(dyads, mpli$predictor)
+      dyads <- rbind(dyads, cbind(as.data.frame(mpli$predictor), i.names, j.names))
     }
   }
-  term.names <- colnames(dyads)[-(length(colnames(dyads)):(length(colnames(dyads)) - 2))]
-  term.names <- c(term.names, "i", "j", "t")
-  dyads <- data.frame(dyads)
+  term.names <- colnames(dyads)[1:(ncol(dyads) - 5)]
+  term.names <- c(term.names, "i", "j", "t", "i.name", "j.name")
   colnames(dyads) <- term.names
   dyads <- cbind(Y, dyads)
   colnames(dyads)[1] <- "tie"
-  class(dyads[, length(colnames(dyads))]) <- "integer"
-  class(dyads[, length(colnames(dyads)) - 1]) <- "integer"
-  class(dyads[, length(colnames(dyads)) - 2]) <- "integer"
+  class(dyads$i) <- "integer"
+  class(dyads$j) <- "integer"
+  class(dyads$t) <- "integer"
   cf <- coef(object)
   cf.length <- length(cf)
   cf <- cf[!cf %in% c(Inf, -Inf)]
@@ -693,7 +704,7 @@ edgeprob <- function (object, verbose = FALSE) {
                   "by 0 or 1, respectively."))
   }
   cbcoef <- cbind(cf)
-  chgstat <- dyads[, 2:(ncol(dyads) - 3)]
+  chgstat <- dyads[, 2:(ncol(dyads) - 5)]
 
   # handle decay term in curved ERGMs
   if ("mtergm" %in% class(object) && ergm::is.curved(object@ergm)) {
@@ -711,19 +722,7 @@ edgeprob <- function (object, verbose = FALSE) {
   }
 
   lp <- apply(chgstat, 1, function(x) t(x) %*% cbcoef)
-  result <- c(1/(1 + exp(-lp)))
-  i.name <- numeric(nrow(dyads))
-  j.name <- numeric(nrow(dyads))
-  for (t in 1:length(l$networks)) {
-    vnames.t <- colnames(l$networks[[t]][, ])
-    dyads.t <- dyads[which(dyads$t == t), ]
-    i.name.t <- vnames.t[dyads.t$i]
-    j.name.t <- vnames.t[dyads.t$j]
-    i.name[which(dyads$t == t)] <- i.name.t
-    j.name[which(dyads$t == t)] <- j.name.t
-  }
-  dyads$i.name <- i.name
-  dyads$j.name <- j.name
+  result <- c(1 / (1 + exp(-lp)))
   dyads <- cbind(dyads, result)
   colnames(dyads)[ncol(dyads)] <- "probability"
   dyads <- dyads[order(dyads$t, dyads$i, dyads$j), ]
@@ -732,9 +731,9 @@ edgeprob <- function (object, verbose = FALSE) {
 }
 
 #' Plot marginal effects for two-way interactions in (T)ERGMs
-#' 
+#'
 #' Plot marginal effects for two-way interactions in (T)ERGMs.
-#' 
+#'
 #' The \code{marginalplot} function creates marginal effects plots for ERGMs
 #' with interaction effects. The user has to supply the \code{ergm} object and
 #' the coefficient names of the first main variable, the second main variable,
@@ -743,10 +742,10 @@ edgeprob <- function (object, verbose = FALSE) {
 #' error bars depending on the nature of the data (using the \code{point}
 #' argument). The distribution of the second (conditioning) variable can be
 #' plotted at the bottom of the viewport using the \code{rug} argument.
-#' 
+#'
 #' The resulting marginal effects plot is a \code{ggplot2} plot. This means it
 #' can be extended by plotting additional elements and using themes.
-#' 
+#'
 #' @param model An \code{ergm} object as generated by the \pkg{ergm} package.
 #'   Note that marginal effects plots cannot be created for \code{btergm}
 #'   objects because the variance-covariance matrix is not valid. However, it
@@ -777,7 +776,7 @@ edgeprob <- function (object, verbose = FALSE) {
 #' @param color Color of the curve, confidence interval, and distribution.
 #' @param xlab Axis label for the second (conditioning) variable.
 #' @param ylab Axis label for the first (focal) variable.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' # data preparation
@@ -788,24 +787,24 @@ edgeprob <- function (object, verbose = FALSE) {
 #' wealth.icov <- matrix(rep(wealth, n), ncol = n, byrow = TRUE)
 #' priorates.icov <- matrix(rep(priorates, n), ncol = n, byrow = TRUE)
 #' interac <- wealth.icov * priorates.icov
-#' 
+#'
 #' # estimate model with interaction effect
-#' model <- ergm(flobusiness ~ edges + esp(1) + edgecov(wealth.icov) 
+#' model <- ergm(flobusiness ~ edges + esp(1) + edgecov(wealth.icov)
 #'                 + edgecov(priorates.icov) + edgecov(interac))
-#' 
+#'
 #' # plot the interaction (note the additional optional ggplot2 elements)
-#' marginalplot(model, var1 = "edgecov.wealth.icov", 
-#'              var2 = "edgecov.priorates.icov", inter = "edgecov.interac", 
+#' marginalplot(model, var1 = "edgecov.wealth.icov",
+#'              var2 = "edgecov.priorates.icov", inter = "edgecov.interac",
 #'              color = "darkred", rug = TRUE, point = FALSE,
 #'              xlab = "Priorates", ylab = "Wealth") +
 #'   ggplot2::theme_bw() +
 #'   ggplot2::ggtitle("Interaction effect")
 #' }
-#' 
+#'
 #' @family interpretation
 #' @export
-marginalplot <- function(model, var1, var2, inter, ci = 0.95, 
-    rug = FALSE, point = FALSE, structzeromat = NULL, 
+marginalplot <- function(model, var1, var2, inter, ci = 0.95,
+    rug = FALSE, point = FALSE, structzeromat = NULL,
     zeroline = TRUE, color = "black", xlab = NULL, ylab = NULL) {
 
   # check arguments
@@ -825,7 +824,7 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
       colnames(ep)[i] <- substr(colnames(ep)[i], 1, nchar(colnames(ep)[i]) - 5)
     }
   }
-  
+
   # delete structural zeros from edgeprob output
   if (!is.null(structzeromat)) {
     include <- logical(nrow(ep))
@@ -838,40 +837,40 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
     }
     ep <- ep[include == TRUE, ]
   }
-  
+
   # unique values of the second variable
   v2 <- sort(unlist(unique(ep[var2])))
   names(v2) <- NULL
-  
+
   # coefficients
   co <- coef(model)
   beta1 <- co[match(var1, names(co))]
   beta3 <- co[match(inter, names(co))]
-  
+
   # marginal effects
   delta1 = beta1 + beta3 * v2
-  
+
   # variance-covariance matrix
   if ("mtergm" %in% class(model)) {
     model <- model@ergm
   }
   vc <- stats::vcov(model)
-  
+
   # variances
-  variances1 = vc[var1, var1] + (v2^2) * vc[inter, inter] + 
+  variances1 = vc[var1, var1] + (v2^2) * vc[inter, inter] +
       (2 * v2 * vc[var1, inter])
-  
+
   # standard errors
   se1 = sqrt(variances1)
-  
+
   # confidence intervals
   z_score = qnorm(1 - ((1 - ci) / 2))
   upper = delta1 + z_score * se1
   lower = delta1 - z_score * se1
-  
+
   # aggregate in data frame
   dta <- data.frame(v2 = v2, delta1 = delta1, upper = upper, lower = lower)
-  
+
   # axis labels
   if (is.null(xlab)) {
     xlab <- var2
@@ -879,43 +878,43 @@ marginalplot <- function(model, var1, var2, inter, ci = 0.95,
   if (is.null(ylab)) {
     ylab <- var1
   }
-  
+
   # plot error bars or line
   if (point == TRUE) {
     if (length(v2) == 2 && v2[1] == 0 && v2[2] == 1 && rug == FALSE) {
       dta$v2 <- as.factor(dta$v2)
     }
-    gp <- ggplot2::ggplot(data = dta, ggplot2::aes(x = v2, y = delta1)) + 
-      ggplot2::geom_errorbar(data = dta, 
-                             ggplot2::aes(x = v2, ymin = lower, ymax = upper), 
-                             color = color) + 
-      ggplot2::geom_point(data = dta, ggplot2::aes(x = v2, y = delta1)) + 
-      ggplot2::ylab(ylab) + 
+    gp <- ggplot2::ggplot(data = dta, ggplot2::aes(x = v2, y = delta1)) +
+      ggplot2::geom_errorbar(data = dta,
+                             ggplot2::aes(x = v2, ymin = lower, ymax = upper),
+                             color = color) +
+      ggplot2::geom_point(data = dta, ggplot2::aes(x = v2, y = delta1)) +
+      ggplot2::ylab(ylab) +
       ggplot2::xlab(xlab)
   } else {
-    gp <- ggplot2::ggplot(data = dta, ggplot2::aes(x = v2, y = delta1)) + 
-      ggplot2::geom_line(color = color) + 
-      ggplot2::geom_ribbon(ggplot2::aes_string(ymin = "lower", ymax = "upper"), 
-                  alpha = 0.15, 
-                  fill = color) + 
-      ggplot2::ylab(ylab) + 
+    gp <- ggplot2::ggplot(data = dta, ggplot2::aes(x = v2, y = delta1)) +
+      ggplot2::geom_line(color = color) +
+      ggplot2::geom_ribbon(ggplot2::aes_string(ymin = "lower", ymax = "upper"),
+                  alpha = 0.15,
+                  fill = color) +
+      ggplot2::ylab(ylab) +
       ggplot2::xlab(xlab)
   }
-  
+
   # add distribution to the plot
   if (rug == TRUE) {
-    gp <- gp + ggplot2::geom_rug(data = ep[var2], 
-                                 ggplot2::aes_string(x = var2), 
-                                 inherit.aes = FALSE, 
-                                 sides = "b", 
-                                 col = color, 
+    gp <- gp + ggplot2::geom_rug(data = ep[var2],
+                                 ggplot2::aes_string(x = var2),
+                                 inherit.aes = FALSE,
+                                 sides = "b",
+                                 col = color,
                                  alpha = 0.1)
   }
-  
+
   # add horizontal line for 0
   if (zeroline == TRUE) {
     gp <- gp + ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
   }
-  
+
   return(gp)
 }
