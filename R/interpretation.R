@@ -648,7 +648,7 @@ edgeprob <- function (object, verbose = FALSE) {
                      byrow = TRUE)
     }
     f <- stats::as.formula(paste(l$form, " + edgecov(imat) + edgecov(jmat)"))
-    mpli <- ergm::ergmMPLE(f)
+    mpli <- ergm::ergmMPLE(f, control = control.ergm(MPLE.max.dyad.types = Inf))
     Y <- c(Y, mpli$response)
     if (any(grepl("^gw.+#\\d{1,}$", colnames(mpli$predictor)))) {
       stop("MPLE-based (T)ERGMs with variable GW* decay are currently not supported.")
