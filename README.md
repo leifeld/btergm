@@ -7,21 +7,22 @@ Temporal Exponential Random Graph Models (TERGM) estimated by maximum pseudolike
 [![R-CMD-check](https://github.com/leifeld/btergm/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/leifeld/btergm/actions/workflows/check-standard.yaml)
 [![test-coverage](https://github.com/leifeld/btergm/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/leifeld/btergm/actions/workflows/test-coverage.yaml)
 [![coverage status](https://codecov.io/gh/leifeld/btergm/branch/master/graph/badge.svg)](https://codecov.io/github/leifeld/btergm?branch=master)
-[![cran version](http://www.r-pkg.org/badges/version/btergm)](https://cran.r-project.org/package=btergm)
-[![downloads](http://cranlogs.r-pkg.org/badges/btergm)](http://cranlogs.r-pkg.org/badges/btergm)
-[![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/btergm)](http://cranlogs.r-pkg.org/badges/grand-total/btergm)
-[![research software impact](http://depsy.org/api/package/cran/btergm/badge.svg)](http://depsy.org/package/r/btergm)
 
 # Installation
 
 The last stable release can be installed from CRAN:
 ```r
-install.packages("texreg")
+install.packages("btergm")
 ```
 To install the latest development version from GitHub, use the remotes package:
 ```r
-remotes::install_github("leifeld/texreg")
+remotes::install_github("leifeld/btergm")
 ```
+
+[![cran version](http://www.r-pkg.org/badges/version/btergm)](https://cran.r-project.org/package=btergm)
+[![downloads](http://cranlogs.r-pkg.org/badges/btergm)](http://cranlogs.r-pkg.org/badges/btergm)
+[![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/btergm)](http://cranlogs.r-pkg.org/badges/grand-total/btergm)
+[![research software impact](http://depsy.org/api/package/cran/btergm/badge.svg)](http://depsy.org/package/r/btergm)
 
 # Documentation
 Documentation of the package is available as a JStatSoft article:
