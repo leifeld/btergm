@@ -16,12 +16,12 @@
 the alliance ties, each network object contains three vertex attributes.
 \code{cinc} is the "CINC" or Composite Index of National Capability score
 (see
-\url{https://correlatesofwar.org/data-sets/national-material-capabilities}).
+\url{https://correlatesofwar.org/data-sets/national-material-capabilities/}).
 \code{polity} is the "polity score" of each country in the respective year.
 Quoting the online description, "the Polity Score captures this regime
 authority spectrum on a 21-point scale ranging from -10 (hereditary
 monarchy) to +10 (consolidated democracy)," (see
-\url{http://www.systemicpeace.org/polityproject.html}). \code{year} is
+\url{https://www.systemicpeace.org/polityproject.html}). \code{year} is
 simply the year recorded as a vertex attribute.}
 
 \item{\code{contigMat}}{is a 164 x 164 binary matrix in which a 1 indicates
