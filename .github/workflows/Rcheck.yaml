@@ -53,8 +53,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages('remotes')
-          install.packages('rcmdcheck')
           install.packages(c("Bergm", "RSiena", "fastglm", "ggplot2", "statnet", "igraph", "ROCR", "coda", "boot", "Matrix"))
           remotes::install_version('speedglm', '0.3-4', repos = 'https://packagemanager.rstudio.com/cran/2023-03-31')
         shell: Rscript {0}
