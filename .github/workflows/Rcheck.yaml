@@ -57,12 +57,6 @@ jobs:
           remotes::install_version('speedglm', '0.3-4', repos = 'https://packagemanager.rstudio.com/cran/2023-03-31')
         shell: Rscript {0}
 
-      - name: Check
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck
-          needs: check
-
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@main
