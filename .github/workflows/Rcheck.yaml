@@ -37,21 +37,11 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Query dependencies
+      - name: Install development packages
         run: |
           install.packages('remotes')
           install.packages('rcmdcheck')
-          saveRDS(remotes::dev_package_deps(dependencies = NA), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
         shell: Rscript {0}
-
-      - name: Cache R packages
-        if: runner.os != 'Windows'
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
       - name: Install system dependencies
         if: runner.os == 'Linux'
@@ -63,8 +53,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("Bergm", "RSiena", "fastglm", "ggplot2"))
-          remotes::install_deps(dependencies = TRUE)
+          install.packages('remotes')
+          install.packages('rcmdcheck')
+          install.packages(c("Bergm", "RSiena", "fastglm", "ggplot2", "statnet", "igraph", "ROCR", "coda", "boot", "Matrix"))
+          remotes::install_version('speedglm', '0.3-4', repos = 'https://packagemanager.rstudio.com/cran/2023-03-31')
         shell: Rscript {0}
 
       - name: Check
@@ -79,3 +71,11 @@ jobs:
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
+
+      - name: Unit testing
+        run: withr::with_envvar(c("NOT_CRAN" = "true"), devtools::test())
+        shell: Rscript {0}
+
+      - name: Test coverage
+        run: withr::with_envvar(c("NOT_CRAN" = "true"), covr::codecov(quiet = FALSE))
+        shell: Rscript {0}
