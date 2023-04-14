@@ -208,145 +208,145 @@ by statistics like \code{walktrap.roc} and others.
 }
 \section{Functions}{
 \itemize{
-\item \code{dsp}: Multivariate GOF statistic: dyad-wise shared
+\item \code{dsp()}: Multivariate GOF statistic: dyad-wise shared
 partner distribution
 
-\item \code{esp}: Multivariate GOF statistic: edge-wise shared
+\item \code{esp()}: Multivariate GOF statistic: edge-wise shared
 partner distribution
 
-\item \code{nsp}: Multivariate GOF statistic: non-edge-wise shared
+\item \code{nsp()}: Multivariate GOF statistic: non-edge-wise shared
 partner distribution
 
-\item \code{deg}: Multivariate GOF statistic: degree distribution
+\item \code{deg()}: Multivariate GOF statistic: degree distribution
 
-\item \code{b1deg}: Multivariate GOF statistic: degree distribution
+\item \code{b1deg()}: Multivariate GOF statistic: degree distribution
 for the first mode
 
-\item \code{b2deg}: Multivariate GOF statistic: degree distribution
+\item \code{b2deg()}: Multivariate GOF statistic: degree distribution
 for the second mode
 
-\item \code{odeg}: Multivariate GOF statistic: outdegree distribution
+\item \code{odeg()}: Multivariate GOF statistic: outdegree distribution
 
-\item \code{ideg}: Multivariate GOF statistic: indegree distribution
+\item \code{ideg()}: Multivariate GOF statistic: indegree distribution
 
-\item \code{kstar}: Multivariate GOF statistic: k-star distribution
+\item \code{kstar()}: Multivariate GOF statistic: k-star distribution
 
-\item \code{b1star}: Multivariate GOF statistic: k-star distribution
+\item \code{b1star()}: Multivariate GOF statistic: k-star distribution
 for the first mode
 
-\item \code{b2star}: Multivariate GOF statistic: k-star distribution
+\item \code{b2star()}: Multivariate GOF statistic: k-star distribution
 for the second mode
 
-\item \code{ostar}: Multivariate GOF statistic: outgoing k-star
+\item \code{ostar()}: Multivariate GOF statistic: outgoing k-star
 distribution
 
-\item \code{istar}: Multivariate GOF statistic: incoming k-star
+\item \code{istar()}: Multivariate GOF statistic: incoming k-star
 distribution
 
-\item \code{kcycle}: Multivariate GOF statistic: k-cycle distribution
+\item \code{kcycle()}: Multivariate GOF statistic: k-cycle distribution
 
-\item \code{geodesic}: Multivariate GOF statistic: geodesic distance
+\item \code{geodesic()}: Multivariate GOF statistic: geodesic distance
 distribution
 
-\item \code{triad.directed}: Multivariate GOF statistic: triad census in
+\item \code{triad.directed()}: Multivariate GOF statistic: triad census in
 directed networks
 
-\item \code{triad.undirected}: Multivariate GOF statistic: triad census in
+\item \code{triad.undirected()}: Multivariate GOF statistic: triad census in
 undirected networks
 
-\item \code{comemb}: Helper function: create community co-membership
+\item \code{comemb()}: Helper function: create community co-membership
 matrix
 
-\item \code{walktrap.modularity}: Univariate GOF statistic: Walktrap modularity
+\item \code{walktrap.modularity()}: Univariate GOF statistic: Walktrap modularity
 distribution
 
-\item \code{walktrap.roc}: Tie prediction GOF statistic: ROC of Walktrap
+\item \code{walktrap.roc()}: Tie prediction GOF statistic: ROC of Walktrap
 community detection. Receiver-operating characteristics of predicting the
 community structure in the observed network(s) by the community structure
 in the simulated networks, as computed by the Walktrap algorithm.
 
-\item \code{walktrap.pr}: Tie prediction GOF statistic: PR of Walktrap
+\item \code{walktrap.pr()}: Tie prediction GOF statistic: PR of Walktrap
 community detection. Precision-recall curve for predicting the community
 structure in the observed network(s) by the community structure in the
 simulated networks, as computed by the Walktrap algorithm.
 
-\item \code{fastgreedy.modularity}: Univariate GOF statistic: fast and greedy
+\item \code{fastgreedy.modularity()}: Univariate GOF statistic: fast and greedy
 modularity distribution
 
-\item \code{fastgreedy.roc}: Tie prediction GOF statistic: ROC of fast and
+\item \code{fastgreedy.roc()}: Tie prediction GOF statistic: ROC of fast and
 greedy community detection. Receiver-operating characteristics of
 predicting the community structure in the observed network(s) by the
 community structure in the simulated networks, as computed by the fast and
 greedy algorithm. Only sensible with undirected networks.
 
-\item \code{fastgreedy.pr}: Tie prediction GOF statistic: PR of fast and
+\item \code{fastgreedy.pr()}: Tie prediction GOF statistic: PR of fast and
 greedy community detection. Precision-recall curve for predicting the
 community structure in the observed network(s) by the community structure
 in the simulated networks, as computed by the fast and greedy algorithm.
 Only sensible with undirected networks.
 
-\item \code{louvain.modularity}: Univariate GOF statistic: Louvain clustering
+\item \code{louvain.modularity()}: Univariate GOF statistic: Louvain clustering
 modularity distribution
 
-\item \code{louvain.roc}: Tie prediction GOF statistic: ROC of Louvain
+\item \code{louvain.roc()}: Tie prediction GOF statistic: ROC of Louvain
 community detection. Receiver-operating characteristics of predicting the
 community structure in the observed network(s) by the community structure
 in the simulated networks, as computed by the Louvain algorithm.
 
-\item \code{louvain.pr}: Tie prediction GOF statistic: PR of Louvain
+\item \code{louvain.pr()}: Tie prediction GOF statistic: PR of Louvain
 community detection. Precision-recall curve for predicting the community
 structure in the observed network(s) by the community structure in the
 simulated networks, as computed by the Louvain algorithm.
 
-\item \code{maxmod.modularity}: Univariate GOF statistic: maximal modularity
+\item \code{maxmod.modularity()}: Univariate GOF statistic: maximal modularity
 distribution
 
-\item \code{maxmod.roc}: Tie prediction GOF statistic: ROC of maximal
+\item \code{maxmod.roc()}: Tie prediction GOF statistic: ROC of maximal
 modularity community detection. Receiver-operating characteristics of
 predicting the community structure in the observed network(s) by the
 community structure in the simulated networks, as computed by the
 modularity maximization algorithm.
 
-\item \code{maxmod.pr}: Tie prediction GOF statistic: PR of maximal
+\item \code{maxmod.pr()}: Tie prediction GOF statistic: PR of maximal
 modularity community detection. Precision-recall curve for predicting the
 community structure in the observed network(s) by the community structure
 in the simulated networks, as computed by the modularity maximization
 algorithm.
 
-\item \code{edgebetweenness.modularity}: Univariate GOF statistic: edge betweenness
+\item \code{edgebetweenness.modularity()}: Univariate GOF statistic: edge betweenness
 modularity distribution
 
-\item \code{edgebetweenness.roc}: Tie prediction GOF statistic: ROC of edge
+\item \code{edgebetweenness.roc()}: Tie prediction GOF statistic: ROC of edge
 betweenness community detection. Receiver-operating characteristics of
 predicting the community structure in the observed network(s) by the
 community structure in the simulated networks, as computed by the
 Girvan-Newman edge betweenness community detection method.
 
-\item \code{edgebetweenness.pr}: Tie prediction GOF statistic: PR of edge
+\item \code{edgebetweenness.pr()}: Tie prediction GOF statistic: PR of edge
 betweenness community detection. Precision-recall curve for predicting the
 community structure in the observed network(s) by the community structure
 in the simulated networks, as computed by the Girvan-Newman edge
 betweenness community detection method.
 
-\item \code{spinglass.modularity}: Univariate GOF statistic: spinglass modularity
+\item \code{spinglass.modularity()}: Univariate GOF statistic: spinglass modularity
 distribution
 
-\item \code{spinglass.roc}: Tie prediction GOF statistic: ROC of spinglass
+\item \code{spinglass.roc()}: Tie prediction GOF statistic: ROC of spinglass
 community detection. Receiver-operating characteristics of predicting the
 community structure in the observed network(s) by the community structure
 in the simulated networks, as computed by the Spinglass algorithm.
 
-\item \code{spinglass.pr}: Tie prediction GOF statistic: PR of spinglass
+\item \code{spinglass.pr()}: Tie prediction GOF statistic: PR of spinglass
 community detection. Precision-recall curve for predicting the community
 structure in the observed network(s) by the community structure in the
 simulated networks, as computed by the Spinglass algorithm.
 
-\item \code{rocpr}: Tie prediction GOF statistic: ROC and PR curves.
+\item \code{rocpr()}: Tie prediction GOF statistic: ROC and PR curves.
 Receiver-operating characteristics (ROC) and precision-recall curve (PR).
 Prediction of the dyad states of the observed network(s) by the dyad states
 of the simulated networks.
-}}
 
+}}
 \examples{
 # To see how these statistics are used, look at the examples section of 
 # ?"gof-methods". The following example illustrates how custom 

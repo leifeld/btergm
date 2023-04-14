@@ -39,18 +39,18 @@ errors, and p-values, among other details.
 }
 \section{Functions}{
 \itemize{
-\item \code{show,mtergm-method}: Show the coefficients of an \code{mtergm} object.
+\item \code{show(mtergm)}: Show the coefficients of an \code{mtergm} object.
 
-\item \code{coef,mtergm-method}: Return the coefficients of an \code{mtergm} object.
+\item \code{coef(mtergm)}: Return the coefficients of an \code{mtergm} object.
 
-\item \code{nobs,mtergm-method}: Return the coefficients of an \code{mtergm} object.
+\item \code{nobs(mtergm)}: Return the coefficients of an \code{mtergm} object.
 
-\item \code{timesteps.mtergm}: Return the number of time steps saved in an
+\item \code{timesteps.mtergm()}: Return the number of time steps saved in an
 \code{mtergm} object.
 
-\item \code{summary,mtergm-method}: Return the coefficients of an \code{mtergm} object.
-}}
+\item \code{summary(mtergm)}: Return the coefficients of an \code{mtergm} object.
 
+}}
 \section{Slots}{
 
 \describe{

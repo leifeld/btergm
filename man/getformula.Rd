@@ -31,12 +31,12 @@ The \code{getformula} function will extract the formula from a fitted model.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{ergm}: Extract the formula from an \code{ergm} object.
+\item \code{getformula(ergm)}: Extract the formula from an \code{ergm} object.
 
-\item \code{btergm}: Extract the formula from a \code{btergm} object.
+\item \code{getformula(btergm)}: Extract the formula from a \code{btergm} object.
 
-\item \code{mtergm}: Extract the formula from an \code{mtergm} object.
+\item \code{getformula(mtergm)}: Extract the formula from an \code{mtergm} object.
 
-\item \code{tbergm}: Extract the formula from a \code{tbergm} object.
+\item \code{getformula(tbergm)}: Extract the formula from a \code{tbergm} object.
+
 }}
-

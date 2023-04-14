@@ -33,17 +33,17 @@ and some additional information.
 }
 \section{Functions}{
 \itemize{
-\item \code{show,tbergm-method}: Show the coefficients of a \code{tbergm} object.
+\item \code{show(tbergm)}: Show the coefficients of a \code{tbergm} object.
 
-\item \code{nobs,tbergm-method}: Return the number of observations saved in a
+\item \code{nobs(tbergm)}: Return the number of observations saved in a
 \code{tbergm} object.
 
-\item \code{timesteps.tbergm}: Return the number of time steps saved in a
+\item \code{timesteps.tbergm()}: Return the number of time steps saved in a
 \code{tbergm} object.
 
-\item \code{summary,tbergm-method}: Summary of a fitted \code{tbergm} object.
+\item \code{summary(tbergm)}: Summary of a fitted \code{tbergm} object.
+
 }}
-
 \section{Slots}{
 
 \describe{

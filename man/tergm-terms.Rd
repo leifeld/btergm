@@ -120,9 +120,9 @@ can be executed directly for manual inclusion of the results as a covariate.
 }
 \section{Functions}{
 \itemize{
-\item \code{timecov}: Time trends and temporal covariate interactions
-}}
+\item \code{timecov()}: Time trends and temporal covariate interactions
 
+}}
 \references{
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017):
   Temporal Exponential Random Graph Models with btergm: Estimation and

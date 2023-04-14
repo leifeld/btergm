@@ -508,7 +508,7 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #' @param usefastglm Controls whether to use the \code{\link[fastglm]{fastglm}}
 #'   estimation routine from the \pkg{fastglm} package with \code{method = 3}.
 #'   Defaults to \code{FALSE} (and then uses
-#'   \code{\link[speedglm:speedglm]{speedglm.wfit}} instead).
+#'   \code{\link[speedglm:speedglm]{speedglm.wfit}} instead if available).
 #' @param verbose Print details about data preprocessing and estimation
 #'   settings.
 #' @param ... Further arguments to be handed over to the
@@ -662,7 +662,6 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #' @importFrom boot boot
 #' @importFrom ergm control.ergm ergm.design ergm_model ergm.getnetwork ergm.pl ergmMPLE
 #' @importFrom Matrix Matrix
-#' @importFrom speedglm speedglm.wfit
 #' @import stats
 #' @export
 btergm <- function(formula,
@@ -835,41 +834,71 @@ btergm <- function(formula,
       stop("The 'fastglm' package was not found.")
     }
   } else {
-    xsparse <- Matrix(as.matrix(x), sparse = TRUE)
-    est <- speedglm.wfit(y = Y, X = xsparse, weights = W, offset = O,
-                         family = binomial(link = logit), sparse = TRUE)
+    if (requireNamespace("speedglm", quietly = TRUE)) {
+      xsparse <- Matrix(as.matrix(x), sparse = TRUE)
+      est <- speedglm::speedglm.wfit(y = Y,
+                                     X = xsparse,
+                                     weights = W,
+                                     offset = O,
+                                     family = binomial(link = logit),
+                                     sparse = TRUE)
 
-    startval <- coef(est)
+      startval <- coef(est)
 
-    # report NAs as warnings
-    if (isTRUE(verbose) && any(is.na(startval))) {
-      warning("The following coefficients yielded NA estimates: ",
-              paste(names(startval)[which(is.na(startval))], collapse = ", "),
-              ". Bootstrapping may not work with NA coefficients.")
-    }
+      # report NAs as warnings
+      if (isTRUE(verbose) && any(is.na(startval))) {
+        warning("The following coefficients yielded NA estimates: ",
+                paste(names(startval)[which(is.na(startval))], collapse = ", "),
+                ". Bootstrapping may not work with NA coefficients.")
+      }
 
-    # define function for bootstrapping and estimation
-    estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse,
-                         Wi = W, Oi = O, timei = time, startvali = startval) {
-      indic <- unlist(lapply(bsi, function(x) which(timei == x)))
-      tryCatch(
-        expr = {
-          coef(speedglm.wfit(y = Yi[indic], X = xsparsei[indic, ],
-                                    weights = Wi[indic], offset = Oi[indic],
-                                    family = binomial(link = logit), sparse = TRUE))
-        },
-        error = function(e) {
-          # when fitted probabilities of 0 or 1 occur or when the algorithm does
-          # not converge, use glm because it only throws a warning, not an error
-          coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ],
-                              weights = Wi[indic], offset = Oi[indic],
-                              family = binomial(link = logit)))
-        },
-        warning = function(w) {
-          warning(w)
-        },
-        finally = {}
-      )
+      # define function for bootstrapping and estimation
+      estimate <- function(unique.time.steps, bsi, Yi = Y, xsparsei = xsparse,
+                           Wi = W, Oi = O, timei = time, startvali = startval) {
+        indic <- unlist(lapply(bsi, function(x) which(timei == x)))
+        tryCatch(
+          expr = {
+            coef(speedglm::speedglm.wfit(y = Yi[indic],
+                                         X = xsparsei[indic, ],
+                                         weights = Wi[indic],
+                                         offset = Oi[indic],
+                                         family = binomial(link = logit),
+                                         sparse = TRUE))
+          },
+          error = function(e) {
+            # when fitted probabilities of 0 or 1 occur or when the algorithm does
+            # not converge, use glm because it only throws a warning, not an error
+            coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ],
+                         weights = Wi[indic], offset = Oi[indic],
+                         family = binomial(link = logit)))
+          },
+          warning = function(w) {
+            warning(w)
+          },
+          finally = {}
+        )
+      }
+    } else {
+      warning("The 'speedglm' package was not found. Using the 'glm' function.")
+      startval <- coef(glm.fit(y = Y,
+                               x = as.matrix(x),
+                               weights = W,
+                               offset = O,
+                               family = binomial(link = logit)))
+
+      estimate <- function(unique.time.steps,
+                           bsi,
+                           Yi = Y,
+                           xsparsei = xsparse,
+                           Wi = W,
+                           Oi = O,
+                           timei = time,
+                           startvali = startval) {
+        indic <- unlist(lapply(bsi, function(x) which(timei == x)))
+        coef(glm.fit(y = Yi[indic], x = as.matrix(x)[indic, ],
+                     weights = Wi[indic], offset = Oi[indic],
+                     family = binomial(link = logit)))
+      }
     }
   }
 

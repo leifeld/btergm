@@ -88,7 +88,7 @@ temporarily on the local machine.}
 \item{usefastglm}{Controls whether to use the \code{\link[fastglm]{fastglm}}
 estimation routine from the \pkg{fastglm} package with \code{method = 3}.
 Defaults to \code{FALSE} (and then uses
-\code{\link[speedglm:speedglm]{speedglm.wfit}} instead).}
+\code{\link[speedglm:speedglm]{speedglm.wfit}} instead if available).}
 
 \item{verbose}{Print details about data preprocessing and estimation
 settings.}

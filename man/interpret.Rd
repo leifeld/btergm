@@ -154,13 +154,13 @@ dyadic edge probabilities.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{ergm}: Interpret method for \code{ergm} objects
+\item \code{interpret(ergm)}: Interpret method for \code{ergm} objects
 
-\item \code{btergm}: Interpret method for \code{btergm} objects
+\item \code{interpret(btergm)}: Interpret method for \code{btergm} objects
 
-\item \code{mtergm}: Interpret method for \code{mtergm} objects
+\item \code{interpret(mtergm)}: Interpret method for \code{mtergm} objects
+
 }}
-
 \examples{
 ##### The following example is a TERGM adaptation of the #####
 ##### dyad-level example provided in figure 5(c) on page #####

@@ -68,12 +68,12 @@ into the \code{glm} call for estimating the model.
 }
 \section{Functions}{
 \itemize{
-\item \code{coef,btergm-method}: Return the coefficients of a \code{btergm} object.
+\item \code{coef(btergm)}: Return the coefficients of a \code{btergm} object.
 
-\item \code{nobs,btergm-method}: Return the number of observations saved in a
+\item \code{nobs(btergm)}: Return the number of observations saved in a
 \code{btergm} object.
 
-\item \code{btergm.se}: Create a coefficient table from a \code{btergm}
+\item \code{btergm.se()}: Create a coefficient table from a \code{btergm}
   object
 
 Create a coefficient matrix with standard errors and p-values.
@@ -89,15 +89,15 @@ for checking for normality for each model term are available, for example
 quantile-quantile plots (e.g., \code{qqnorm(x@boot$t[, 1])} for the first
 model term in the \code{btergm} object called \code{x}).
 
-\item \code{confint,btergm-method}: Return the confidence intervals for estimates in a
+\item \code{confint(btergm)}: Return the confidence intervals for estimates in a
 \code{btergm} object.
 
-\item \code{timesteps.btergm}: Return the number of time steps saved in a
+\item \code{timesteps.btergm()}: Return the number of time steps saved in a
 \code{btergm} object.
 
-\item \code{summary,btergm-method}: Summary of a fitted \code{btergm} object.
+\item \code{summary(btergm)}: Summary of a fitted \code{btergm} object.
+
 }}
-
 \section{Slots}{
 
 \describe{
