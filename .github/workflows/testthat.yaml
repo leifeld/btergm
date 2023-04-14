@@ -25,7 +25,7 @@ jobs:
       - name: Query dependencies
         run: |
           install.packages(c("devtools", "covr", "remotes", "withr", "testthat"))
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+          saveRDS(remotes::dev_package_deps(dependencies = NA), ".github/depends.Rds", version = 2)
         shell: Rscript {0}
 
       - name: Cache R packages
