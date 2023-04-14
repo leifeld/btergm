@@ -5,7 +5,7 @@ Temporal Exponential Random Graph Models by Bootstrapped Pseudolikelihood.
 Temporal Exponential Random Graph Models (TERGM) estimated by maximum pseudolikelihood with bootstrapped confidence intervals or Markov Chain Monte Carlo maximum likelihood (MCMC MLE). Goodness of fit assessment for ERGMs, TERGMs, and SAOMs. Micro-level interpretation of ERGMs and TERGMs.
 
 [![R-CMD-check](https://github.com/leifeld/btergm/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/leifeld/btergm/actions/workflows/check-standard.yaml)
-[![testthat](https://github.com/leifeld/btergm/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/leifeld/btergm/actions/workflows/test-coverage.yaml)
+[![test-coverage](https://github.com/leifeld/btergm/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/leifeld/btergm/actions/workflows/test-coverage.yaml)
 [![coverage status](https://codecov.io/gh/leifeld/btergm/branch/master/graph/badge.svg)](https://codecov.io/github/leifeld/btergm?branch=master)
 [![cran version](http://www.r-pkg.org/badges/version/btergm)](https://cran.r-project.org/package=btergm)
 [![downloads](http://cranlogs.r-pkg.org/badges/btergm)](http://cranlogs.r-pkg.org/badges/btergm)
