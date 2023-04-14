@@ -16,10 +16,10 @@ test_that("basic GOF functionality works", {
     covariates[[i]] <- mat       # add matrix to the list
   }
 
-  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  fit <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE))
 
   sink(nullfile())
-  g <- gof(fit, nsim = 2, MCMC.burnin = 1000, MCMC.interval = 500, verbose = FALSE)
+  g <- btergm::gof(fit, nsim = 2, MCMC.burnin = 1000, MCMC.interval = 500, verbose = FALSE)
   sink()
   expect_equal(length(g), 7)
   expect_equal(class(g), "gof")
@@ -48,7 +48,7 @@ test_that("checkdegeneracy works with btergm and mtergm", {
     covariates[[i]] <- mat       # add matrix to the list
   }
 
-  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  fit <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE))
   d <- checkdegeneracy(fit)
   expect_equal(class(d), "degeneracy")
   expect_length(d$target.stats, 10)

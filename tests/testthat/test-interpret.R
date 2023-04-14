@@ -103,8 +103,8 @@ test_that("edgeprob works with ergm, btergm, and mtergm objects, with and withou
 
   # btergm with fixed GW decay
   expect_silent({
-    fit1 <- btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(1.0, fixed = TRUE),
-                   R = 100, verbose = FALSE)
+    fit1 <- suppressWarnings(btergm(sim ~ edges + edgecov(fixed_covariate) + edgecov(changing_covariate) + gwidegree(1.0, fixed = TRUE),
+                                    R = 100, verbose = FALSE))
   })
   expect_length(coef(fit1), 4)
   expect_silent(ep1 <- edgeprob(fit1))

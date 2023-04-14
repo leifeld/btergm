@@ -88,7 +88,7 @@ test_that("chemnet example can be replicated", {
   expect_length(coef(model4), 11)
 
   # goodness of fit using the btergm package
-  gof4 <- gof(model4, verbose = FALSE)
+  gof4 <- btergm::gof(model4, verbose = FALSE)
   expect_equal(length(gof4), 7)
   plot(gof4)
 })

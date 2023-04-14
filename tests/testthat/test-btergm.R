@@ -17,7 +17,7 @@ for (i in 1:10) {              # create 10 matrices as covariate
 
 test_that("btergm estimation works", {
   set.seed(12345)
-  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  fit <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE))
   expect_equal(round(unname(coef(fit)), 4), c(-1.1707, 0.0543, 0.0045))
   expect_equal(names(coef(fit)), c("edges", "istar2", "edgecov.covariates[[i]]"))
   expect_equal(class(fit@boot), "boot")
@@ -55,7 +55,7 @@ test_that("fastglm works like speedglm", {
   skip_if_not_installed("fastglm", minimum_version = "0.0.1")
 
   set.seed(12345)
-  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  fit <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE))
   set.seed(12345)
   fit2 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, usefastglm = TRUE, verbose = FALSE)
   expect_equal(all(round(confint(fit), 4) == round(confint(fit2), 4)), TRUE)
@@ -63,17 +63,17 @@ test_that("fastglm works like speedglm", {
 
 test_that("offset argument in btergm works without composition change", {
   set.seed(12345)
-  fit1 <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
-                 R = 100,
-                 offset = FALSE,
-                 usefastglm = TRUE,
-                 verbose = FALSE)
+  fit1 <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates),
+                                  R = 100,
+                                  offset = FALSE,
+                                  usefastglm = TRUE,
+                                  verbose = FALSE))
   set.seed(12345)
-  fit2 <- btergm(networks ~ edges + istar(2) + edgecov(covariates),
-                 R = 100,
-                 offset = TRUE,
-                 usefastglm = TRUE,
-                 verbose = FALSE)
+  fit2 <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates),
+                                  R = 100,
+                                  offset = TRUE,
+                                  usefastglm = TRUE,
+                                  verbose = FALSE))
   expect_equal(confint(fit1), confint(fit2))
 })
 
@@ -178,7 +178,7 @@ test_that("tbergm estimation works", {
   skip_on_cran()
   skip_if_not_installed("Bergm", minimum_version = "5.0.2")
   set.seed(12345)
-  fit <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE)
+  fit <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, verbose = FALSE))
   suppressMessages(suppressWarnings(fit_b <- tbergm(networks ~ edges + istar(2) + edgecov(covariates), verbose = FALSE)))
   expect_s3_class(fit_b@bergm, "bergm")
   expect_length(fit_b@bergm$ess, 4)
@@ -193,6 +193,7 @@ test_that("tbergm estimation works", {
 
 test_that("bipartite network objects work, including composition change, with and without offset", {
   skip_on_cran()
+  skip_if_not_installed("fastglm", minimum_version = "0.0.1")
   set.seed(12345)
   nw_matrix <- lapply(1:20, function(x) {
     mat <- matrix(rbinom(200, 1, 0.2), nrow = 20)
@@ -203,10 +204,10 @@ test_that("bipartite network objects work, including composition change, with an
   nw_network <- lapply(nw_matrix, function(x) {
     network::network(x, bipartite = TRUE, directed = FALSE)
   })
-  expect_warning(model1 <- btergm(nw_matrix ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = FALSE, verbose = FALSE), regexp = NA)
-  expect_warning(model2 <- btergm(nw_network ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = FALSE, verbose = FALSE), regexp = NA)
-  expect_warning(model3 <- btergm(nw_matrix ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = TRUE, verbose = FALSE), regexp = NA)
-  expect_warning(model4 <- btergm(nw_network ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = TRUE, verbose = FALSE), regexp = NA)
+  expect_warning(model1 <- btergm(nw_matrix ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = FALSE, verbose = FALSE, usefastglm = TRUE), regexp = NA)
+  expect_warning(model2 <- btergm(nw_network ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = FALSE, verbose = FALSE, usefastglm = TRUE), regexp = NA)
+  expect_warning(model3 <- btergm(nw_matrix ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = TRUE, verbose = FALSE, usefastglm = TRUE), regexp = NA)
+  expect_warning(model4 <- btergm(nw_network ~ edges + threetrail + kstar(2) + memory("autoregression"), R = 50, offset = TRUE, verbose = FALSE, usefastglm = TRUE), regexp = NA)
   expect_length(model1@coef, 4)
   expect_length(model2@coef, 4)
   expect_length(model3@coef, 4)
