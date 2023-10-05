@@ -1,0 +1,216 @@
+#' Swiss political science co-authorship network 2013
+#'
+#' Swiss political science co-authorship network 2013
+#'
+#' The Swiss political science co-authorship network 2013 dataset contains the
+#' co-authorship network of all political scientists at Swiss universities and
+#' research institutes in late 2013. The data are described in Leifeld and
+#' Ingold (2016) and Leifeld (2018). The data contained here include
+#' postdoctoral and professorial researchers but not PhD students, as in Leifeld
+#' (2018), without the PhD researchers included in Leifeld and Ingold (2016).
+#' For the full dataset, see the replication archive at DOI
+#' \doi{10.7910/DVN/85SK1M}.
+#'
+#' Leifeld and Ingold (2016) summarize the data collection strategy as follows:
+#' \emph{"Data gathering took place between July and December 2013. A single
+#' coder pursued a three-step coding procedure: he first created a list of all
+#' relevant university departments and research institutes that host political
+#' scientists in Switzerland, then he browsed the websites of these institutes
+#' and entered all researchers along with several details about them into a
+#' database, including their seniority status (predoctoral, postdoctoral, or
+#' professor) and the URL of their publication list (either the CV, the
+#' institutional website, a private homepage, or several of those items in order
+#' to get a complete publication profile of each person). After entering all
+#' researchers of an institute, the coder went through the researchers'
+#' publication lists and entered the following pieces of information for each
+#' publication into the database: the reporting author, the names of all
+#' co-authors, the title of the publication, the year, the name of the journal
+#' or book in which the publication appeared (if applicable), the names of all
+#' editors (if applicable), and a classification of the type of publication
+#' (academic journal, book chapter, monograph, edited volume, other). Most
+#' publications are relatively recent, but the earliest publications in the
+#' database date back to the 1960s. After completing these three steps, data
+#' entered at the beginning was double-checked in order to avoid bias due to new
+#' publications that may have shown up during the coding time period. This
+#' procedure is the best one can do in terms of completeness, but it should be
+#' clear that it crucially depends on the accuracy of the self-reported
+#' bibliographic information. For example, if a researcher did not update his or
+#' her CV or list of publications for the previous six months, those most recent
+#' publications only had a chance to enter the database if the co-authors listed
+#' the publication on their website. In some relatively rare cases, all authors
+#' failed to report recent updates, and this may cause minor inaccuracies in the
+#' network dataset, mostly affecting very recent publications in 2013 because
+#' there is, on average, a reporting lag."}
+#'
+#' Based on the collected publication data, a co-authorship network matrix with
+#' 156 nodes was created. In addition to this matrix, the dataset here contains
+#' node attribute data (institutional affiliations, location, demographics,
+#' language shares, publication type shares) and relational covariates
+#' (geographical distance, similarity in terms of the share of English articles,
+#' and topic similarity) as described in Leifeld (2018). The dataset can be used
+#' to replicate Leifeld (2018), but only approximately due to changes in the
+#' estimation routine in the \pkg{ergm} package since the article was published.
+#'
+#' @name coauthor
+#'
+#' @aliases ch_coauthor ch_coaut ch_dist100km ch_en_article_sim ch_nodeattr
+#'   ch_topicsim
+#'
+#' @docType data
+#'
+#' @format
+#' \describe{
+#' \item{\code{ch_coaut}}{is an undirected, weighted 156 x 156 adjancency matrix
+#' indicating how many publications political scientist in Switzerland shared
+#' with each other as reported in late 2013, including only postdoctoral and
+#' professorial political scientists affiliated with research institutes or
+#' universities. The exact edge weight should be treated with caution because
+#' some publications were counted multiple times because they were reported by
+#' multiple co-authors. The diagonal contains the number of publications of
+#' the respective author. Leifeld and Ingold (2016) describe the data collection
+#' process in more detail.}
+#'
+#' \item{\code{ch_nodeattr}}{is a data frame with node attributes/variables for
+#' the 156 researchers, in the same alphabetical row order as the network
+#' matrix. The first twelve columns with column labels starting with "inst_" are
+#' affiliations with different institutions (1 = affiliated; 0 = no
+#' affiliation). The next seven columns with column labels starting with "city_"
+#' contain the locations of the researchers' institutional affiliations. The
+#' "phdyear" column contains the self-reported year of obtaining the PhD, and
+#' the "birthyear" column contains the self-reported or publicly available year
+#' of birth; these two variables contain many missing values. The "status"
+#' column indicates whether a researcher was listed as a professor or as having
+#' postdoctoral or other non-professorial status at the time. "chairtitle" is
+#' the name of the chair or research group the researcher reported to be a
+#' member of. "num_publications" is the total number of publications,
+#' "num_articles" the number of journal articles among them, "num_books" the
+#' number of books among them, "share_articles" the percentage of journal
+#' articles among the publications, and "share_books" the percentage of
+#' monographs and edited volumes among the publications. The four columns with
+#' column names starting with "lang_" contain the relative shares of English,
+#' French, German, Italian, and other languages among the publications of the
+#' researcher. The column "share_en_articles" contains the percentage of English
+#' journal articles among all publications of the researcher. "male" is a dummy
+#' variable indicating whether the author is male (1) or female (0). The
+#' variables contained here are described in Leifeld (2018).}
+#'
+#' \item{\code{ch_dist100km}}{is a 156 x 156 matrix containing the geographical
+#' distance between any two researchers measured in units of 100km (for a
+#' reasonable scaling of coefficients in a statistical model), computed over the
+#' latitude and longitude of their main institutional affiliations. The measure
+#' is included in Leifeld (2018).}
+#'
+#' \item{\code{ch_en_article_sim}}{is a 156 x 156 matrix containing the
+#' similarity between any two researchers in terms of the share of their work
+#' that is published in English and as journal articles. Values closer to 1.0
+#' indicate that two researchers were similar in their language and publication
+#' type portfolio while values closer to 0 indicate that they were relatively
+#' dissimilar. Only extra-dyadic publications were counted in establishing this
+#' similarity. I.e., if researcher A and B co-authored, their joint publications
+#' were not included in establishing their English article share similarity.
+#' This was done to reduce endogeneity/reverse causality when modeling
+#' co-authorship as a function of English article share similarity. The measure
+#' is described in Leifeld (2018).}
+#'
+#' \item{\code{ch_topicsim}}{is a 156 x 156 topic similarity matrix for the
+#' researchers. Topic similarities were computed by taking into account all
+#' words in the publication titles of any two researchers, excluding the
+#' publications they published as co-authors (i.e., only extra-dyadic
+#' publications, to reduce endogeneity/reverse causality in modeling
+#' co-authorship ties as a function of topic similarity). Topic similarity was
+#' established by computing the cosine similarity between the tf-idf scores for
+#' the title words of any two researchers (i.e., a vector space model). Leifeld
+#' (2018) contains more details on this procedure.}
+#' }
+#'
+#' @references
+#' Leifeld, Philip (2018): Polarization in the Social Sciences: Assortative
+#' Mixing in Social Science Collaboration Networks is Resilient to
+#' Interventions. \emph{Physica A: Statistical Mechanics and its Applications}
+#' 507: 510--523. \doi{10.1016/j.physa.2018.05.109}. Full replication data:
+#' \doi{10.7910/DVN/85SK1M}.
+#'
+#' Leifeld, Philip and Karin Ingold (2016): Co-authorship Networks in Swiss
+#' Political Research. \emph{Swiss Political Science Review} 22(2): 264--287.
+#' \doi{10.1111/spsr.12193}.
+#'
+#' @source The data were collected from public information online. The full
+#' data collection details are described in Leifeld and Ingold (2016).
+#'
+#' @keywords datasets
+#'
+#' @examples
+#' \dontrun{
+#' # Replication code for the full Swiss co-authorship ERGM in Leifeld (2018).
+#' # Note that the estimates can only be reproduced approximately due to
+#' # internal changes in the ergm package.
+#'
+#' library("network")
+#' library("ergm")
+#'
+#' data("ch_coauthor")
+#'
+#' # set up network object with node attributes
+#' ch_nw <- network(ch_coaut, directed = FALSE)
+#' set.vertex.attribute(ch_nw, "frequency", ch_nodeattr$num_publications)
+#' set.vertex.attribute(ch_nw, "status", as.character(ch_nodeattr$status))
+#' set.vertex.attribute(ch_nw, "male", ch_nodeattr$male)
+#' set.vertex.attribute(ch_nw, "share_en_articles",
+#'                      ch_nodeattr$share_en_articles)
+#'
+#' # create same affiliation matrix
+#' ch_inst_indices <- which(grepl("^inst_.+", colnames(ch_nodeattr)))
+#' ch_same_affiliation <- as.matrix(ch_nodeattr[, ch_inst_indices]) %*%
+#'   t(ch_nodeattr[, ch_inst_indices])
+#'
+#' # create same chair matrix
+#' ch_nodeattr$chairtitle[ch_nodeattr$chairtitle == ""] <- NA
+#' ch_same_chair <- matrix(0, nrow = nrow(ch_same_affiliation),
+#'                         ncol = ncol(ch_same_affiliation))
+#' for (i in 1:length(ch_nodeattr$chairtitle)) {
+#'   for (j in 1:length(ch_nodeattr$chairtitle)) {
+#'     if (i != j &&
+#'         !is.na(ch_nodeattr$chairtitle[i]) &&
+#'         !is.na(ch_nodeattr$chairtitle[j]) &&
+#'         ch_nodeattr$chairtitle[i] == ch_nodeattr$chairtitle[j] &&
+#'         ch_same_affiliation[i, j] == TRUE) {
+#'       ch_same_chair[i, j] <- 1
+#'     }
+#'   }
+#' }
+#' rownames(ch_same_chair) <- rownames(ch_same_affiliation)
+#' colnames(ch_same_chair) <- colnames(ch_same_affiliation)
+#'
+#' # create supervision matrix (same chair + affiliation + mixed seniority)
+#' ch_supervision <- ch_same_affiliation *
+#'   ch_same_chair *
+#'   matrix(ch_nodeattr$status == "professor",
+#'          nrow = nrow(ch_same_chair),
+#'          ncol = ncol(ch_same_chair),
+#'          byrow = FALSE) *
+#'   matrix(ch_nodeattr$status != "professor",
+#'          nrow = nrow(ch_same_chair),
+#'          ncol = ncol(ch_same_chair),
+#'          byrow = TRUE)
+#'
+#' # ERGM estimation
+#' ch_model <- ergm(ch_nw ~
+#'                    edges +
+#'                    gwesp(0.3, fixed = TRUE) +
+#'                    gwdegree(0.4, fixed = TRUE) +
+#'                    nodecov("frequency") +
+#'                    nodefactor("status") +
+#'                    nodefactor("male") +
+#'                    nodematch("male") +
+#'                    edgecov(ch_dist100km) +
+#'                    edgecov(ch_same_affiliation) +
+#'                    edgecov(ch_same_chair) +
+#'                    edgecov(ch_supervision) +
+#'                    edgecov(ch_topicsim) +
+#'                    nodecov("share_en_articles") +
+#'                    edgecov(ch_en_article_sim),
+#'                  control = control.ergm(MCMLE.termination = "Hummel",
+#'                                         MCMLE.effectiveSize = NULL))
+#' summary(ch_model)  # corresponds Column 1 in Table 3 in Leifeld (2018)
+#' }
+NULL

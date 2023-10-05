@@ -62,6 +62,7 @@ test_that("fastglm works like speedglm", {
 })
 
 test_that("offset argument in btergm works without composition change", {
+  skip_if_not_installed("fastglm", minimum_version = "0.0.1")
   set.seed(12345)
   fit1 <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates),
                                   R = 100,
@@ -79,6 +80,7 @@ test_that("offset argument in btergm works without composition change", {
 
 test_that("offset argument in btergm works with composition change", {
   skip_on_cran()
+  skip_if_not_installed("fastglm", minimum_version = "0.0.1")
 
   # example taken from 2018 JSS article
   require("sna")
