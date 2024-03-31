@@ -42,8 +42,7 @@
 #' \doi{10.18637/jss.v083.i06}.
 #'
 #' @name btergm-package
-#' @docType package
-NULL
+"_PACKAGE"
 
 #' Display version number and date when the package is loaded
 #'
@@ -57,7 +56,7 @@ NULL
     'Package:  btergm\n',
     'Version:  ', desc$Version, '\n',
     'Date:     ', desc$Date, '\n',
-    'Authors:  Philip Leifeld (University of Essex)\n',
+    'Authors:  Philip Leifeld (University of Manchester)\n',
     '          Skyler J. Cranmer (The Ohio State University)\n',
     '          Bruce A. Desmarais (Pennsylvania State University)\n'
   )

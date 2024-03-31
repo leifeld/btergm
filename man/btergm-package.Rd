@@ -45,6 +45,13 @@ Exponential Random Graph Models with btergm: Estimation and Bootstrap
 Confidence Intervals. \emph{Journal of Statistical Software} 83(6): 1--36.
 \doi{10.18637/jss.v083.i06}.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/leifeld/btergm}
+}
+
+}
 \author{
 Philip Leifeld, Skyler J. Cranmer, Bruce A. Desmarais
 }
