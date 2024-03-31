@@ -32,7 +32,7 @@
 #'     \link{rocpr} function).
 #' }
 #' 
-#' Users can create their own statistics for use with the code{gof} methods. To
+#' Users can create their own statistics for use with the \code{gof} methods. To
 #' do so, one needs to write a function that accepts and returns the respective
 #' objects described in the enumeration above. It is advisable to look at the
 #' definitions of some of the existing functions to add custom functions. It is
