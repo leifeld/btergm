@@ -466,9 +466,10 @@ setMethod(f = "summary", signature = "btergm", definition = function(object,
 #'   object, and the offset matrices inform the estimation preparation routine
 #'   which dyads are constrained to be absent. After MPLE data preparation, the
 #'   dyads with these structural zeros are removed before the GLM is estimated.
-#'   If \code{offset = FALSE} is set (the default behavior), all nodes that are
-#'   not present across all covariates and networks within a time step are
-#'   removed completely from the respective object(s) before estimation begins.
+#'   If \code{offset = FALSE} is set, all nodes that are not present across all
+#'   covariates and networks within a time step are removed completely from the
+#'   respective object(s) before the change statistics are computed for all
+#'   remaining dyads.
 #' @param returndata Return the processed input data instead of estimating and
 #'   returning the model? In the \code{btergm} case, this will return a data
 #'   frame with the dyads of the dependent variable/network and the change
@@ -713,70 +714,54 @@ btergm <- function(formula,
     message("\nReturning data frame with change statistics.")
   }
 
-  # create MPLE data structures
-  if (offset == TRUE) {  # via structural zeros and an offset term
-    # create the data for MPLE with structural zeros
-    Y <- NULL  # dependent variable
-    X <- NULL  # independent variables data frame
-    W <- NULL  # weights for each observation
-    O <- NULL  # offset term
-    for (i in 1:length(l$networks)) {
-      nw <- ergm::ergm.getnetwork(form)
-      model <- ergm::ergm_model(form, nw, initialfit = TRUE)
-      Clist.miss <- ergm::ergm.design(nw, verbose = FALSE)
-      control.ergm$init <- c(rep(NA, length(l$rhs.terms) - 1), 1)
-      pl <- ergm::ergm.pl(nw,
-                          Clist.miss,
-                          model,
-                          theta.offset = c(rep(FALSE, length(l$rhs.terms) - 1), TRUE),
-                          verbose = FALSE,
-                          control = control.ergm)
-      Y <- c(Y, pl$zy[pl$foffset == 0])
-      X <- rbind(X, cbind(data.frame(pl$xmat[pl$foffset == 0, ], check.names = FALSE), i))
-      W <- c(W, pl$wend[pl$foffset == 0])
-      O <- c(O, pl$foffset[pl$foffset == 0])
-    }
-    term.names <- colnames(X)[-length(colnames(X))]
-    term.names <- c(term.names, "time")
-    colnames(X) <- term.names
-  } else {  # by deleting structural zero observations per time step
-    Y <- NULL
-    X <- NULL
-    W <- NULL
-    O <- NULL  # will remain NULL and will be fed into GLM
-    for (i in 1:length(l$networks)) {
-      mpli <- ergm::ergmMPLE(form, control = control.ergm)
-      Y <- c(Y, mpli$response)
-
-      # fix different factor levels across time points
-      if (i > 1 && ncol(X) != ncol(mpli$predictor) + 1) {
-        cn.x <- colnames(X)[-ncol(X)]  # exclude last column "i"
-        cn.i <- colnames(mpli$predictor)
-        names.x <- cn.x[which(!cn.x %in% cn.i)]
-        names.i <- cn.i[which(!cn.i %in% cn.x)]
-        if (length(names.x) > 0) {
-          for (nm in 1:length(names.x)) {
-            mpli$predictor <- cbind(mpli$predictor, rep(0,
-                nrow(mpli$predictor)))
-            colnames(mpli$predictor)[ncol(mpli$predictor)] <- names.x[nm]
-          }
+  # create MPLE data structures (with or without structural zeros)
+  Y <- NULL  # dependent variable
+  X <- NULL  # independent variables data frame
+  W <- NULL  # weights for each observation
+  O <- NULL  # offset term
+  for (i in 1:length(l$networks)) {
+    pl <- ergm::ergmMPLE(form, control = control.ergm) # get the response, predictor matrix, weights, and offset values
+    offset_col_index <- which(attributes(pl)$etamap$offsettheta) # in which column of the predictor matrix are structural zeros stored (if any)?
+    
+    # fix different factor levels across time points
+    if (i > 1 && ncol(X) != ifelse(offset, ncol(pl$predictor[, -offset_col_index]) + 1, ncol(pl$predictor) + 1)) {
+      cn.x <- colnames(X)[-ncol(X)]  # exclude last column "i"
+      cn.i <- colnames(ifelse(offset, pl$predictor[, -offset_col_index], pl$predictor))
+      names.x <- cn.x[which(!cn.x %in% cn.i)]
+      names.i <- cn.i[which(!cn.i %in% cn.x)]
+      if (length(names.x) > 0) {
+        for (nm in 1:length(names.x)) {
+          pl$predictor <- cbind(pl$predictor, rep(0, nrow(pl$predictor)))
+          colnames(pl$predictor)[ncol(pl$predictor)] <- names.x[nm]
         }
-        if (length(names.i) > 0) {
-          for (nm in 1:length(names.i)) {
-            X <- cbind(X[, 1:(ncol(X) - 1)], rep(0, nrow(X)), X[, ncol(X)])
-            colnames(X)[ncol(X) - 1] <- names.i[nm]
-          }
+      }
+      if (length(names.i) > 0) {
+        for (nm in 1:length(names.i)) {
+          X <- cbind(X[, 1:(ncol(X) - 1)], rep(0, nrow(X)), X[, ncol(X)])
+          colnames(X)[ncol(X) - 1] <- names.i[nm]
         }
-      }  # end of column fix
-
-      X <- rbind(X, cbind(mpli$predictor, i))
-      W <- c(W, mpli$weights)
+      }
+    }  # end of column fix
+    
+    if (length(offset_col_index) == 0) {
+      offset_row_indices <- 1:nrow(pl$predictor) # no offset terms/structural zeros -> use all observations
+    } else {
+      offset_row_indices <- which(pl$predictor[, offset_col_index] == 0) # which rows of the predictor matrix indicate dyads that are not structural zeros?
     }
-    term.names <- colnames(X)[-length(colnames(X))]
-    term.names <- c(term.names, "time")
-    X <- data.frame(X)
-    colnames(X) <- term.names
+    
+    Y <- c(Y, pl$response[offset_row_indices]) # append the dependent variable where the values are not structural zeros
+    W <- c(W, pl$weights[offset_row_indices]) # append the weights for estimation for dyads unaffected by structural zeros
+    if (offset) {
+      X <- rbind(X, cbind(data.frame(pl$predictor[offset_row_indices, -offset_col_index], check.names = FALSE), i)) # append the predictor variables where the values are not structural zeros; omit the offset variable (if any); add a column for the time point
+      O <- c(O, pl$predictor[offset_row_indices, offset_col_index]) # append the number of zeros corresponding to the number of dyads unaffected by structural zeros
+    } else{
+      X <- rbind(X, cbind(data.frame(pl$predictor, check.names = FALSE), i)) # append the predictor variables where the values are not structural zeros; omit the offset variable (if any); add a column for the time point
+      O <- c(O, rep(0, nrow(pl$predictor))) # no structural zeros -> just append zeros for every observation as there are no offsets
+    }
   }
+  term.names <- colnames(X)[-length(colnames(X))]
+  term.names <- c(term.names, "time")
+  colnames(X) <- term.names
 
   # remove time variable for estimation
   unique.time.steps <- unique(X$time)

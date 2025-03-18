@@ -41,9 +41,10 @@ matrices and network objects are inflated to the dimensions of the largest
 object, and the offset matrices inform the estimation preparation routine
 which dyads are constrained to be absent. After MPLE data preparation, the
 dyads with these structural zeros are removed before the GLM is estimated.
-If \code{offset = FALSE} is set (the default behavior), all nodes that are
-not present across all covariates and networks within a time step are
-removed completely from the respective object(s) before estimation begins.}
+If \code{offset = FALSE} is set, all nodes that are not present across all
+covariates and networks within a time step are removed completely from the
+respective object(s) before the change statistics are computed for all
+remaining dyads.}
 
 \item{returndata}{Return the processed input data instead of estimating and
 returning the model? In the \code{btergm} case, this will return a data

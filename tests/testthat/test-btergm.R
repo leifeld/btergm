@@ -64,17 +64,9 @@ test_that("fastglm works like speedglm", {
 test_that("offset argument in btergm works without composition change", {
   skip_if_not_installed("fastglm", minimum_version = "0.0.1")
   set.seed(12345)
-  fit1 <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates),
-                                  R = 100,
-                                  offset = FALSE,
-                                  usefastglm = TRUE,
-                                  verbose = FALSE))
+  fit1 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, offset = FALSE, usefastglm = TRUE, verbose = FALSE)
   set.seed(12345)
-  fit2 <- suppressWarnings(btergm(networks ~ edges + istar(2) + edgecov(covariates),
-                                  R = 100,
-                                  offset = TRUE,
-                                  usefastglm = TRUE,
-                                  verbose = FALSE))
+  fit2 <- btergm(networks ~ edges + istar(2) + edgecov(covariates), R = 100, offset = TRUE, usefastglm = TRUE, verbose = FALSE)
   expect_equal(confint(fit1), confint(fit2))
 })
 
@@ -122,6 +114,7 @@ test_that("offset argument in btergm works with composition change", {
                  nodeofactor("sex") + nodeifactor("sex") + nodematch("sex") +
                  edgecov(primary) + delrecip + memory(type = "stability"),
                R = 100, usefastglm = TRUE, offset = TRUE, verbose = FALSE)
+  set.seed(12345)
   m2 <- btergm(friendship ~ edges + mutual + ttriple +
                  transitiveties + ctriple + nodeicov("idegsqrt") +
                  nodeicov("odegsqrt") + nodeocov("odegsqrt") +
