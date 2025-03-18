@@ -428,15 +428,11 @@ createGOF <- function(simulations,
           } else if (parallel[1] == "multicore") {
             test <- suppressMessages(statistics[[z]](simulations[[1]]))
             if (is.numeric(test) && length(test) == 1) {
-              simulated <- suppressMessages(unlist(mclapply(simulations, 
-                                                            statistics[[z]], ..., mc.cores = ncpus)))
-              observed <- suppressMessages(unlist(mclapply(target, 
-                                                           statistics[[z]], ..., mc.cores = ncpus)))
+              simulated <- suppressMessages(unlist(mclapply(simulations, statistics[[z]], ..., mc.cores = ncpus)))
+              observed <- suppressMessages(unlist(mclapply(target, statistics[[z]], ..., mc.cores = ncpus)))
             } else {  # no mcsapply available because different length vectors
-              simulated <- suppressMessages(mclapply(simulations, 
-                                                     statistics[[z]], ..., mc.cores = ncpus))
-              observed <- suppressMessages(mclapply(target, statistics[[z]], 
-                                                    ..., mc.cores = ncpus))
+              simulated <- suppressMessages(mclapply(simulations, statistics[[z]], ..., mc.cores = ncpus))
+              observed <- suppressMessages(mclapply(target, statistics[[z]], ..., mc.cores = ncpus))
               max.length.sim <- max(sapply(simulated, length), na.rm = TRUE)
               max.length.obs <- max(sapply(observed, length), na.rm = TRUE)
               max.length <- max(max.length.sim, max.length.obs, na.rm = TRUE)
@@ -449,10 +445,8 @@ createGOF <- function(simulations,
             }
           } else {
             clusterEvalQ(cl, library("ergm"))
-            simulated <- suppressMessages(parSapply(cl = cl, simulations, 
-                                                    statistics[[z]], ...))
-            observed <- suppressMessages(parSapply(cl = cl, target, 
-                                                   statistics[[z]], ...))
+            simulated <- suppressMessages(parSapply(cl = cl, simulations, statistics[[z]], ...))
+            observed <- suppressMessages(parSapply(cl = cl, target, statistics[[z]], ...))
           }
           
           # if simulations have different dimensions, convert list to matrix

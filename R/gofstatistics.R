@@ -109,7 +109,7 @@
 #' # method is used to compute the statistic. Names are attached to the 
 #' # resulting vector for the different indegree values. Then the vector 
 #' # is returned.
-#' 
+#'
 #' ideg <- function(mat, ...) {
 #'   d <- summary(mat ~ idegree(0:(nrow(mat) - 1)))
 #'   names(d) <- 0:(length(d) - 1)
@@ -124,19 +124,18 @@
 #' 
 #' @importFrom Matrix Matrix
 #' @importFrom ROCR performance prediction
-#' @importFrom igraph graph.adjacency spinglass.community fastgreedy.community
-#'   cluster_louvain modularity edge.betweenness.community optimal.community
-#'   walktrap.community
+#' @importFrom igraph graph_from_adjacency_matrix cluster_spinglass 
+#'   cluster_fast_greedy cluster_louvain modularity cluster_edge_betweenness
+#'   cluster_optimal cluster_walktrap
 #' @importFrom sna triad.census gden symmetrize
-#' @importFrom network summary.network
-#' @importFrom ergm ergm.geodistdist
+#' @importFrom ergm ergm.geodistdist summary_formula
 NULL
 
 #' @describeIn gof-statistics Multivariate GOF statistic: dyad-wise shared
 #'   partner distribution
 #' @export
 dsp <- function(mat, ...) {
-  d <- summary(mat ~ dsp(0:(nrow(mat) - 2)))
+  d <- ergm::summary_formula(mat ~ dsp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Dyad-wise shared partners"
   return(d)
@@ -146,7 +145,7 @@ dsp <- function(mat, ...) {
 #'   partner distribution
 #' @export
 esp <- function(mat, ...) {
-  d <- summary(mat ~ esp(0:(nrow(mat) - 2)))
+  d <- ergm::summary_formula(mat ~ esp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Edge-wise shared partners"
   return(d)
@@ -156,7 +155,7 @@ esp <- function(mat, ...) {
 #'   partner distribution
 #' @export
 nsp <- function(mat, ...) {
-  d <- summary(mat ~ nsp(0:(nrow(mat) - 2)))
+  d <- ergm::summary_formula(mat ~ nsp(0:(nrow(mat) - 2)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Non-edge-wise shared partners"
   return(d)
@@ -165,8 +164,7 @@ nsp <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: degree distribution
 #' @export
 deg <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) 
-      - 1)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Degree"
   return(d)
@@ -176,8 +174,7 @@ deg <- function(mat, ...) {
 #'   for the first mode
 #' @export
 b1deg <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
-      b1degree(0:nrow(mat)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b1degree(0:nrow(mat)))
   names(d) <- 0:(length(d)- 1)
   attributes(d)$label <- "Degree (first mode)"
   return(d)
@@ -187,8 +184,7 @@ b1deg <- function(mat, ...) {
 #'   for the second mode
 #' @export
 b2deg <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
-      b2degree(0:ncol(mat)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b2degree(0:ncol(mat)))
   names(d) <- 0:(length(d)- 1)
   attributes(d)$label <- "Degree (second mode)"
   return(d)
@@ -197,8 +193,7 @@ b2deg <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: outdegree distribution
 #' @export
 odeg <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) 
-      - 1)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Outdegree"
   return(d)
@@ -207,8 +202,7 @@ odeg <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: indegree distribution
 #' @export
 ideg <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) 
-      - 1)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Indegree"
   return(d)
@@ -217,8 +211,7 @@ ideg <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: k-star distribution
 #' @export
 kstar <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) 
-      - 1)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star"
   return(d)
@@ -228,8 +221,7 @@ kstar <- function(mat, ...) {
 #'   for the first mode
 #' @export
 b1star <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
-      b1star(0:nrow(mat)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b1star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star (first mode)"
   return(d)
@@ -239,8 +231,7 @@ b1star <- function(mat, ...) {
 #'   for the second mode
 #' @export
 b2star <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ 
-      b2star(0:nrow(mat)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b2star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star (second mode)"
   return(d)
@@ -250,8 +241,7 @@ b2star <- function(mat, ...) {
 #'   distribution
 #' @export
 ostar <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) 
-      - 1)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Outgoing k-star"
   return(d)
@@ -261,8 +251,7 @@ ostar <- function(mat, ...) {
 #'   distribution
 #' @export
 istar <- function(mat, ...) {
-  d <- summary(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) 
-      - 1)))
+  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Incoming k-star"
   return(d)
@@ -271,7 +260,7 @@ istar <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: k-cycle distribution
 #' @export
 kcycle <- function(mat, ...) {
-  d <- summary(mat ~ cycle(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(mat ~ cycle(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Cycle"
   return(d)
@@ -294,8 +283,7 @@ geodesic <- function(mat, ...) {
     }
     return(x)
   }
-  g <- fillup(ergm::ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), 
-      nrow(mat) - 1)
+  g <- fillup(ergm::ergm.geodistdist(network(as.matrix(mat), directed = TRUE)), nrow(mat) - 1)
   attributes(g)$label <- "Geodesic distances"
   return(g)
 }
@@ -306,8 +294,7 @@ geodesic <- function(mat, ...) {
 #' @importFrom network network
 #' @export
 triad.directed <- function(mat, ...) {
-  tr <- sna::triad.census(network::network(as.matrix(mat), directed = TRUE), 
-      mode = "digraph")[1, ]
+  tr <- sna::triad.census(network::network(as.matrix(mat), directed = TRUE), mode = "digraph")[1, ]
   attributes(tr)$label <- "Triad census"
   return(tr)
 }
@@ -318,8 +305,7 @@ triad.directed <- function(mat, ...) {
 #' @importFrom network network
 #' @export
 triad.undirected <- function(mat, ...) {
-  tr <- sna::triad.census(network::network(as.matrix(mat), directed = FALSE), 
-      mode = "graph")[1, ]
+  tr <- sna::triad.census(network::network(as.matrix(mat), directed = FALSE), mode = "graph")[1, ]
   attributes(tr)$label <- "Triad census"
   return(tr)
 }
@@ -354,8 +340,8 @@ walktrap.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
-    wt <- igraph::walktrap.community(g)
+    g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = m)
+    wt <- igraph::cluster_walktrap(g)
     mod <- igraph::modularity(wt)
   }
   attributes(mod)$label <- "Modularity (walktrap)"
@@ -384,8 +370,8 @@ walktrap.roc <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::walktrap.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_walktrap(g)$membership
     }
     return(comemb(memb))
   }
@@ -420,8 +406,8 @@ walktrap.pr <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g.obs <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::walktrap.community(g.obs)$membership
+      g.obs <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_walktrap(g.obs)$membership
     }
     return(comemb(memb))
   }
@@ -442,7 +428,7 @@ fastgreedy.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(as.matrix(mat), mode = "undirected")
+    g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = "max")
     wt <- igraph::fastgreedy.community(g)
     mod <- igraph::modularity(wt)
   }
@@ -467,8 +453,8 @@ fastgreedy.roc <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
-      memb <- igraph::fastgreedy.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "undirected")
+      memb <- igraph::cluster_fast_greedy(g)$membership
     }
     return(comemb(memb))
   }
@@ -498,8 +484,8 @@ fastgreedy.pr <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = "undirected")
-      memb <- igraph::fastgreedy.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "undirected")
+      memb <- igraph::cluster_fast_greedy(g)$membership
     }
     return(comemb(memb))
   }
@@ -516,16 +502,11 @@ fastgreedy.pr <- function(sim, obs, ...) {
 #'   modularity distribution
 #' @export
 louvain.modularity <- function(mat, ...) {
-  if (is.mat.directed(as.matrix(mat))) {
-    m <- "directed"
-  } else {
-    m <- "undirected"
-  }
   mat[is.na(mat)] <- 0
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
+    g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = "max")
     clus <- igraph::cluster_louvain(g)
     mod <- igraph::modularity(clus)
   }
@@ -546,16 +527,10 @@ louvain.roc <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
-    } else {
-      m <- "undirected"
-    }
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "max")
       memb <- igraph::cluster_louvain(g)$membership
     }
     return(comemb(memb))
@@ -582,16 +557,10 @@ louvain.pr <- function(sim, obs, ...) {
     obs[[i]][is.na(obs[[i]])] <- 0
   }
   fun <- function(x) {
-    m <- is.mat.directed(as.matrix(x))
-    if (m == TRUE) {
-      m <- "directed"
-    } else {
-      m <- "undirected"
-    }
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "max")
       memb <- igraph::cluster_louvain(g)$membership
     }
     return(comemb(memb))
@@ -618,8 +587,8 @@ maxmod.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
-    wt <- igraph::optimal.community(g)
+    g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = m)
+    wt <- igraph::cluster_optimal(g)
     mod <- igraph::modularity(wt)
   }
   attributes(mod)$label <- "Maximum modularity"
@@ -649,8 +618,8 @@ maxmod.roc <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::optimal.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_optimal(g)$membership
     }
     return(comemb(memb))
   }
@@ -686,8 +655,8 @@ maxmod.pr <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::optimal.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_optimal(g)$membership
     }
     return(comemb(memb))
   }
@@ -713,8 +682,8 @@ edgebetweenness.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
-    eb <- igraph::edge.betweenness.community(g)
+    g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = m)
+    eb <- igraph::cluster_edge_betweenness(g)
     mod <- igraph::modularity(eb)
   }
   attributes(mod)$label <- "Modularity (edge betweenness)"
@@ -744,8 +713,8 @@ edgebetweenness.roc <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::edge.betweenness.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_edge_betweenness(g)$membership
     }
     return(comemb(memb))
   }
@@ -781,8 +750,8 @@ edgebetweenness.pr <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::edge.betweenness.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_edge_betweenness(g)$membership
     }
     return(comemb(memb))
   }
@@ -808,8 +777,8 @@ spinglass.modularity <- function(mat, ...) {
   if (sum(mat) == 0) {
     mod <- 0
   } else {
-    g <- igraph::graph.adjacency(as.matrix(mat), mode = m)
-    eb <- igraph::spinglass.community(g)
+    g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = m)
+    eb <- igraph::cluster_spinglass(g)
     mod <- igraph::modularity(eb)
   }
   attributes(mod)$label <- "Modularity (spinglass)"
@@ -838,8 +807,8 @@ spinglass.roc <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::spinglass.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_spinglass(g)$membership
     }
     return(comemb(memb))
   }
@@ -874,8 +843,8 @@ spinglass.pr <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph.adjacency(as.matrix(x), mode = m)
-      memb <- igraph::spinglass.community(g)$membership
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = m)
+      memb <- igraph::cluster_spinglass(g)$membership
     }
     return(comemb(memb))
   }

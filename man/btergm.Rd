@@ -245,6 +245,11 @@ Desmarais, Bruce A. and Skyler J. Cranmer (2010): Consistent Confidence
   Processing Systems 2010 Workshop on Computational Social Science and the
   Wisdom of Crowds}.
 
+Leifeld, Philip and Skyler J. Cranmer (2019): A Theoretical and Empirical
+  Comparison of the Temporal Exponential Random Graph Model and the
+  Stochastic Actor-Oriented Model. \emph{Network Science} 7(1): 20-51.
+  \doi{10.1017/nws.2018.26}.
+
 Leifeld, Philip, Skyler J. Cranmer and Bruce A. Desmarais (2017):
   Temporal Exponential Random Graph Models with btergm: Estimation and
   Bootstrap Confidence Intervals. \emph{Journal of Statistical Software}
