@@ -1,4 +1,4 @@
-context("test btergm estimation")
+context("test chemnet replication")
 
 test_that("chemnet example can be replicated", {
   skip_on_cran()

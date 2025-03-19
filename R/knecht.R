@@ -120,8 +120,7 @@
 #' investigator Tom A. B. Snijders.
 #'
 #' \itemize{
-#' \item Complete original data:
-#' \url{https://easy.dans.knaw.nl/ui/datasets/id/easy-dataset:48665}
+#' \item Complete original data: \doi{10.17026/dans-z9b-h2bp}
 #' \item This excerpt in Siena format:
 #' \url{http://www.stats.ox.ac.uk/~snijders/siena/klas12b.zip}
 #' \item Siena dataset description:

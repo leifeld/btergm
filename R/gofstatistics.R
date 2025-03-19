@@ -164,7 +164,7 @@ nsp <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: degree distribution
 #' @export
 deg <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = FALSE) ~ degree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Degree"
   return(d)
@@ -174,7 +174,7 @@ deg <- function(mat, ...) {
 #'   for the first mode
 #' @export
 b1deg <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b1degree(0:nrow(mat)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b1degree(0:nrow(mat)))
   names(d) <- 0:(length(d)- 1)
   attributes(d)$label <- "Degree (first mode)"
   return(d)
@@ -184,7 +184,7 @@ b1deg <- function(mat, ...) {
 #'   for the second mode
 #' @export
 b2deg <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b2degree(0:ncol(mat)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b2degree(0:ncol(mat)))
   names(d) <- 0:(length(d)- 1)
   attributes(d)$label <- "Degree (second mode)"
   return(d)
@@ -193,7 +193,7 @@ b2deg <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: outdegree distribution
 #' @export
 odeg <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = TRUE) ~ odegree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Outdegree"
   return(d)
@@ -202,7 +202,7 @@ odeg <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: indegree distribution
 #' @export
 ideg <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = TRUE) ~ idegree(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Indegree"
   return(d)
@@ -211,7 +211,7 @@ ideg <- function(mat, ...) {
 #' @describeIn gof-statistics Multivariate GOF statistic: k-star distribution
 #' @export
 kstar <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = FALSE) ~ kstar(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star"
   return(d)
@@ -221,7 +221,7 @@ kstar <- function(mat, ...) {
 #'   for the first mode
 #' @export
 b1star <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b1star(0:nrow(mat)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b1star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star (first mode)"
   return(d)
@@ -231,7 +231,7 @@ b1star <- function(mat, ...) {
 #'   for the second mode
 #' @export
 b2star <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b2star(0:nrow(mat)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = FALSE, bipartite = TRUE) ~ b2star(0:nrow(mat)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "k-star (second mode)"
   return(d)
@@ -241,7 +241,7 @@ b2star <- function(mat, ...) {
 #'   distribution
 #' @export
 ostar <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = TRUE) ~ ostar(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Outgoing k-star"
   return(d)
@@ -251,7 +251,7 @@ ostar <- function(mat, ...) {
 #'   distribution
 #' @export
 istar <- function(mat, ...) {
-  d <- ergm::summary_formula(network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) - 1)))
+  d <- ergm::summary_formula(network::network(as.matrix(mat), directed = TRUE) ~ istar(0:(nrow(mat) - 1)))
   names(d) <- 0:(length(d) - 1)
   attributes(d)$label <- "Incoming k-star"
   return(d)
@@ -429,7 +429,7 @@ fastgreedy.modularity <- function(mat, ...) {
     mod <- 0
   } else {
     g <- igraph::graph_from_adjacency_matrix(as.matrix(mat), mode = "max")
-    wt <- igraph::fastgreedy.community(g)
+    wt <- igraph::cluster_fast_greedy(g)
     mod <- igraph::modularity(wt)
   }
   attributes(mod)$label <- "Modularity (fast & greedy)"
@@ -453,7 +453,7 @@ fastgreedy.roc <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "undirected")
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "max")
       memb <- igraph::cluster_fast_greedy(g)$membership
     }
     return(comemb(memb))
@@ -484,7 +484,7 @@ fastgreedy.pr <- function(sim, obs, ...) {
     if (sum(x) == 0) {
       memb <- rep(1, nrow(x))
     } else {
-      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "undirected")
+      g <- igraph::graph_from_adjacency_matrix(as.matrix(x), mode = "max")
       memb <- igraph::cluster_fast_greedy(g)$membership
     }
     return(comemb(memb))

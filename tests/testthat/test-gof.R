@@ -61,6 +61,10 @@ test_that("checkdegeneracy works with btergm and mtergm", {
 })
 
 test_that("gof statistics for vectors work", {
+  skip_on_cran()
+  skip_if_not_installed("ergm", minimum_version = "4.8.1")
+  skip_if_not_installed("network", minimum_version = "1.19.0")
+  
   set.seed(12345)
   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
   diag(mat) <- 0               # loops are excluded
@@ -204,6 +208,10 @@ test_that("gof statistics for vectors work", {
 })
 
 test_that("gof statistics for single values work", {
+  skip_on_cran()
+  skip_if_not_installed("ergm", minimum_version = "4.8.1")
+  skip_if_not_installed("network", minimum_version = "1.19.0")
+  
   set.seed(12345)
   mat <- matrix(rbinom(100, 1, .25), nrow = 10, ncol = 10)
   diag(mat) <- 0               # loops are excluded
@@ -259,6 +267,10 @@ test_that("gof statistics for single values work", {
 })
 
 test_that("tie prediction gof statistics work", {
+  skip_on_cran()
+  skip_if_not_installed("ergm", minimum_version = "4.8.1")
+  skip_if_not_installed("network", minimum_version = "1.19.0")
+  
   set.seed(16) # note that a specific random seed is used because the spinglass algorithm requires connected networks in both the observed and target networks
   networks <- list()
   for(i in 1:7) {                # create 7 random networks with 10 actors

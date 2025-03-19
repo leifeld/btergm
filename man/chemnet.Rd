@@ -76,12 +76,11 @@ The data were collected using paper-based questionnaires. The
 questionnaires were administered in personal interviews (PAPI).  Further
 information, including the actual survey, data on additional actors, the
 full names of the policy committees/forums, and the full list of
-unabbreviated actor names can be found online at
-\url{http://hdl.handle.net/1902.1/17004} in the replication archive of
-Leifeld and Schneider (2012).
+unabbreviated actor names can be found online at \doi{10.7910/DVN/ONDFVJ} in
+the replication archive of Leifeld and Schneider (2012).
 
 \itemize{
-\item Replication archive: \url{http://hdl.handle.net/1902.1/17004}
+\item Replication archive: \doi{10.7910/DVN/ONDFVJ}
 \item AJPS publication: \doi{10.1111/j.1540-5907.2011.00580.x}
 }
 
